@@ -56,9 +56,11 @@ class ProfileController extends Controller
             return Redirect::route('profile.edit')->with('error', 'Akun tidak dapat dihapus karena masih terikat riwayat data transaksi sirkulasi peminjaman perpustakaan.');
         }
 
-        $request->validateWithBag('userDeletion', [
-            'password' => ['required', 'current_password'],
-        ]);
+        if (!empty($user->password)) {
+            $request->validateWithBag('userDeletion', [
+                'password' => ['required', 'current_password'],
+            ]);
+        }
 
         Auth::logout();
 

@@ -47,19 +47,26 @@
                     Tindakan ini tidak dapat dibatalkan. Masukkan kata sandi akun Anda untuk memvalidasi permintaan penghapusan akun dari sistem perpustakaan.
                 </p>
 
-                <div class="mt-6">
-                    <x-input-label for="password" value="{{ __('Kata Sandi Konfirmasi') }}" class="sr-only" />
+                @if(empty(auth()->user()->password))
+                    <div class="mt-4 p-3 bg-neutral-surface border border-neutral-border rounded text-xs text-neutral-body flex items-start gap-2">
+                        <svg class="w-4 h-4 text-primary shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span>Akun Anda terdaftar melalui Google OAuth (tanpa kata sandi lokal). Anda tidak perlu memasukkan kata sandi, silakan langsung klik tombol <strong>Ya, Hapus Akun</strong> di bawah.</span>
+                    </div>
+                @else
+                    <div class="mt-6">
+                        <x-input-label for="password" value="{{ __('Kata Sandi Konfirmasi') }}" class="sr-only" />
 
-                    <x-text-input
-                        id="password"
-                        name="password"
-                        type="password"
-                        class="mt-1 block w-full sm:w-3/4"
-                        placeholder="{{ __('Masukkan Kata Sandi Anda') }}"
-                    />
+                        <x-text-input
+                            id="password"
+                            name="password"
+                            type="password"
+                            class="mt-1 block w-full sm:w-3/4"
+                            placeholder="{{ __('Masukkan Kata Sandi Anda') }}"
+                        />
 
-                    <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-                </div>
+                        <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+                    </div>
+                @endif
 
                 <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-neutral-border">
                     <x-secondary-button x-on:click="$dispatch('close')">

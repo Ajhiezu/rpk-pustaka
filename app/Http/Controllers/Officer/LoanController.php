@@ -74,7 +74,7 @@ class LoanController extends Controller
     public function create()
     {
         $borrowers = User::where('role', 'anggota')->get();
-        $books = Book::where('available_stock', '>', 0)->get();
+        $books = Book::where('available_stock', '>', 0)->with('location')->get();
         return view('officer.loans.create', compact('borrowers', 'books'));
     }
 
