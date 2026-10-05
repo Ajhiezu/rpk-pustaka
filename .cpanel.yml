@@ -1,0 +1,4 @@
+---
+deployment:
+  tasks:
+    - /bin/cp -R * /home/rpkd9586/staging/rpk-pustaka/
