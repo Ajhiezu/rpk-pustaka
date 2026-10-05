@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+    /* 1. RPK RED — PRIMARY BRAND */
+    --color-primary: #C62828;
+    --color-primary-dark: #A71D1D;
+    --color-primary-light: #FEF2F2;
+    --color-primary-hover: #A71D1D;
+    
+    /* 2. RPK GOLD — SECONDARY / ACCENT */
+    --color-accent: #E5A11A;
+    --color-accent-light: #FFF9ED;
+    --color-accent-dark: #C98B13;
+    --color-accent-hover: #D48F0E;
+    
+    /* 3. WHITE — MAIN BACKGROUND */
+    --color-bg-main: #FFFFFF;
+    
+    /* 4. SOFT NEUTRAL */
+    --color-neutral-surface: #F8F8F7;
+    
+    /* 5. DARK & GRAY TEXT */
+    --color-neutral-dark: #181818;
+    --color-neutral-body: #4B5563;
+    --color-neutral-muted: #6B7280;
+    --color-neutral-border: #E5E5E5;
+    
+    /* 6. SEMANTIC STATUS COLORS */
+    --color-success: #2E7D32;
+    --color-success-light: #EDF7ED;
+    --color-danger: #D32F2F;
+    --color-danger-light: #FDEDED;
+    --color-warning: #E5A11A;
+    --color-warning-light: #FFF8E1;
+    --color-info: #1976D2;
+    --color-info-light: #E3F2FD;
+    
+    /* 7. TYPOGRAPHY (Inter Sans-Serif System) */
+    --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-serif: var(--font-sans);
+}
+
+@layer base {
+    html {
+        font-family: var(--font-sans);
+        background-color: var(--color-bg-main);
+        color: var(--color-neutral-dark);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body {
+        font-family: var(--font-sans);
+        background-color: var(--color-bg-main);
+        color: var(--color-neutral-dark);
+        line-height: 1.6;
+        font-weight: 400;
+    }
+
+    h1, h2, h3, h4, h5, h6, .font-editorial {
+        font-family: var(--font-sans);
+        letter-spacing: -0.02em;
+    }
+}
+
+@layer components {
+    /* Academic / Editorial Buttons — RPK Brand System */
+    .btn-editorial {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-family: var(--font-sans);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid var(--color-primary);
+        box-shadow: 0 1px 2px rgba(198, 40, 40, 0.08);
+    }
+    .btn-editorial:hover {
+        background-color: var(--color-primary-hover);
+        border-color: var(--color-primary-hover);
+        color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+        transform: translateY(-1px);
+    }
+    .btn-editorial:active {
+        transform: translateY(0);
+    }
+
+    .btn-editorial-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: #FFFFFF;
+        color: var(--color-primary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-family: var(--font-sans);
+        font-size: 0.875rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid var(--color-primary);
+    }
+    .btn-editorial-outline:hover {
+        background-color: var(--color-primary-light);
+        border-color: var(--color-primary);
+        color: var(--color-primary-dark);
+        box-shadow: 0 2px 8px rgba(198, 40, 40, 0.08);
+    }
+
+    /* Backwards compatibility */
+    .btn-premium {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid var(--color-primary);
+    }
+    .btn-premium:hover {
+        background-color: var(--color-primary-hover);
+        box-shadow: 0 4px 12px rgba(198, 40, 40, 0.2);
+    }
+    .btn-premium-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        background-color: #FFFFFF;
+        color: var(--color-primary);
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.375rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: 1px solid var(--color-primary);
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-premium-outline:hover {
+        background-color: var(--color-primary-light);
+        border-color: var(--color-primary);
+        color: var(--color-primary-dark);
+    }
+
+    /* Sidebar Navigation Links */
+    .sidebar-link {
+        display: flex;
+        align-items: center;
+        padding: 0.625rem 0.875rem;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #666666;
+        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        border-left: 2px solid transparent;
+    }
+    .sidebar-link:hover {
+        background-color: #F8F8F7;
+        color: #181818;
+    }
+    .sidebar-active {
+        background-color: #FEF2F2;
+        color: var(--color-primary);
+        font-weight: 600;
+        border-left: 3px solid var(--color-primary);
+    }
+    .sidebar-inactive {
+        color: #666666;
+    }
+    .sidebar-inactive:hover {
+        background-color: #F8F8F7;
+        color: #181818;
+    }
+
+    /* Editorial Card & Surfaces */
+    .card-editorial {
+        background-color: #FFFFFF;
+        border: 1px solid var(--color-neutral-border);
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-editorial:hover {
+        border-color: #D4D4D4;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+    }
+}
+
+/* Custom subtle scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(200, 200, 200, 0.5);
+    border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(180, 180, 180, 0.8);
+}
