@@ -22,6 +22,7 @@ use App\Http\Controllers\Anggota\LoanController as AnggotaLoanController;
 use App\Http\Controllers\Anggota\BookReaderController as AnggotaReaderController;
 use App\Http\Controllers\Anggota\ArticleController as AnggotaArticleController;
 use App\Http\Controllers\Anggota\EssayController as AnggotaEssayController;
+use App\Http\Controllers\StorageController;
 
 // Public Landing Page
 Route::get('/', function () {
@@ -169,3 +170,9 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Public Storage Fallback Route (Shared Hosting Symlink Workaround)
+Route::get('/storage/{path}', [StorageController::class, 'show'])
+    ->where('path', '.*')
+    ->name('storage.show');
+
