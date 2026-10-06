@@ -34,7 +34,7 @@
                 <div class="flex items-center space-x-3">
                     <span class="text-white font-semibold whitespace-nowrap">RPK PUSTAKA IMM SAINTEKMU</span>
                     <span class="text-accent">•</span>
-                    <span class="text-[#A3A3A3]">Layanan Ruang Baca: Sen – Jum 06:00 – 00:00 WIB</span>
+                    <span class="text-[#A3A3A3]">Layanan Ruang Baca: Sen – Jum 06:00 – 15:00 WIB</span>
                 </div>
                 <div class="flex items-center space-x-6 text-[11px] text-[#A3A3A3]">
                     <a href="#koleksi" class="hover:text-white transition-colors">Akses Katalog</a>
@@ -45,38 +45,43 @@
             </div>
         </div>
 
-        <!-- Modern Academic RPK PUSTAKA IMM SAINTEKMU Header / Navigation -->
-        <nav class="h-20 bg-white/95 backdrop-blur-md border-b border-neutral-border sticky top-0 z-50 flex items-center shadow-xs">
+        <!-- Red Header / Navigation Bar with Scroll Blur & Glass Shadow Effect (RPK Red #C62828) -->
+        <nav x-data="{ scrolled: false }"
+             @scroll.window="scrolled = ((window.pageYOffset || document.documentElement.scrollTop) > 20)"
+             :class="scrolled ? 'bg-[#C62828]/90 backdrop-blur-md shadow-[0_12px_32px_rgba(0,0,0,0.35)] border-b border-white/20' : 'bg-[#C62828] shadow-md border-b border-white/10'"
+             class="sticky top-0 z-50 h-20 flex items-center transition-all duration-300">
             <div class="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
                 <!-- Academic Logo & Brand -->
                 <a href="{{ url('/') }}" class="flex items-center space-x-3.5 group">
-                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-11 w-auto object-contain">
+                    <div class="bg-white p-2 rounded-xl shadow-md flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                        <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain">
+                    </div>
                     <div>
-                        <span class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
+                        <span class="text-xl sm:text-2xl font-bold tracking-tight text-white block leading-none">RPK PUSTAKA</span>
+                        <span class="text-[10px] font-semibold text-accent uppercase tracking-wider block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
                     </div>
                 </a>
                 
                 <!-- Center Navigation -->
-                <div class="hidden lg:flex items-center space-x-8 text-[13px] sm:text-sm font-medium text-neutral-dark">
-                    <a href="#koleksi" class="hover:text-primary transition-colors py-1">Koleksi Pilihan</a>
-                    <a href="#publikasi" class="hover:text-primary transition-colors py-1">Artikel & Esai</a>
-                    <a href="#layanan" class="hover:text-primary transition-colors py-1">Panduan Meminjam</a>
-                    <a href="#tentang" class="hover:text-primary transition-colors py-1">Arsip & Visi</a>
+                <div class="hidden lg:flex items-center space-x-8 text-[13px] sm:text-sm font-semibold text-white/90">
+                    <a href="#koleksi" class="hover:text-accent transition-colors py-1">Koleksi Pilihan</a>
+                    <a href="#publikasi" class="hover:text-accent transition-colors py-1">Artikel & Esai</a>
+                    <a href="#layanan" class="hover:text-accent transition-colors py-1">Panduan Meminjam</a>
+                    <a href="#tentang" class="hover:text-accent transition-colors py-1">Arsip & Visi</a>
                 </div>
 
                 <!-- Right Actions -->
                 <div class="flex items-center space-x-3">
                     @auth
-                        <a href="{{ url('/dashboard') }}" class="btn-editorial text-xs sm:text-sm py-2 px-4 shadow-xs font-semibold">
-                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
+                        <a href="{{ url('/dashboard') }}" class="bg-white text-primary hover:bg-neutral-surface text-xs sm:text-sm py-2 px-4 shadow-sm font-bold rounded-md transition-all">
+                            <svg class="w-4 h-4 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"></path></svg>
                             {{ Auth::user()->isAdmin() ? 'Panel Admin' : 'Panel Anggota' }}
                         </a>
                     @else
-                        <a href="{{ route('login') }}" class="text-[13px] sm:text-sm font-medium text-neutral-dark hover:text-primary px-3 py-2 transition-colors">
+                        <a href="{{ route('login') }}" class="text-[13px] sm:text-sm font-semibold text-white hover:text-accent px-3 py-2 transition-colors">
                             Masuk
                         </a>
-                        <a href="{{ route('register') }}" class="btn-editorial text-xs sm:text-sm py-2 px-4 shadow-xs font-semibold">
+                        <a href="{{ route('register') }}" class="bg-white text-primary hover:bg-neutral-surface text-xs sm:text-sm py-2.5 px-4 shadow-sm font-bold rounded-md transition-all">
                             Daftar Anggota
                         </a>
                     @endauth
@@ -84,7 +89,7 @@
             </div>
         </nav>
 
-        <!-- Large Editorial Hero with Dominant White & Prominent Search -->
+        <!-- Section Pertama: Hero Section (Kembali Putih Seperti Semula) -->
         <header class="pt-16 pb-20 relative overflow-hidden border-b border-neutral-border bg-white"
                 x-data="{
                     searchQuery: '',
@@ -172,183 +177,183 @@
                     @endif
                 </div>
 
-                <!-- Academic Pillar Metrics Strip (Soft Neutral Background) -->
-                <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 p-6 sm:p-7 bg-[#F8F8F7] border border-neutral-border rounded-lg max-w-5xl mx-auto">
+                <!-- Academic Pillar Metrics Strip (RPK Red #C62828 Background) -->
+                <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 p-6 sm:p-7 bg-[#C62828] text-white shadow-xl rounded-xl max-w-5xl mx-auto">
                     <div class="text-center sm:text-left">
-                        <span class="text-2xl sm:text-3xl font-bold text-neutral-dark block leading-none">10,000+</span>
-                        <span class="text-xs text-neutral-muted font-medium uppercase tracking-wider block mt-2">Katalog Terindeks</span>
+                        <span class="text-2xl sm:text-3xl font-bold text-white block leading-none">10,000+</span>
+                        <span class="text-xs text-white/80 font-medium uppercase tracking-wider block mt-2">Katalog Terindeks</span>
                     </div>
                     <div class="text-center sm:text-left">
-                        <span class="text-2xl sm:text-3xl font-bold text-neutral-dark block leading-none">100%</span>
-                        <span class="text-xs text-neutral-muted font-medium uppercase tracking-wider block mt-2">Akses Terbuka</span>
+                        <span class="text-2xl sm:text-3xl font-bold text-white block leading-none">100%</span>
+                        <span class="text-xs text-white/80 font-medium uppercase tracking-wider block mt-2">Akses Terbuka</span>
                     </div>
                     <div class="text-center sm:text-left">
-                        <span class="text-2xl sm:text-3xl font-bold text-neutral-dark block leading-none">{{ $physicalLoanDays }} Hari</span>
-                        <span class="text-xs text-neutral-muted font-medium uppercase tracking-wider block mt-2">Masa Pinjam Standar</span>
+                        <span class="text-2xl sm:text-3xl font-bold text-white block leading-none">{{ $physicalLoanDays }} Hari</span>
+                        <span class="text-xs text-white/80 font-medium uppercase tracking-wider block mt-2">Masa Pinjam Standar</span>
                     </div>
                     <div class="text-center sm:text-left">
-                        <span class="text-2xl sm:text-3xl font-bold text-primary block leading-none">Aktif</span>
-                        <span class="text-xs text-neutral-muted font-medium uppercase tracking-wider block mt-2">Layanan Sirkulasi</span>
+                        <span class="text-2xl sm:text-3xl font-bold text-accent block leading-none">Aktif</span>
+                        <span class="text-xs text-white/80 font-medium uppercase tracking-wider block mt-2">Layanan Sirkulasi</span>
                     </div>
                 </div>
             </div>
-
-            <!-- Curated Masterpieces / Book Catalog Section -->
-            <section id="koleksi" class="mt-20 pt-16 bg-white border-t border-neutral-border">
-                <div class="max-w-7xl mx-auto px-6">
-                    
-                    <!-- Section Header -->
-                    <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b border-neutral-border gap-6">
-                        <div>
-                            <span class="text-xs font-semibold uppercase tracking-wider text-primary block mb-1.5">Pilihan Kurator</span>
-                            <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-dark tracking-tight">Koleksi Buku Unggulan</h2>
-                            <p class="text-sm sm:text-base text-neutral-body mt-1.5 max-w-xl">Koleksi rujukan terpenting yang siap dipelajari di ruang baca maupun dipinjam ke rumah.</p>
-                        </div>
-
-                        @php
-                            $uniqueCategories = $books->pluck('category')->filter()->unique('id');
-                        @endphp
-                        @if($uniqueCategories->isNotEmpty())
-                            <!-- Category Chips -->
-                            <div class="flex items-center flex-wrap gap-2">
-                                <button 
-                                    @click="selectedCategory = 'all'" 
-                                    :class="selectedCategory === 'all' ? 'bg-primary text-white border-primary' : 'bg-white text-neutral-body border-neutral-border hover:border-primary hover:text-primary'"
-                                    class="px-4 py-2 rounded-md text-xs sm:text-[13px] font-semibold uppercase tracking-wide border transition-colors cursor-pointer">
-                                    Semua Kategori
-                                </button>
-                                @foreach($uniqueCategories as $cat)
-                                    <button 
-                                        @click="selectedCategory = '{{ $cat->slug }}'" 
-                                        :class="selectedCategory === '{{ $cat->slug }}' ? 'bg-primary text-white border-primary' : 'bg-white text-neutral-body border-neutral-border hover:border-primary hover:text-primary'"
-                                        class="px-4 py-2 rounded-md text-xs sm:text-[13px] font-semibold uppercase tracking-wide border transition-colors cursor-pointer">
-                                        {{ $cat->name }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Filtered Grid View of Book Cards -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-                        @forelse($books as $book)
-                            <article 
-                                x-show="(!searchQuery || '{{ strtolower(addslashes($book->title . ' ' . $book->author . ' ' . ($book->category->name ?? ''))) }}'.includes(searchQuery.toLowerCase().trim())) && (selectedCategory === 'all' || selectedCategory === '{{ $book->category->slug ?? '' }}')"
-                                class="group flex flex-col bg-white border border-neutral-border rounded-lg overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-md">
-                                
-                                <!-- Book Cover as Focal Point -->
-                                <div class="relative w-full aspect-[3/4.2] bg-[#F8F8F7] overflow-hidden border-b border-neutral-border">
-                                    @if($book->cover_url)
-                                        <img src="{{ $book->cover_url }}" alt="{{ $book->title }}" 
-                                             class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103">
-                                    @else
-                                        <div class="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-[#F8F8F7]">
-                                            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary mb-3 shadow-xs border border-neutral-border">
-                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                                </svg>
-                                            </div>
-                                            <span class="text-sm sm:text-[15px] font-semibold text-neutral-dark line-clamp-2 leading-snug">{{ $book->title }}</span>
-                                            <span class="text-xs text-neutral-muted mt-1.5">{{ $book->author }}</span>
-                                        </div>
-                                    @endif
-
-                                    <!-- Category Badge on Cover -->
-                                    <div class="absolute top-3 left-3">
-                                        <span class="bg-white/95 backdrop-blur-xs px-2.5 py-1 text-[11px] font-bold text-primary uppercase tracking-wide rounded border border-neutral-border shadow-xs">
-                                            {{ $book->category->name ?? 'Umum' }}
-                                        </span>
-                                    </div>
-
-                                    <!-- Format Badge (FISIK / DIGITAL / FISIK + DIGITAL) -->
-                                    <div class="absolute top-3 right-3 flex items-center gap-1.5">
-                                        @if($book->collection_type === 'fisik_digital')
-                                            <span class="bg-primary text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded shadow-xs">
-                                                FISIK + DIGITAL
-                                            </span>
-                                        @elseif($book->collection_type === 'digital')
-                                            <span class="bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded shadow-xs">
-                                                DIGITAL
-                                            </span>
-                                        @else
-                                            <span class="bg-[#EDF7ED] text-success border border-[#C8E6C9] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded shadow-xs">
-                                                FISIK
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- Book Metadata -->
-                                <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
-                                    <div>
-                                        <div class="flex items-center justify-between gap-2 mb-1.5">
-                                            <p class="text-xs sm:text-[13px] font-medium text-neutral-muted truncate">{{ $book->author }}</p>
-                                            <span class="font-mono text-[10px] text-neutral-muted font-semibold shrink-0">{{ $book->book_code ?? '' }}</span>
-                                        </div>
-                                        <h3 class="text-[15px] sm:text-base font-semibold text-neutral-dark leading-snug group-hover:text-primary transition-colors line-clamp-2">
-                                            <a href="{{ route('public.books.show', $book) }}">
-                                                {{ $book->title }}
-                                            </a>
-                                        </h3>
-                                        <p class="text-xs sm:text-sm text-neutral-body mt-2 line-clamp-2 leading-relaxed">
-                                            {{ $book->description ?? 'Buku teks rujukan akademik untuk keperluan pembelajaran dan riset mendalam.' }}
-                                        </p>
-                                    </div>
-
-                                    <!-- Bottom Action & Shelf Location -->
-                                    <div class="pt-3 border-t border-neutral-border flex items-center justify-between text-xs">
-                                        <div class="flex items-center space-x-1.5 text-neutral-muted">
-                                            @if($book->collection_type === 'digital')
-                                                <svg class="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                                <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-primary">E-Book Digital</span>
-                                            @else
-                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
-                                                <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wide">{{ $book->location->name ?? 'Rak Utama' }}</span>
-                                            @endif
-                                        </div>
-
-                                        <a href="{{ route('public.books.show', $book) }}" 
-                                           class="inline-flex items-center font-semibold text-xs sm:text-sm text-primary hover:text-primary-hover group-hover:underline">
-                                            Buka Detail
-                                            <svg class="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                            </svg>
-                                        </a>
-                                    </div>
-                                </div>
-                            </article>
-                        @empty
-                            <div class="col-span-full py-20 text-center bg-[#F8F8F7] rounded-lg border border-dashed border-neutral-border">
-                                <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mx-auto mb-3 text-neutral-muted border border-neutral-border">
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                </div>
-                                <p class="text-base sm:text-lg font-bold text-neutral-dark">Koleksi Belum Terdaftar</p>
-                                <p class="text-xs sm:text-sm text-neutral-muted mt-1">Koleksi buku akan segera diperbarui oleh pustakawan RPK PUSTAKA IMM SAINTEKMU.</p>
-                            </div>
-                        @endforelse
-                    </div>
-
-                    <!-- Bottom Catalog CTA -->
-                    @auth
-                        @if(Auth::user()->isAdmin())
-                            <div class="mt-14 text-center">
-                                <a href="{{ route('admin.books.index') }}" class="btn-editorial-outline px-8 py-3.5 text-xs sm:text-sm uppercase tracking-wider font-semibold">
-                                    Kelola Master Data Buku &rarr;
-                                </a>
-                            </div>
-                        @else
-                            <div class="mt-14 text-center">
-                                <a href="{{ route('member.books.index') }}" class="btn-editorial-outline px-8 py-3.5 text-xs sm:text-sm uppercase tracking-wider font-semibold">
-                                    Lihat Seluruh Katalog Anggota ({{ $books->count() }}+ Buku) &rarr;
-                                </a>
-                            </div>
-                        @endif
-                    @endauth
-                </div>
-            </section>
         </header>
 
-        <!-- Published Articles & Member Essays Section -->
+        <!-- Section Katalog Buku (Kembali Putih Seperti Semula) -->
+        <section id="koleksi" class="py-20 bg-white border-b border-neutral-border">
+            <div class="max-w-7xl mx-auto px-6">
+                
+                <!-- Section Header -->
+                <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b border-neutral-border gap-6">
+                    <div>
+                        <span class="text-xs font-semibold uppercase tracking-wider text-primary block mb-1.5">Pilihan Kurator</span>
+                        <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-dark tracking-tight">Koleksi Buku Unggulan</h2>
+                        <p class="text-sm sm:text-base text-neutral-body mt-1.5 max-w-xl">Koleksi rujukan terpenting yang siap dipelajari di ruang baca maupun dipinjam ke rumah.</p>
+                    </div>
+
+                    @php
+                        $uniqueCategories = $books->pluck('category')->filter()->unique('id');
+                    @endphp
+                    @if($uniqueCategories->isNotEmpty())
+                        <!-- Category Chips -->
+                        <div class="flex items-center flex-wrap gap-2">
+                            <button 
+                                @click="selectedCategory = 'all'" 
+                                :class="selectedCategory === 'all' ? 'bg-primary text-white border-primary' : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary hover:text-primary'"
+                                class="px-4 py-2 rounded-md text-xs sm:text-[13px] font-semibold uppercase tracking-wide border transition-colors cursor-pointer">
+                                Semua Kategori
+                            </button>
+                            @foreach($uniqueCategories as $cat)
+                                <button 
+                                    @click="selectedCategory = '{{ $cat->slug }}'" 
+                                    :class="selectedCategory === '{{ $cat->slug }}' ? 'bg-primary text-white border-primary' : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary hover:text-primary'"
+                                    class="px-4 py-2 rounded-md text-xs sm:text-[13px] font-semibold uppercase tracking-wide border transition-colors cursor-pointer">
+                                    {{ $cat->name }}
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Filtered Grid View of Book Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    @forelse($books as $book)
+                        <article 
+                            x-show="(!searchQuery || '{{ strtolower(addslashes($book->title . ' ' . $book->author . ' ' . ($book->category->name ?? ''))) }}'.includes(searchQuery.toLowerCase().trim())) && (selectedCategory === 'all' || selectedCategory === '{{ $book->category->slug ?? '' }}')"
+                            class="group flex flex-col bg-white border border-neutral-border rounded-lg overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-md">
+                            
+                            <!-- Book Cover as Focal Point -->
+                            <div class="relative w-full aspect-[3/4.2] bg-[#F8F8F7] overflow-hidden border-b border-neutral-border">
+                                @if($book->cover_url)
+                                    <img src="{{ $book->cover_url }}" alt="{{ $book->title }}" 
+                                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-103">
+                                @else
+                                    <div class="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-[#F8F8F7]">
+                                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary mb-3 shadow-xs border border-neutral-border">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-sm sm:text-[15px] font-semibold text-neutral-dark line-clamp-2 leading-snug">{{ $book->title }}</span>
+                                        <span class="text-xs text-neutral-muted mt-1.5">{{ $book->author }}</span>
+                                    </div>
+                                @endif
+
+                                <!-- Category Badge on Cover -->
+                                <div class="absolute top-3 left-3">
+                                    <span class="bg-white/95 backdrop-blur-xs px-2.5 py-1 text-[11px] font-bold text-primary uppercase tracking-wide rounded border border-neutral-border shadow-xs">
+                                        {{ $book->category->name ?? 'Umum' }}
+                                    </span>
+                                </div>
+
+                                <!-- Format Badge (FISIK / DIGITAL / FISIK + DIGITAL) -->
+                                <div class="absolute top-3 right-3 flex items-center gap-1.5">
+                                    @if($book->collection_type === 'fisik_digital')
+                                        <span class="bg-primary text-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded shadow-xs">
+                                            FISIK + DIGITAL
+                                        </span>
+                                    @elseif($book->collection_type === 'digital')
+                                        <span class="bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded shadow-xs">
+                                            DIGITAL
+                                        </span>
+                                    @else
+                                        <span class="bg-[#EDF7ED] text-success border border-[#C8E6C9] px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded shadow-xs">
+                                            FISIK
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Book Metadata -->
+                            <div class="p-5 flex-1 flex flex-col justify-between space-y-4">
+                                <div>
+                                    <div class="flex items-center justify-between gap-2 mb-1.5">
+                                        <p class="text-xs sm:text-[13px] font-medium text-neutral-muted truncate">{{ $book->author }}</p>
+                                        <span class="font-mono text-[10px] text-neutral-muted font-semibold shrink-0">{{ $book->book_code ?? '' }}</span>
+                                    </div>
+                                    <h3 class="text-[15px] sm:text-base font-semibold text-neutral-dark leading-snug group-hover:text-primary transition-colors line-clamp-2">
+                                        <a href="{{ route('public.books.show', $book) }}">
+                                            {{ $book->title }}
+                                        </a>
+                                    </h3>
+                                    <p class="text-xs sm:text-sm text-neutral-body mt-2 line-clamp-2 leading-relaxed">
+                                        {{ $book->description ?? 'Buku teks rujukan akademik untuk keperluan pembelajaran dan riset mendalam.' }}
+                                    </p>
+                                </div>
+
+                                <!-- Bottom Action & Shelf Location -->
+                                <div class="pt-3 border-t border-neutral-border flex items-center justify-between text-xs">
+                                    <div class="flex items-center space-x-1.5 text-neutral-muted">
+                                        @if($book->collection_type === 'digital')
+                                            <svg class="w-3.5 h-3.5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                            <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wide text-primary">E-Book Digital</span>
+                                        @else
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                            <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wide">{{ $book->location->name ?? 'Rak Utama' }}</span>
+                                        @endif
+                                    </div>
+
+                                    <a href="{{ route('public.books.show', $book) }}" 
+                                       class="inline-flex items-center font-semibold text-xs sm:text-sm text-primary hover:text-primary-hover group-hover:underline">
+                                        Buka Detail
+                                        <svg class="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    @empty
+                        <div class="col-span-full py-20 text-center bg-[#F8F8F7] rounded-lg border border-dashed border-neutral-border">
+                            <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center mx-auto mb-3 text-neutral-muted border border-neutral-border">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            </div>
+                            <p class="text-base sm:text-lg font-bold text-neutral-dark">Koleksi Belum Terdaftar</p>
+                            <p class="text-xs sm:text-sm text-neutral-muted mt-1">Koleksi buku akan segera diperbarui oleh pustakawan RPK PUSTAKA IMM SAINTEKMU.</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <!-- Bottom Catalog CTA -->
+                @auth
+                    @if(Auth::user()->isAdmin())
+                        <div class="mt-14 text-center">
+                            <a href="{{ route('admin.books.index') }}" class="btn-editorial-outline px-8 py-3.5 text-xs sm:text-sm uppercase tracking-wider font-semibold">
+                                Kelola Master Data Buku &rarr;
+                            </a>
+                        </div>
+                    @else
+                        <div class="mt-14 text-center">
+                            <a href="{{ route('member.books.index') }}" class="btn-editorial-outline px-8 py-3.5 text-xs sm:text-sm uppercase tracking-wider font-semibold">
+                                Lihat Seluruh Katalog Anggota ({{ $books->count() }}+ Buku) &rarr;
+                            </a>
+                        </div>
+                    @endif
+                @endauth
+            </div>
+        </section>
+
+        <!-- Published Articles & Member Essays Section (Original Soft Neutral Styling) -->
         <section id="publikasi" class="py-20 bg-[#F8F8F7] border-b border-neutral-border">
             <div class="max-w-7xl mx-auto px-6">
                 <!-- Section Header -->
@@ -487,60 +492,69 @@
             </div>
         </section>
 
-        <!-- Library Experience & Research Services -->
-        <section id="layanan" class="py-24 bg-white border-b border-neutral-border">
-            <div class="max-w-7xl mx-auto px-6">
+        <!-- Red Service Standard Section (RPK Red #C62828 Background) -->
+        <section id="layanan" class="py-24 bg-[#C62828] text-white overflow-hidden relative shadow-inner">
+            <!-- Background Ambient Circle Effects -->
+            <div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-white/5 blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-black/10 blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-7xl mx-auto px-6 relative z-10">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
                     <div class="lg:col-span-6 space-y-6">
-                        <span class="text-xs font-semibold uppercase tracking-wider text-primary block">Standar Pelayanan</span>
-                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-dark tracking-tight leading-tight">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-white text-xs font-semibold uppercase tracking-wider border border-white/20">
+                            <svg class="w-3.5 h-3.5 text-accent fill-current" viewBox="0 0 24 24">
+                                <path d="M12 2l2.4 7.2h7.6l-6.2 4.5 2.4 7.3-6.2-4.6-6.2 4.6 2.4-7.3-6.2-4.5h7.6z"/>
+                            </svg>
+                            Standar Pelayanan
+                        </span>
+                        <h2 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-white tracking-tight leading-tight">
                             Ruang Sunyi untuk Konsentrasi & Refleksi Mendalam
                         </h2>
-                        <p class="text-sm sm:text-base text-neutral-body leading-relaxed">
+                        <p class="text-sm sm:text-base text-white/90 leading-relaxed">
                             Kami memadukan kenyamanan ruang baca fisik yang hening dengan ketepatan katalog digital. Anggota terdaftar dapat mereservasi buku langsung secara daring dan mengambilnya di loket sirkulasi dalam hitungan menit.
                         </p>
 
-                        <div class="space-y-4 pt-4 border-t border-neutral-border">
+                        <div class="space-y-4 pt-4 border-t border-white/20">
                             <div class="flex items-start space-x-3.5">
-                                <div class="w-6 h-6 rounded-full bg-green-50 text-green-700 flex items-center justify-center shrink-0 mt-0.5 border border-green-200">
+                                <div class="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 mt-0.5 border border-white/30">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                                 </div>
                                 <div>
-                                    <h4 class="text-sm sm:text-base font-semibold text-neutral-dark">Peminjaman Tanpa Hambatan</h4>
-                                    <p class="text-xs sm:text-sm text-neutral-body mt-0.5 leading-relaxed">Ajukan peminjaman buku dengan tenggat {{ $physicalLoanDays }} hari melalui dasbor anggota.</p>
+                                    <h4 class="text-sm sm:text-base font-semibold text-white">Peminjaman Tanpa Hambatan</h4>
+                                    <p class="text-xs sm:text-sm text-white/80 mt-0.5 leading-relaxed">Ajukan peminjaman buku dengan tenggat {{ $physicalLoanDays }} hari melalui dasbor anggota.</p>
                                 </div>
                             </div>
 
                             <div class="flex items-start space-x-3.5">
-                                <div class="w-6 h-6 rounded-full bg-green-50 text-green-700 flex items-center justify-center shrink-0 mt-0.5 border border-green-200">
+                                <div class="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 mt-0.5 border border-white/30">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                                 </div>
                                 <div>
-                                    <h4 class="text-sm sm:text-base font-semibold text-neutral-dark">Pustakawan Kurasi Profesional</h4>
-                                    <p class="text-xs sm:text-sm text-neutral-body mt-0.5 leading-relaxed">Didukung staf pustaka yang siap mendampingi pencarian sumber referensi.</p>
+                                    <h4 class="text-sm sm:text-base font-semibold text-white">Pustakawan Kurasi Profesional</h4>
+                                    <p class="text-xs sm:text-sm text-white/80 mt-0.5 leading-relaxed">Didukung staf pustaka yang siap mendampingi pencarian sumber referensi.</p>
                                 </div>
                             </div>
 
                             <div class="flex items-start space-x-3.5">
-                                <div class="w-6 h-6 rounded-full bg-green-50 text-green-700 flex items-center justify-center shrink-0 mt-0.5 border border-green-200">
+                                <div class="w-6 h-6 rounded-full bg-white/20 text-white flex items-center justify-center shrink-0 mt-0.5 border border-white/30">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                                 </div>
                                 <div>
-                                    <h4 class="text-sm sm:text-base font-semibold text-neutral-dark">Akses Riwayat & Notifikasi Tenggat</h4>
-                                    <p class="text-xs sm:text-sm text-neutral-body mt-0.5 leading-relaxed">Pantau status pinjaman aktif, tanggal jatuh tempo, dan riwayat sirkulasi secara transparan.</p>
+                                    <h4 class="text-sm sm:text-base font-semibold text-white">Akses Riwayat & Notifikasi Tenggat</h4>
+                                    <p class="text-xs sm:text-sm text-white/80 mt-0.5 leading-relaxed">Pantau status pinjaman aktif, tanggal jatuh tempo, dan riwayat sirkulasi secara transparan.</p>
                                 </div>
                             </div>
                         </div>
 
                         <div class="pt-4">
-                            <a href="{{ route('register') }}" class="btn-editorial text-xs sm:text-sm py-3 px-6 uppercase tracking-wider font-semibold">
+                            <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-6 py-3.5 bg-white text-primary hover:bg-neutral-surface font-bold text-xs sm:text-sm uppercase tracking-wider rounded-lg shadow-xl transition-all hover:scale-[1.02]">
                                 Bergabung Sebagai Anggota RPK PUSTAKA IMM SAINTEKMU
                             </a>
                         </div>
                     </div>
 
                     <div class="lg:col-span-6">
-                        <div class="bg-[#F8F8F7] border border-neutral-border p-8 rounded-lg space-y-6">
+                        <div class="bg-white text-neutral-dark border-0 p-8 rounded-2xl shadow-2xl space-y-6">
                             <div class="border-b border-neutral-border pb-6">
                                 <span class="text-xs font-semibold uppercase tracking-wider text-primary">Pedoman Umum Sirkulasi</span>
                                 <h3 class="text-xl sm:text-2xl font-bold text-neutral-dark mt-1">Ketentuan Keanggotaan</h3>
@@ -549,19 +563,19 @@
                             <div class="space-y-4 text-xs sm:text-sm text-neutral-body leading-relaxed">
                                 <div class="flex items-baseline justify-between border-b border-neutral-border pb-3">
                                     <span class="font-semibold text-neutral-dark">Batas Waktu Pengembalian:</span>
-                                    <span>{{ $physicalLoanDays }} Hari Kalender (Dapat Diperpanjang)</span>
+                                    <span class="font-medium text-neutral-dark">{{ $physicalLoanDays }} Hari Kalender (Dapat Diperpanjang)</span>
                                 </div>
                                 <div class="flex items-baseline justify-between border-b border-neutral-border pb-3">
                                     <span class="font-semibold text-neutral-dark">Denda Keterlambatan:</span>
-                                    <span>Dihitung Otomatis Berdasarkan Aturan Harian</span>
+                                    <span class="font-medium text-neutral-dark">Dihitung Otomatis Berdasarkan Aturan Harian</span>
                                 </div>
                                 <div class="flex items-baseline justify-between pb-1">
                                     <span class="font-semibold text-neutral-dark">Kondisi Buku:</span>
-                                    <span>Wajib Dijaga Kebersihan & Keutuhan Halaman</span>
+                                    <span class="font-medium text-neutral-dark">Wajib Dijaga Kebersihan & Keutuhan Halaman</span>
                                 </div>
                             </div>
 
-                            <div class="bg-white p-4 rounded border border-neutral-border text-xs sm:text-sm text-neutral-body italic">
+                            <div class="bg-[#F8F8F7] p-4 rounded-lg border border-neutral-border text-xs sm:text-sm text-neutral-body italic">
                                 "Menjaga buku sama halnya menghormati ribuan pemikiran yang mendahului kita."
                             </div>
                         </div>
@@ -571,7 +585,7 @@
         </section>
 
         <!-- Dignified Institution Footer -->
-        <footer id="tentang" class="bg-[#181818] text-[#E5E5E5] pt-16 pb-12 border-t border-[#262626]">
+        <footer id="tentang" class="bg-[#181818] text-[#E5E5E5] pt-16 pb-12">
             <div class="max-w-7xl mx-auto px-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-12 pb-14 border-b border-[#262626]">
                     <!-- Brand Column -->
@@ -617,7 +631,7 @@
                         <div class="space-y-2 text-xs sm:text-[13px] text-[#A3A3A3]">
                             <div class="flex justify-between border-b border-[#262626] pb-1.5">
                                 <span>Senin s.d. Jumat:</span>
-                                <span class="text-white font-medium">06:00 – 00:00 WIB</span>
+                                <span class="text-white font-medium">06:00 – 15:00 WIB</span>
                             </div>
                             <div class="flex justify-between pt-1">
                                 <span>Sabtu, Minggu & Hari Libur:</span>
