@@ -8,6 +8,7 @@ use App\Models\Loan;
 use App\Models\Book;
 use App\Models\User;
 use App\Services\LibraryService;
+use App\Models\Setting;
 
 class LoanController extends Controller
 {
@@ -93,7 +94,7 @@ class LoanController extends Controller
             ],
             'book_ids' => 'required|array|min:1',
             'book_ids.*' => 'exists:books,id',
-            'due_date' => 'required|date|after:today|before_or_equal:' . now()->addDays(14)->toDateString(),
+            'due_date' => 'required|date|after:today|before_or_equal:' . now()->addDays((int) Setting::get('physical_loan_duration_days', 14))->toDateString(),
         ]);
 
         try {

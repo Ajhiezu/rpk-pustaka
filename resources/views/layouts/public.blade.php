@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }} — Modern Academic Editorial Library</title>
+    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }}, Modern Academic Editorial Library</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -158,7 +158,7 @@
                     <h4 class="text-xs sm:text-[13px] font-semibold uppercase tracking-wider text-white">Jam Layanan Sirkulasi</h4>
                     <div class="space-y-2 text-xs sm:text-[13px] text-[#A3A3A3]">
                         <div class="flex justify-between border-b border-[#262626] pb-1.5">
-                            <span>Senin — Jumat:</span>
+                            <span>Senin s.d. Jumat:</span>
                             <span class="text-white font-medium">06:00 – 00:00 WIB</span>
                         </div>
                         <div class="flex justify-between pt-1">
@@ -171,7 +171,7 @@
 
             <!-- Copyright Bar -->
             <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#888888] gap-4">
-                <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU — Hak Cipta Dilindungi.</p>
+                <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU, Hak Cipta Dilindungi.</p>
                 <p class="font-medium">IMM SAINTEKMU</p>
             </div>
         </div>

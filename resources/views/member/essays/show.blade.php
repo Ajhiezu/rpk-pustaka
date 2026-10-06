@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Karya Tulis Anggota — {{ $essay->title }}
+        Karya Tulis Anggota, {{ $essay->title }}
     </x-slot>
 
     <div class="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">
@@ -81,7 +81,7 @@
             @endif
 
             <div class="pt-8 border-t border-neutral-border flex items-center justify-between text-xs text-neutral-muted">
-                <span>RPK PUSTAKA IMM SAINTEKMU — Ruang Karya Literasi Anggota</span>
+                <span>RPK PUSTAKA IMM SAINTEKMU, Ruang Karya Literasi Anggota</span>
                 <a href="{{ Auth::check() ? route('anggota.essays.index') : url('/') }}" class="font-semibold text-primary hover:underline">
                     &larr; {{ Auth::check() ? 'Kembali ke Daftar Tulisan' : 'Kembali ke Beranda Utama' }}
                 </a>

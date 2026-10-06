@@ -147,7 +147,7 @@
                         </div>
                         <div class="text-center">
                             <p class="text-sm font-semibold text-neutral-dark">Seret & Lepas file di sini, atau <span class="text-primary underline">klik untuk memilih</span></p>
-                            <p class="text-xs text-neutral-muted mt-1">Format didukung: <strong>.xlsx, .xls, .csv</strong> — Maksimum 10 MB</p>
+                            <p class="text-xs text-neutral-muted mt-1">Format didukung: <strong>.xlsx, .xls, .csv</strong>, Maksimum 10 MB</p>
                         </div>
 
                         {{-- File selected preview --}}

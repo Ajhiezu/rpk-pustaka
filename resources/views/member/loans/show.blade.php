@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Bukti Peminjaman — {{ $loan->loan_code }}
+        Bukti Peminjaman, {{ $loan->loan_code }}
     </x-slot>
 
     <div class="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-300 print:max-w-none print:m-0">

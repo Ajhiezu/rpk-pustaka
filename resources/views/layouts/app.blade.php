@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }} — Modern Academic Editorial Library</title>
+    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }}, Modern Academic Editorial Library</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -478,7 +478,7 @@
                     <div class="mb-8 pb-6 border-b border-neutral-border flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
                         <div>
                             <h1 class="font-sans text-2xl sm:text-3xl font-bold text-neutral-dark tracking-tight">{{ $header }}</h1>
-                            <p class="text-xs text-neutral-muted font-normal mt-1.5 uppercase tracking-wider">RPK PUSTAKA IMM SAINTEKMU — Sistem Perpustakaan & Arsip Akademik</p>
+                            <p class="text-xs text-neutral-muted font-normal mt-1.5 uppercase tracking-wider">RPK PUSTAKA IMM SAINTEKMU, Sistem Perpustakaan & Arsip Akademik</p>
                         </div>
 
                         @isset($actions)
@@ -497,7 +497,7 @@
             <!-- Refined Academic Footer -->
             <footer class="mt-auto border-t border-neutral-border bg-white px-6 lg:px-12 py-6 text-center text-xs text-neutral-muted">
                 <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU — Hak Cipta Dilindungi. Perpustakaan Riset & Akademik.</p>
+                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU, Hak Cipta Dilindungi. Perpustakaan Riset & Akademik.</p>
                     <div class="flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
                         <p class="font-sans italic text-neutral-body">Veritas et Sapientia</p>

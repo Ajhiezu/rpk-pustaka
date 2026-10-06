@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Ruang Karya & Esai Anggota — RPK PUSTAKA IMM SAINTEKMU
+        Ruang Karya & Esai Anggota, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <x-slot name="actions">

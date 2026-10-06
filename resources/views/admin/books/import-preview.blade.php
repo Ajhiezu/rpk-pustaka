@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Pratinjau & Validasi Import Massal — RPK PUSTAKA IMM SAINTEKMU
+        Pratinjau & Validasi Import Massal, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <x-slot name="actions">

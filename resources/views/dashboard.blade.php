@@ -3,6 +3,10 @@
         Ringkasan & Dasbor Pustaka
     </x-slot>
 
+    @php
+        $digitalLoanDays = (int) \App\Models\Setting::get('digital_loan_duration_days', 7);
+    @endphp
+
     <div class="space-y-10 animate-in fade-in duration-300">
         <!-- Editorial Welcome Header -->
         <div class="bg-white p-6 sm:p-8 rounded-lg border border-neutral-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -309,7 +313,7 @@
                     </div>
                     <h5 class="font-sans text-base font-bold text-neutral-dark">Ketepatan Sirkulasi</h5>
                     <p class="text-xs text-neutral-body leading-relaxed">
-                        Pastikan setiap peminjaman fisik dikembalikan sebelum tanggal jatuh tempo. Untuk peminjaman digital, masa akses otomatis ditutup setelah 7 hari.
+                        Pastikan setiap peminjaman fisik dikembalikan sebelum tanggal jatuh tempo. Untuk peminjaman digital, masa akses otomatis ditutup setelah {{ $digitalLoanDays }} hari.
                     </p>
                     <div class="pt-2 text-[11px] text-neutral-muted italic">
                         Bantuan: hubungi administrator pustaka melalui layanan meja sirkulasi.

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Tulis Artikel Baru — RPK PUSTAKA IMM SAINTEKMU
+        Tulis Artikel Baru, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <div class="space-y-6 animate-in fade-in duration-300">

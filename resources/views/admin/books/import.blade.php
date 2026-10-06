@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Import Massal Koleksi Buku — RPK PUSTAKA IMM SAINTEKMU
+        Import Massal Koleksi Buku, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <x-slot name="actions">

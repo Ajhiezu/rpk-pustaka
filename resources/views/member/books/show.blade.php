@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Lembar Publikasi Koleksi — RPK PUSTAKA IMM SAINTEKMU
+        Lembar Publikasi Koleksi, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     @php

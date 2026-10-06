@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Buku Pinjaman & Riwayat Sirkulasi — RPK PUSTAKA IMM SAINTEKMU
+        Buku Pinjaman & Riwayat Sirkulasi, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <div class="space-y-8 animate-in fade-in duration-300">

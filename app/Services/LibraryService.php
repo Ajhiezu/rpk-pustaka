@@ -25,7 +25,10 @@ class LibraryService
     {
         return DB::transaction(function () use ($data) {
             $loanType = $data['loan_type'] ?? 'physical';
-            $dueDate = isset($data['due_date']) ? Carbon::parse($data['due_date']) : now()->addDays(14);
+            $defaultDuration = $loanType === 'digital'
+                ? (int) Setting::get('digital_loan_duration_days', 7)
+                : (int) Setting::get('physical_loan_duration_days', 14);
+            $dueDate = isset($data['due_date']) ? Carbon::parse($data['due_date']) : now()->addDays($defaultDuration);
             $userId = $data['user_id'];
             $bookIds = (array) $data['book_ids'];
 

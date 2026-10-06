@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Services\LibraryService;
+use App\Models\Setting;
 use Illuminate\Support\Facades\Auth;
 
 class LoanController extends Controller
@@ -31,7 +32,7 @@ class LoanController extends Controller
     {
         $request->validate([
             'book_id' => 'required|exists:books,id',
-            'due_date' => 'required|date|after:today|before_or_equal:' . now()->addDays(14)->toDateString(),
+            'due_date' => 'required|date|after:today|before_or_equal:' . now()->addDays((int) Setting::get('physical_loan_duration_days', 14))->toDateString(),
         ]);
 
         $book = Book::findOrFail($request->book_id);

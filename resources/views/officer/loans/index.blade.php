@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Daftar Sirkulasi Peminjaman & Reservasi — RPK PUSTAKA
+        Daftar Sirkulasi Peminjaman & Reservasi, RPK PUSTAKA
     </x-slot>
 
     <x-slot name="actions">

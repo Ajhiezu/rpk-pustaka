@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Lembar Telaah Esai — {{ $essay->title }}
+        Lembar Telaah Esai, {{ $essay->title }}
     </x-slot>
 
     <div class="space-y-8 animate-in fade-in duration-300">

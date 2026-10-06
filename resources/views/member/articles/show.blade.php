@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Publikasi Ilmiah — {{ $article->title }}
+        Publikasi Ilmiah, {{ $article->title }}
     </x-slot>
 
     <div class="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-300">

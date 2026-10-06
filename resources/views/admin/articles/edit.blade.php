@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Edit Artikel — {{ $article->title }}
+        Edit Artikel, {{ $article->title }}
     </x-slot>
 
     <div class="space-y-6 animate-in fade-in duration-300">

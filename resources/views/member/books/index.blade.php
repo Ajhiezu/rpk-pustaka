@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Eksplorasi Katalog Koleksi — RPK PUSTAKA IMM SAINTEKMU
+        Eksplorasi Katalog Koleksi, RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <div class="space-y-10 animate-in fade-in duration-300">

@@ -113,7 +113,7 @@
         @if($loan->isPending())
             <div class="bg-amber-50 border-2 border-amber-300 p-5 rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4" x-data="{ showRejectModal: false }">
                 <div class="space-y-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">AKSI ADMIN — VERIFIKASI RESERVASI PENDING</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-amber-800 block">AKSI ADMIN, VERIFIKASI RESERVASI PENDING</span>
                     <h3 class="font-sans text-base font-bold text-amber-950">Permohonan Reservasi Buku Fisik Membutuhkan Persetujuan Admin</h3>
                     <p class="text-xs text-amber-900">Stok fisik telah otomatis di-lock (berkurang 1 kuota) saat reservasi dibuat. Menyetujui tidak akan memotong stok lagi.</p>
                 </div>
@@ -162,7 +162,7 @@
         @elseif($loan->isApproved())
             <div class="bg-blue-50 border-2 border-blue-300 p-5 rounded-lg shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div class="space-y-1">
-                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-800 block">AKSI ADMIN — SERAH TERIMA BUKU FISIK</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-blue-800 block">AKSI ADMIN, SERAH TERIMA BUKU FISIK</span>
                     <h3 class="font-sans text-base font-bold text-blue-950">Reservasi Disetujui. Anggota Datang Mengambil Buku</h3>
                     <p class="text-xs text-blue-900">Verifikasi Kode Bukti: <strong class="font-mono text-primary">{{ $loan->loan_code }}</strong>. Klik tombol saat fisik buku diserahkan kepada Anggota.</p>
                 </div>

@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ $title ?? 'Autentikasi' }} — RPK PUSTAKA IMM SAINTEKMU</title>
+        <title>{{ $title ?? 'Autentikasi' }}, RPK PUSTAKA IMM SAINTEKMU</title>
         
         <!-- Favicon -->
         <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">

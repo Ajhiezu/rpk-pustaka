@@ -3,6 +3,10 @@
         Pencatatan Peminjaman Koleksi
     </x-slot>
 
+    @php
+        $physicalLoanDays = max(1, (int) \App\Models\Setting::get('physical_loan_duration_days', 14));
+    @endphp
+
     <div class="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-300" 
          x-data="{
             bookSearch: '',
@@ -194,10 +198,10 @@
                     </label>
                     <input type="date" name="due_date" id="due_date" required 
                         min="{{ now()->addDay()->toDateString() }}" 
-                        max="{{ now()->addDays(14)->toDateString() }}"
-                        value="{{ old('due_date', now()->addDays(7)->toDateString()) }}"
+                        max="{{ now()->addDays($physicalLoanDays)->toDateString() }}"
+                        value="{{ old('due_date', now()->addDays($physicalLoanDays)->toDateString()) }}"
                         class="w-full px-3.5 py-2.5 bg-white border border-neutral-border rounded-md text-xs font-semibold text-neutral-dark focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-xs">
-                    <p class="text-[11px] text-neutral-muted italic">* Standar durasi peminjaman fisik adalah 7 hari kalender (maksimal 14 hari).</p>
+                    <p class="text-[11px] text-neutral-muted italic">* Standar durasi peminjaman fisik mengikuti pengaturan admin: maksimal {{ $physicalLoanDays }} hari kalender.</p>
                     <x-input-error :messages="$errors->get('due_date')" class="mt-1.5" />
                 </div>
 

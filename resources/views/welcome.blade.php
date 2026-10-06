@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>RPK PUSTAKA IMM SAINTEKMU — Modern Academic Editorial Library</title>
+        <title>RPK PUSTAKA IMM SAINTEKMU, Modern Academic Editorial Library</title>
         
         <!-- Favicon -->
         <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -24,6 +24,9 @@
         </style>
     </head>
     <body class="antialiased bg-white text-neutral-dark selection:bg-primary/10 selection:text-primary">
+        @php
+            $physicalLoanDays = (int) \App\Models\Setting::get('physical_loan_duration_days', 14);
+        @endphp
         
         <!-- Institutional Top Bar -->
         <div class="bg-[#181818] text-[#E5E5E5] text-xs py-2.5 px-6 border-b border-[#262626]">
@@ -180,7 +183,7 @@
                         <span class="text-xs text-neutral-muted font-medium uppercase tracking-wider block mt-2">Akses Terbuka</span>
                     </div>
                     <div class="text-center sm:text-left">
-                        <span class="text-2xl sm:text-3xl font-bold text-neutral-dark block leading-none">14 Hari</span>
+                        <span class="text-2xl sm:text-3xl font-bold text-neutral-dark block leading-none">{{ $physicalLoanDays }} Hari</span>
                         <span class="text-xs text-neutral-muted font-medium uppercase tracking-wider block mt-2">Masa Pinjam Standar</span>
                     </div>
                     <div class="text-center sm:text-left">
@@ -504,7 +507,7 @@
                                 </div>
                                 <div>
                                     <h4 class="text-sm sm:text-base font-semibold text-neutral-dark">Peminjaman Tanpa Hambatan</h4>
-                                    <p class="text-xs sm:text-sm text-neutral-body mt-0.5 leading-relaxed">Ajukan peminjaman buku dengan tenggat 14 hari melalui dasbor anggota.</p>
+                                    <p class="text-xs sm:text-sm text-neutral-body mt-0.5 leading-relaxed">Ajukan peminjaman buku dengan tenggat {{ $physicalLoanDays }} hari melalui dasbor anggota.</p>
                                 </div>
                             </div>
 
@@ -546,7 +549,7 @@
                             <div class="space-y-4 text-xs sm:text-sm text-neutral-body leading-relaxed">
                                 <div class="flex items-baseline justify-between border-b border-neutral-border pb-3">
                                     <span class="font-semibold text-neutral-dark">Batas Waktu Pengembalian:</span>
-                                    <span>14 Hari Kalender (Dapat Diperpanjang)</span>
+                                    <span>{{ $physicalLoanDays }} Hari Kalender (Dapat Diperpanjang)</span>
                                 </div>
                                 <div class="flex items-baseline justify-between border-b border-neutral-border pb-3">
                                     <span class="font-semibold text-neutral-dark">Denda Keterlambatan:</span>
@@ -613,7 +616,7 @@
                         <h4 class="text-xs sm:text-[13px] font-semibold uppercase tracking-wider text-white">Jam Layanan Sirkulasi</h4>
                         <div class="space-y-2 text-xs sm:text-[13px] text-[#A3A3A3]">
                             <div class="flex justify-between border-b border-[#262626] pb-1.5">
-                                <span>Senin — Jumat:</span>
+                                <span>Senin s.d. Jumat:</span>
                                 <span class="text-white font-medium">06:00 – 00:00 WIB</span>
                             </div>
                             <div class="flex justify-between pt-1">
@@ -626,7 +629,7 @@
 
                 <!-- Copyright Bar -->
                 <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#888888] gap-4">
-                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU — Hak Cipta Dilindungi. Sesuai Standar Tata Kelola Perpustakaan Digital Nasional.</p>
+                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU, Hak Cipta Dilindungi. Sesuai Standar Tata Kelola Perpustakaan Digital Nasional.</p>
                     <p class="font-medium">IMM SAINTEKMU</p>
                 </div>
             </div>
