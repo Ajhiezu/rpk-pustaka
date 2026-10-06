@@ -75,11 +75,13 @@
             }">
             
             <!-- Brand masthead area with official RPK PUSTAKA IMM SAINTEKMU logo -->
-            <div class="h-20 flex items-center justify-between px-4 border-b border-neutral-border flex-shrink-0 bg-white">
-                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 min-w-0 group">
+            <div class="h-20 flex items-center border-b border-neutral-border flex-shrink-0 bg-white transition-all duration-300"
+                 :class="sidebarOpen ? 'justify-between px-4' : 'justify-center px-2'">
+                <a href="{{ route('dashboard') }}" class="flex items-center min-w-0 group"
+                   :class="sidebarOpen ? 'space-x-3' : 'justify-center'">
                     <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain shrink-0">
                     <div class="transition-all duration-300 overflow-hidden whitespace-nowrap"
-                         :class="sidebarOpen ? 'opacity-100' : 'opacity-0 -translate-x-6 w-0'">
+                         x-show="sidebarOpen" x-cloak>
                         <span class="font-sans text-base font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
                         <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-0.5 whitespace-nowrap">IMM SAINTEKMU</span>
                     </div>
@@ -87,6 +89,7 @@
                 <button type="button"
                         @click="closeMobileSidebar()"
                         class="lg:hidden shrink-0 p-1.5 rounded-md text-neutral-muted hover:text-primary hover:bg-primary-light transition-colors cursor-pointer"
+                        x-show="sidebarOpen"
                         title="Tutup Menu Mobile">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -101,7 +104,8 @@
                     x-show="sidebarOpen">Navigasi Utama</div>
 
                 <a href="{{ route('dashboard') }}"
-                    class="sidebar-link {{ request()->routeIs('dashboard') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                    class="sidebar-link relative {{ request()->routeIs('dashboard') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                    :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                     x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                     @mouseleave="tooltip = false">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -110,15 +114,16 @@
                         </path>
                     </svg>
                     <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                        :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Dashboard</span>
+                        x-show="sidebarOpen">Dashboard</span>
 
-                    <div x-show="tooltip" x-cloak
-                        class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                    <div x-show="tooltip && !sidebarOpen" x-cloak
+                        class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                         Dashboard</div>
                 </a>
 
                 <a href="{{ route('activities.index') }}"
-                    class="sidebar-link {{ request()->routeIs('activities.index') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                    class="sidebar-link relative {{ request()->routeIs('activities.index') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                    :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                     x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                     @mouseleave="tooltip = false">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,10 +131,10 @@
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                        :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Aktivitas</span>
+                        x-show="sidebarOpen">Aktivitas</span>
 
-                    <div x-show="tooltip" x-cloak
-                        class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                    <div x-show="tooltip && !sidebarOpen" x-cloak
+                        class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                         Aktivitas & Log</div>
                 </a>
 
@@ -139,7 +144,8 @@
                             x-show="sidebarOpen">Layanan Anggota</div>
 
                         <a href="{{ route('anggota.books.index') }}"
-                            class="sidebar-link {{ request()->routeIs('*.books.index') || request()->routeIs('*.books.show') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('*.books.index') || request()->routeIs('*.books.show') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,15 +154,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Katalog Buku</span>
+                                x-show="sidebarOpen">Katalog Buku</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Jelajahi Katalog</div>
                         </a>
 
                         <a href="{{ route('anggota.loans.index') }}"
-                            class="sidebar-link {{ request()->routeIs('*.loans.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('*.loans.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -165,15 +172,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Pinjaman Saya</span>
+                                x-show="sidebarOpen">Pinjaman Saya</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Riwayat Pinjaman</div>
                         </a>
 
                         <a href="{{ route('anggota.articles.index') }}"
-                            class="sidebar-link {{ request()->routeIs('*.articles.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('*.articles.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -182,15 +190,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Artikel Pustaka</span>
+                                x-show="sidebarOpen">Artikel Pustaka</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Artikel & Wawasan</div>
                         </a>
 
                         <a href="{{ route('anggota.essays.index') }}"
-                            class="sidebar-link {{ request()->routeIs('*.essays.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('*.essays.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,10 +208,10 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Tulisan Saya</span>
+                                x-show="sidebarOpen">Tulisan Saya</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Esai & Karya Tulis</div>
                         </a>
                     @endif
@@ -212,7 +221,8 @@
                             x-show="sidebarOpen">Katalog & Rak</div>
 
                         <a href="{{ route('admin.books.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.books.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.books.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -221,15 +231,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Data Buku</span>
+                                x-show="sidebarOpen">Data Buku</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Koleksi Buku</div>
                         </a>
 
                         <a href="{{ route('admin.categories.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.categories.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.categories.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -238,15 +249,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Kategori</span>
+                                x-show="sidebarOpen">Kategori</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Kategori Buku</div>
                         </a>
 
                         <a href="{{ route('admin.locations.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.locations.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.locations.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -255,10 +267,10 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Lokasi Rak</span>
+                                x-show="sidebarOpen">Lokasi Rak</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Rak Penyimpanan</div>
                         </a>
 
@@ -266,7 +278,8 @@
                             x-show="sidebarOpen">Sirkulasi & Layanan</div>
 
                         <a href="{{ route('admin.loans.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.loans.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.loans.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -275,15 +288,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Peminjaman</span>
+                                x-show="sidebarOpen">Peminjaman</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Transaksi Sirkulasi</div>
                         </a>
 
                         <a href="{{ route('admin.articles.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.articles.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.articles.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,15 +306,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Kelola Artikel</span>
+                                x-show="sidebarOpen">Kelola Artikel</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Manajemen Konten Artikel</div>
                         </a>
 
                         <a href="{{ route('admin.essays.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.essays.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.essays.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -309,15 +324,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Kurasi Esai</span>
+                                x-show="sidebarOpen">Kurasi Esai</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Review Esai Anggota</div>
                         </a>
 
                         <a href="{{ route('admin.reports.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.reports.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.reports.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -326,10 +342,10 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Laporan</span>
+                                x-show="sidebarOpen">Laporan</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Rekapitulasi & Arsip</div>
                         </a>
 
@@ -337,7 +353,8 @@
                             x-show="sidebarOpen">Pengguna & Akses</div>
 
                         <a href="{{ route('admin.users.index') }}"
-                            class="sidebar-link {{ (request()->routeIs('admin.users.*') || request()->routeIs('admin.members.import.*')) ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ (request()->routeIs('admin.users.*') || request()->routeIs('admin.members.import.*')) ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,14 +363,16 @@
                                 </path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Anggota</span>
-                            <div x-show="tooltip"
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                                x-show="sidebarOpen">Anggota</span>
+
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Kelola Data Anggota</div>
                         </a>
 
                         <a href="{{ route('admin.settings.index') }}"
-                            class="sidebar-link {{ request()->routeIs('admin.settings.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            class="sidebar-link relative {{ request()->routeIs('admin.settings.*') ? 'sidebar-active' : 'sidebar-inactive' }}"
+                            :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
                             x-data="{ tooltip: false }" @mouseenter="!sidebarOpen ? tooltip = true : null"
                             @mouseleave="tooltip = false">
                             <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,10 +383,10 @@
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
                             <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Pengaturan</span>
+                                x-show="sidebarOpen">Pengaturan</span>
 
-                            <div x-show="tooltip" x-cloak
-                                class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                            <div x-show="tooltip && !sidebarOpen" x-cloak
+                                class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                                 Konfigurasi Sistem</div>
                         </a>
                     @endif
@@ -376,7 +395,10 @@
                 <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
                     x-show="sidebarOpen">Laman Publik</div>
 
-                <a href="{{ url('/') }}" class="sidebar-link sidebar-inactive" x-data="{ tooltip: false }"
+                <a href="{{ url('/') }}"
+                    class="sidebar-link relative sidebar-inactive"
+                    :class="sidebarOpen ? 'justify-start px-3.5' : 'justify-center px-0'"
+                    x-data="{ tooltip: false }"
                     @mouseenter="!sidebarOpen ? tooltip = true : null" @mouseleave="tooltip = false">
                     <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
@@ -384,10 +406,10 @@
                         </path>
                     </svg>
                     <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                        :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Katalog Publik</span>
+                        x-show="sidebarOpen">Katalog Publik</span>
 
-                    <div x-show="tooltip" x-cloak
-                        class="absolute left-full ml-3 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap">
+                    <div x-show="tooltip && !sidebarOpen" x-cloak
+                        class="fixed left-20 ml-2 px-2.5 py-1 bg-neutral-dark text-white text-xs rounded shadow-lg z-50 whitespace-nowrap pointer-events-none">
                         Halaman Depan</div>
                 </a>
             </nav>
@@ -398,20 +420,24 @@
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                            class="flex items-center w-full px-3 py-2 text-xs font-semibold text-primary hover:bg-primary-light rounded-md transition-colors group overflow-hidden cursor-pointer">
+                            class="flex items-center w-full py-2 text-xs font-semibold text-primary hover:bg-primary-light rounded-md transition-colors group cursor-pointer"
+                            :class="sidebarOpen ? 'justify-start px-3' : 'justify-center px-0'"
+                            title="Keluar Sistem">
                             <svg class="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" fill="none"
                                 stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                                     d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                                 </path>
                             </svg>
-                            <span class="ml-3 transition-all duration-300 whitespace-nowrap"
-                                :class="sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'">Keluar Sistem</span>
+                            <span class="ml-3 whitespace-nowrap" x-show="sidebarOpen">Keluar Sistem</span>
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="btn-editorial w-full text-xs py-2">
-                        Masuk Akun
+                    <a href="{{ route('login') }}" class="btn-editorial w-full text-xs py-2" :class="!sidebarOpen && 'px-0 text-center'">
+                        <span x-show="sidebarOpen">Masuk Akun</span>
+                        <svg x-show="!sidebarOpen" class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                        </svg>
                     </a>
                 @endauth
             </div>
