@@ -6,7 +6,7 @@
             <thead class="bg-[#F8F8F7] border-b border-neutral-border">
                 <tr>
                     @foreach($headers as $header)
-                        <th class="px-6 py-3.5 text-[11px] font-bold text-[#666666] uppercase tracking-wider whitespace-nowrap">
+                        <th class="px-5 py-3 text-[11px] font-bold text-[#666666] uppercase tracking-wider whitespace-nowrap {{ $loop->last ? 'text-right' : 'text-left' }}">
                             {{ $header }}
                         </th>
                     @endforeach

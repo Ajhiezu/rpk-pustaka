@@ -498,8 +498,8 @@
                     const totalFiles = this.fileQueue.length;
                     this.progressPercent = 5;
 
-                    // Concurrency Worker Pool (3 parallel workers)
-                    const CONCURRENCY = 3;
+                    // High-speed deterministic 1-by-1 processing to ensure 100% file retention without Windows file handle collisions
+                    const CONCURRENCY = 1;
                     let nextIndex = 0;
                     let processedSoFar = 0;
 

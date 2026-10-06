@@ -807,8 +807,9 @@ class BookImportService
     public function saveCandidate(string $batchId, array $candidate): void
     {
         $dir = 'temp/import/' . $batchId;
-        if (!Storage::disk('local')->exists($dir)) {
-            Storage::disk('local')->makeDirectory($dir);
+        $fullDir = storage_path('app/' . $dir);
+        if (!is_dir($fullDir)) {
+            @mkdir($fullDir, 0755, true);
         }
         $path = $dir . '/' . $candidate['id'] . '.json';
         Storage::disk('local')->put($path, json_encode($candidate, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

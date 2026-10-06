@@ -4,30 +4,55 @@
     </x-slot>
 
     <x-slot name="actions">
-        <a href="{{ route('admin.books.import.create') }}" class="btn-editorial-outline text-xs py-2 px-4 shadow-xs">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Tambah Berkas Lain
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.books.import.create') }}" class="btn-editorial-outline text-xs py-2 px-3 shadow-xs">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Tambah Berkas
+            </a>
+            <button type="button" @click="document.getElementById('importForm').submit()" class="btn-editorial text-xs py-2 px-4 font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 cursor-pointer">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Import Semua Naskah
+            </button>
+        </div>
     </x-slot>
 
     <div class="space-y-6 animate-in fade-in duration-300" x-data="previewManager('{{ $batchId }}')">
-        <!-- Summary Stats Band -->
-        <div class="bg-white p-5 rounded-xl border border-neutral-border shadow-xs grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="p-3 bg-neutral-surface rounded-lg border border-neutral-border">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-muted block">Total Kandidat</span>
-                <span class="text-xl font-extrabold text-neutral-dark mt-1 block" x-text="totalCount"></span>
+        <!-- Summary Stats & Top Action Band -->
+        <div class="bg-white p-5 rounded-xl border border-neutral-border shadow-xs space-y-4">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div class="p-3 bg-neutral-surface rounded-lg border border-neutral-border">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-muted block">Total Kandidat</span>
+                    <span class="text-xl font-extrabold text-neutral-dark mt-1 block" x-text="totalCount"></span>
+                </div>
+                <div class="p-3 bg-[#EDF7ED] rounded-lg border border-[#C8E6C9]">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-success block">Siap Diimport</span>
+                    <span class="text-xl font-extrabold text-success mt-1 block" x-text="validCount"></span>
+                </div>
+                <div class="p-3 bg-[#FFF9ED] rounded-lg border border-[#FDE68A]">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#B45309] block">Perlu Dilengkapi</span>
+                    <span class="text-xl font-extrabold text-[#B45309] mt-1 block" x-text="warningCount"></span>
+                </div>
+                <div class="p-3 bg-[#F3E8FF] rounded-lg border border-[#E9D5FF]">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-[#7E22CE] block">Potensi Duplikat</span>
+                    <span class="text-xl font-extrabold text-[#7E22CE] mt-1 block" x-text="duplicateCount"></span>
+                </div>
             </div>
-            <div class="p-3 bg-[#EDF7ED] rounded-lg border border-[#C8E6C9]">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-success block">Siap Diimport</span>
-                <span class="text-xl font-extrabold text-success mt-1 block" x-text="validCount"></span>
-            </div>
-            <div class="p-3 bg-[#FFF9ED] rounded-lg border border-[#FDE68A]">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-[#B45309] block">Perlu Dilengkapi</span>
-                <span class="text-xl font-extrabold text-[#B45309] mt-1 block" x-text="warningCount"></span>
-            </div>
-            <div class="p-3 bg-[#F3E8FF] rounded-lg border border-[#E9D5FF]">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-[#7E22CE] block">Potensi Duplikat</span>
-                <span class="text-xl font-extrabold text-[#7E22CE] mt-1 block" x-text="duplicateCount"></span>
+
+            <!-- Top Action Toolbar -->
+            <div class="pt-3 border-t border-neutral-border flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div class="text-xs text-neutral-body flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-success"></span>
+                    <span>Tinjau data naskah di bawah sebelum disimpan ke katalog Master:</span>
+                </div>
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <a href="{{ route('admin.books.import.create') }}" class="btn-editorial-outline text-xs py-2 px-4 text-center w-1/2 sm:w-auto">
+                        Batalkan Sesi
+                    </a>
+                    <button type="button" @click="document.getElementById('importForm').submit()" class="btn-editorial text-xs py-2 px-5 font-bold uppercase tracking-wider shadow-xs w-1/2 sm:w-auto cursor-pointer flex items-center justify-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Import Semua Naskah
+                    </button>
+                </div>
             </div>
         </div>
 
