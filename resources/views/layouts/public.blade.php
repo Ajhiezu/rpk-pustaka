@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEK MU') }} — Modern Academic Editorial Library</title>
+    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }} — Modern Academic Editorial Library</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -34,7 +34,7 @@
         <div class="bg-[#181818] text-[#E5E5E5] text-xs py-2.5 px-6 border-b border-[#262626]">
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 font-medium">
                 <div class="flex items-center space-x-3">
-                    <span class="text-white font-semibold">RPK PUSTAKA IMM SAINTEK MU</span>
+                    <span class="text-white font-semibold whitespace-nowrap">RPK PUSTAKA IMM SAINTEKMU</span>
                     <span class="text-accent">•</span>
                     <span class="text-[#A3A3A3]">Layanan Ruang Baca: Sen – Jum 06:00 – 00:00 WIB</span>
                 </div>
@@ -52,10 +52,10 @@
             <div class="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
                 <!-- Academic Logo & Brand -->
                 <a href="{{ url('/') }}" class="flex items-center space-x-3.5 group">
-                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-11 w-auto object-contain">
+                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-11 w-auto object-contain">
                     <div>
                         <span class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1">IMM SAINTEK MU</span>
+                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
                     </div>
                 </a>
                 
@@ -118,10 +118,10 @@
                 <!-- Brand Column -->
                 <div class="md:col-span-5 space-y-4">
                     <div class="flex items-center space-x-3">
-                        <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-10 w-auto object-contain bg-white rounded p-1">
+                        <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain bg-white rounded p-1">
                         <div>
                             <span class="text-xl font-bold tracking-tight text-white block leading-none">RPK PUSTAKA</span>
-                            <span class="text-[10px] uppercase tracking-wider text-[#A3A3A3] font-semibold block mt-1">IMM SAINTEK MU</span>
+                            <span class="text-[10px] uppercase tracking-wider text-[#A3A3A3] font-semibold block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
                         </div>
                     </div>
                     <p class="text-xs sm:text-[13px] text-[#A3A3A3] leading-relaxed max-w-sm pt-2">
@@ -171,8 +171,8 @@
 
             <!-- Copyright Bar -->
             <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#888888] gap-4">
-                <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEK MU — Hak Cipta Dilindungi.</p>
-                <p class="font-medium">IMM SAINTEK MU</p>
+                <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU — Hak Cipta Dilindungi.</p>
+                <p class="font-medium">IMM SAINTEKMU</p>
             </div>
         </div>
     </footer>

@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Artikel & Wawasan Pustaka — RPK PUSTAKA IMM SAINTEK MU
+        Artikel & Wawasan Pustaka — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <div class="space-y-10 animate-in fade-in duration-300">
@@ -8,7 +8,7 @@
         <div class="space-y-1.5">
             <span class="text-xs uppercase tracking-[0.2em] font-semibold text-primary block">Wacana & Esai Kuratorial</span>
             <h2 class="font-serif text-2xl sm:text-3xl font-normal text-neutral-dark tracking-tight">Koleksi Artikel Pustaka</h2>
-            <p class="text-xs sm:text-sm text-neutral-body">Kumpulan artikel telaah ilmiah, ulasan literatur, dan wawasan kuratorial yang diterbitkan oleh kurator RPK PUSTAKA IMM SAINTEK MU.</p>
+            <p class="text-xs sm:text-sm text-neutral-body">Kumpulan artikel telaah ilmiah, ulasan literatur, dan wawasan kuratorial yang diterbitkan oleh kurator RPK PUSTAKA IMM SAINTEKMU.</p>
         </div>
 
         <!-- Search Bar -->

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Membaca: {{ $book->title }} — RPK PUSTAKA IMM SAINTEK MU Digital Reader</title>
+    <title>Membaca: {{ $book->title }} — RPK PUSTAKA IMM SAINTEKMU Digital Reader</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">

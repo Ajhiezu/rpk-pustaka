@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'RPK PUSTAKA IMM SAINTEK MU'),
+    'name' => env('APP_NAME', 'RPK PUSTAKA IMM SAINTEKMU'),
 
     /*
     |--------------------------------------------------------------------------

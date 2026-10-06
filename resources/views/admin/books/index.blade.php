@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Kelola Koleksi Buku — RPK PUSTAKA IMM SAINTEK MU
+        Kelola Koleksi Buku — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <x-slot name="actions">

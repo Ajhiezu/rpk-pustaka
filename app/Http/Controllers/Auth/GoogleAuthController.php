@@ -98,6 +98,6 @@ class GoogleAuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->intended(route('dashboard', absolute: false))
-            ->with('status', 'Selamat datang di RPK PUSTAKA IMM SAINTEK MU! Akun Anda berhasil terdaftar melalui Google.');
+            ->with('status', 'Selamat datang di RPK PUSTAKA IMM SAINTEKMU! Akun Anda berhasil terdaftar melalui Google.');
     }
 }

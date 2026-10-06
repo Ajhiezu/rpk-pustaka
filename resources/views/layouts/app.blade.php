@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEK MU') }} — Modern Academic Editorial Library</title>
+    <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }} — Modern Academic Editorial Library</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -42,8 +42,9 @@
          x-data="{ 
              sidebarOpen: window.innerWidth >= 1024, 
              mobileSidebarOpen: false,
+             isDesktop: window.innerWidth >= 1024,
              toggleSidebar() {
-                 if (window.innerWidth < 1024) {
+                 if (!this.isDesktop) {
                      this.mobileSidebarOpen = !this.mobileSidebarOpen;
                      if (this.mobileSidebarOpen) {
                          this.sidebarOpen = true;
@@ -56,7 +57,7 @@
                  this.mobileSidebarOpen = false;
              }
          }"
-         @resize.window="if (window.innerWidth >= 1024) mobileSidebarOpen = false">
+         @resize.window="isDesktop = window.innerWidth >= 1024; if (isDesktop) { mobileSidebarOpen = false }">
 
         <!-- Mobile Backdrop -->
         <div x-show="mobileSidebarOpen" x-cloak 
@@ -65,26 +66,27 @@
 
         <!-- Sidebar: Fixed Desktop, Off-canvas Mobile -->
         <aside
-            class="fixed inset-y-0 left-0 z-50 bg-white border-r border-neutral-border transition-all duration-300 transform lg:translate-x-0 flex flex-col shadow-xs"
+            x-show="isDesktop || mobileSidebarOpen"
+            x-cloak
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-neutral-border transition-all duration-300 flex flex-col shadow-xs overflow-hidden lg:translate-x-0"
             :class="{
-                'w-64': sidebarOpen, 
-                'w-20': !sidebarOpen,
-                'translate-x-0': mobileSidebarOpen,
-                '-translate-x-full': !mobileSidebarOpen
+                'lg:w-64': sidebarOpen,
+                'lg:w-20': !sidebarOpen
             }">
             
-            <!-- Brand masthead area with official RPK PUSTAKA IMM SAINTEK MU logo -->
+            <!-- Brand masthead area with official RPK PUSTAKA IMM SAINTEKMU logo -->
             <div class="h-20 flex items-center justify-between px-4 border-b border-neutral-border flex-shrink-0 bg-white">
-                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 shrink-0 group">
-                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-10 w-auto object-contain shrink-0">
+                <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 min-w-0 group">
+                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain shrink-0">
                     <div class="transition-all duration-300 overflow-hidden whitespace-nowrap"
                          :class="sidebarOpen ? 'opacity-100' : 'opacity-0 -translate-x-6 w-0'">
                         <span class="font-sans text-base font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-0.5">IMM SAINTEK MU</span>
+                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-0.5 whitespace-nowrap">IMM SAINTEKMU</span>
                     </div>
                 </a>
-                <button @click="closeMobileSidebar()" 
-                        class="lg:hidden p-1.5 rounded-md text-neutral-muted hover:text-primary hover:bg-primary-light transition-colors cursor-pointer"
+                <button type="button"
+                        @click="closeMobileSidebar()"
+                        class="lg:hidden shrink-0 p-1.5 rounded-md text-neutral-muted hover:text-primary hover:bg-primary-light transition-colors cursor-pointer"
                         title="Tutup Menu Mobile">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -433,7 +435,7 @@
                     <div class="hidden sm:flex items-center gap-2">
                         <span class="font-sans text-sm tracking-wide uppercase font-semibold text-neutral-dark">RPK PUSTAKA</span>
                         <span class="text-neutral-muted text-xs">•</span>
-                        <span class="text-xs text-neutral-body">IMM SAINTEK MU</span>
+                        <span class="text-xs text-neutral-body">IMM SAINTEKMU</span>
                     </div>
                 </div>
 
@@ -476,7 +478,7 @@
                     <div class="mb-8 pb-6 border-b border-neutral-border flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
                         <div>
                             <h1 class="font-sans text-2xl sm:text-3xl font-bold text-neutral-dark tracking-tight">{{ $header }}</h1>
-                            <p class="text-xs text-neutral-muted font-normal mt-1.5 uppercase tracking-wider">RPK PUSTAKA IMM SAINTEK MU — Sistem Perpustakaan & Arsip Akademik</p>
+                            <p class="text-xs text-neutral-muted font-normal mt-1.5 uppercase tracking-wider">RPK PUSTAKA IMM SAINTEKMU — Sistem Perpustakaan & Arsip Akademik</p>
                         </div>
 
                         @isset($actions)
@@ -495,7 +497,7 @@
             <!-- Refined Academic Footer -->
             <footer class="mt-auto border-t border-neutral-border bg-white px-6 lg:px-12 py-6 text-center text-xs text-neutral-muted">
                 <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEK MU — Hak Cipta Dilindungi. Perpustakaan Riset & Akademik.</p>
+                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU — Hak Cipta Dilindungi. Perpustakaan Riset & Akademik.</p>
                     <div class="flex items-center gap-2">
                         <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
                         <p class="font-sans italic text-neutral-body">Veritas et Sapientia</p>

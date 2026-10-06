@@ -1,6 +1,6 @@
-# RPK PUSTAKA IMM SAINTEK MU — DESIGN SYSTEM & UI MEMORY
+# RPK PUSTAKA IMM SAINTEKMU — DESIGN SYSTEM & UI MEMORY
 
-Dokumen ini merupakan **sumber kebenaran tunggal (Single Source of Truth / Memory)** untuk seluruh identitas visual, UI/UX, dan implementasi frontend aplikasi **RPK PUSTAKA IMM SAINTEK MU (Digital Library)**.
+Dokumen ini merupakan **sumber kebenaran tunggal (Single Source of Truth / Memory)** untuk seluruh identitas visual, UI/UX, dan implementasi frontend aplikasi **RPK PUSTAKA IMM SAINTEKMU (Digital Library)**.
 Setiap kali ada permintaan perbaikan, revisi, atau penambahan fitur antarmuka, **baca dan ikuti aturan di bawah ini secara ketat**.
 
 ---

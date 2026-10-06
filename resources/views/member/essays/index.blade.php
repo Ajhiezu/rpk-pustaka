@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Ruang Karya & Esai Anggota — RPK PUSTAKA IMM SAINTEK MU
+        Ruang Karya & Esai Anggota — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <x-slot name="actions">
@@ -15,7 +15,7 @@
         <div class="space-y-1.5">
             <span class="text-xs uppercase tracking-[0.2em] font-semibold text-primary block">Wadah Literasi Anggota</span>
             <h2 class="font-serif text-2xl sm:text-3xl font-normal text-neutral-dark tracking-tight">Karya Tulis & Esai Anda</h2>
-            <p class="text-xs sm:text-sm text-neutral-body">Sampaikan gagasan, telaah pustaka, dan artikel ilmiah Anda untuk ditinjau oleh kurator RPK PUSTAKA IMM SAINTEK MU.</p>
+            <p class="text-xs sm:text-sm text-neutral-body">Sampaikan gagasan, telaah pustaka, dan artikel ilmiah Anda untuk ditinjau oleh kurator RPK PUSTAKA IMM SAINTEKMU.</p>
         </div>
 
         <!-- My Essays Table -->

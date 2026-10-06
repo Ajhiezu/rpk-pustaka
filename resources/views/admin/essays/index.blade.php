@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Kurasi & Review Esai Anggota — RPK PUSTAKA IMM SAINTEK MU
+        Kurasi & Review Esai Anggota — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <div class="space-y-6 animate-in fade-in duration-300">

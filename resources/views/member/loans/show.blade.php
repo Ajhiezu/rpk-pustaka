@@ -28,7 +28,7 @@
                         <img src="{{ asset('images/logo-rpk.png') }}" alt="Logo RPK" class="w-8 h-8 object-contain">
                     </div>
                     <div>
-                        <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-widest block">RPK PUSTAKA IMM SAINTEK MU</span>
+                        <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-widest block">RPK PUSTAKA IMM SAINTEKMU</span>
                         <h2 class="font-sans text-xl font-extrabold text-neutral-dark tracking-tight">BUKTI RESERVASI & PEMINJAMAN</h2>
                     </div>
                 </div>

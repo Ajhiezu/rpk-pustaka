@@ -81,7 +81,7 @@
             @endif
 
             <div class="pt-8 border-t border-neutral-border flex items-center justify-between text-xs text-neutral-muted">
-                <span>RPK PUSTAKA IMM SAINTEK MU — Ruang Karya Literasi Anggota</span>
+                <span>RPK PUSTAKA IMM SAINTEKMU — Ruang Karya Literasi Anggota</span>
                 <a href="{{ Auth::check() ? route('anggota.essays.index') : url('/') }}" class="font-semibold text-primary hover:underline">
                     &larr; {{ Auth::check() ? 'Kembali ke Daftar Tulisan' : 'Kembali ke Beranda Utama' }}
                 </a>

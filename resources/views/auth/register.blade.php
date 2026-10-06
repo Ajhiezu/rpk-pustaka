@@ -11,7 +11,7 @@
             <span class="text-xs uppercase tracking-[0.2em] font-semibold text-primary block">Pendaftaran Anggota</span>
         </div>
         <h1 class="font-sans text-2xl sm:text-3xl font-bold text-neutral-dark tracking-tight leading-tight">Buka Akses Pengetahuan</h1>
-        <p class="text-sm text-neutral-body">Daftarkan diri Anda untuk meminjam buku dan menjelajahi koleksi akademik RPK PUSTAKA IMM SAINTEK MU.</p>
+        <p class="text-sm text-neutral-body">Daftarkan diri Anda untuk meminjam buku dan menjelajahi koleksi akademik RPK PUSTAKA IMM SAINTEKMU.</p>
     </div>
 
     @if (session('error'))

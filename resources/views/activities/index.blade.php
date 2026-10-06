@@ -7,7 +7,7 @@
         <div class="space-y-1">
             <span class="text-xs uppercase tracking-[0.2em] font-semibold text-primary block">Buku Catatan Digital</span>
             <h2 class="font-serif text-2xl font-normal text-neutral-dark tracking-tight">Kronologi Aktivitas Sistem</h2>
-            <p class="text-xs sm:text-sm text-neutral-body">Rekaman kronologis setiap pengajuan peminjaman, pengembalian, dan sirkulasi koleksi RPK PUSTAKA IMM SAINTEK MU.</p>
+            <p class="text-xs sm:text-sm text-neutral-body">Rekaman kronologis setiap pengajuan peminjaman, pengembalian, dan sirkulasi koleksi RPK PUSTAKA IMM SAINTEKMU.</p>
         </div>
 
         <x-card>

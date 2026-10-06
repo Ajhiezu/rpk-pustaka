@@ -16,7 +16,7 @@
             <!-- Article Header -->
             <div class="space-y-4 pb-6 border-b border-neutral-border text-center max-w-2xl mx-auto">
                 <span class="px-2.5 py-0.5 bg-primary-light text-primary text-[10px] font-bold uppercase tracking-wider rounded border border-red-200">
-                    Artikel Ilmiah RPK PUSTAKA IMM SAINTEK MU
+                    Artikel Ilmiah RPK PUSTAKA IMM SAINTEKMU
                 </span>
 
                 <h1 class="font-serif text-3xl sm:text-4xl font-normal text-neutral-dark tracking-tight leading-tight">
@@ -51,7 +51,7 @@
 
             <!-- Footer Author Sign-off -->
             <div class="pt-8 border-t border-neutral-border flex items-center justify-between text-xs text-neutral-muted">
-                <span>Diterbitkan oleh Perpustakaan RPK PUSTAKA IMM SAINTEK MU</span>
+                <span>Diterbitkan oleh Perpustakaan RPK PUSTAKA IMM SAINTEKMU</span>
                 <a href="{{ Auth::check() ? route('anggota.articles.index') : route('public.articles.index') }}" class="font-semibold text-primary hover:underline">
                     &larr; Lihat Artikel Lainnya
                 </a>

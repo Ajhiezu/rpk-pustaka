@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEK MU') }} — Modern Academic Editorial Library</title>
+        <title>{{ config('app.name', 'RPK PUSTAKA IMM SAINTEKMU') }} — Modern Academic Editorial Library</title>
 
         <!-- Favicon -->
         <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -28,9 +28,9 @@
         <div class="min-h-screen flex flex-col justify-center items-center py-12 px-6 bg-[#F8F8F7]">
             <div class="text-center mb-8">
                 <a href="/" class="inline-flex flex-col items-center group">
-                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-14 w-auto object-contain mb-3">
+                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-14 w-auto object-contain mb-3">
                     <span class="font-sans text-2xl font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                    <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1.5">IMM SAINTEK MU</span>
+                    <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1.5 whitespace-nowrap">IMM SAINTEKMU</span>
                 </a>
             </div>
 

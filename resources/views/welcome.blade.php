@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>RPK PUSTAKA IMM SAINTEK MU — Modern Academic Editorial Library</title>
+        <title>RPK PUSTAKA IMM SAINTEKMU — Modern Academic Editorial Library</title>
         
         <!-- Favicon -->
         <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -29,7 +29,7 @@
         <div class="bg-[#181818] text-[#E5E5E5] text-xs py-2.5 px-6 border-b border-[#262626]">
             <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 font-medium">
                 <div class="flex items-center space-x-3">
-                    <span class="text-white font-semibold">RPK PUSTAKA IMM SAINTEK MU</span>
+                    <span class="text-white font-semibold whitespace-nowrap">RPK PUSTAKA IMM SAINTEKMU</span>
                     <span class="text-accent">•</span>
                     <span class="text-[#A3A3A3]">Layanan Ruang Baca: Sen – Jum 06:00 – 00:00 WIB</span>
                 </div>
@@ -42,15 +42,15 @@
             </div>
         </div>
 
-        <!-- Modern Academic RPK PUSTAKA IMM SAINTEK MU Header / Navigation -->
+        <!-- Modern Academic RPK PUSTAKA IMM SAINTEKMU Header / Navigation -->
         <nav class="h-20 bg-white/95 backdrop-blur-md border-b border-neutral-border sticky top-0 z-50 flex items-center shadow-xs">
             <div class="max-w-7xl mx-auto px-6 w-full flex justify-between items-center">
                 <!-- Academic Logo & Brand -->
                 <a href="{{ url('/') }}" class="flex items-center space-x-3.5 group">
-                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-11 w-auto object-contain">
+                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-11 w-auto object-contain">
                     <div>
                         <span class="text-xl sm:text-2xl font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1">IMM SAINTEK MU</span>
+                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
                     </div>
                 </a>
                 
@@ -117,7 +117,7 @@
                     </h1>
 
                     <p class="text-base sm:text-lg text-neutral-body font-normal leading-relaxed max-w-2xl mx-auto pt-2">
-                        Jelajahi ribuan naskah, literatur akademik, dan karya pemikiran manusia di RPK PUSTAKA IMM SAINTEK MU. Tersedia untuk dibaca, diteliti, dan dipinjam secara langsung maupun digital.
+                        Jelajahi ribuan naskah, literatur akademik, dan karya pemikiran manusia di RPK PUSTAKA IMM SAINTEKMU. Tersedia untuk dibaca, diteliti, dan dipinjam secara langsung maupun digital.
                     </p>
                 </div>
 
@@ -320,7 +320,7 @@
                                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                                 </div>
                                 <p class="text-base sm:text-lg font-bold text-neutral-dark">Koleksi Belum Terdaftar</p>
-                                <p class="text-xs sm:text-sm text-neutral-muted mt-1">Koleksi buku akan segera diperbarui oleh pustakawan RPK PUSTAKA IMM SAINTEK MU.</p>
+                                <p class="text-xs sm:text-sm text-neutral-muted mt-1">Koleksi buku akan segera diperbarui oleh pustakawan RPK PUSTAKA IMM SAINTEKMU.</p>
                             </div>
                         @endforelse
                     </div>
@@ -531,7 +531,7 @@
 
                         <div class="pt-4">
                             <a href="{{ route('register') }}" class="btn-editorial text-xs sm:text-sm py-3 px-6 uppercase tracking-wider font-semibold">
-                                Bergabung Sebagai Anggota RPK PUSTAKA IMM SAINTEK MU
+                                Bergabung Sebagai Anggota RPK PUSTAKA IMM SAINTEKMU
                             </a>
                         </div>
                     </div>
@@ -574,10 +574,10 @@
                     <!-- Brand Column -->
                     <div class="md:col-span-5 space-y-4">
                         <div class="flex items-center space-x-3">
-                            <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-10 w-auto object-contain bg-white rounded p-1">
+                            <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain bg-white rounded p-1">
                             <div>
-                                <span class="text-xl font-bold tracking-tight text-white block leading-none">RPK PUSTAKA IMM SAINTEK MU</span>
-                                <span class="text-[10px] uppercase tracking-wider text-[#A3A3A3] font-semibold block mt-1">IMM SAINTEK MU</span>
+                                <span class="text-xl font-bold tracking-tight text-white block leading-none whitespace-nowrap">RPK PUSTAKA</span>
+                                <span class="text-[10px] uppercase tracking-wider text-[#A3A3A3] font-semibold block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
                             </div>
                         </div>
                         <p class="text-xs sm:text-[13px] text-[#A3A3A3] leading-relaxed max-w-sm pt-2">
@@ -626,8 +626,8 @@
 
                 <!-- Copyright Bar -->
                 <div class="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[#888888] gap-4">
-                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEK MU — Hak Cipta Dilindungi. Sesuai Standar Tata Kelola Perpustakaan Digital Nasional.</p>
-                    <p class="font-medium">IMM SAINTEK MU</p>
+                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU — Hak Cipta Dilindungi. Sesuai Standar Tata Kelola Perpustakaan Digital Nasional.</p>
+                    <p class="font-medium">IMM SAINTEKMU</p>
                 </div>
             </div>
         </footer>

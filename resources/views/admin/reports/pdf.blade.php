@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Laporan Rekapitulasi Sirkulasi - RPK PUSTAKA IMM SAINTEK MU</title>
+    <title>Laporan Rekapitulasi Sirkulasi - RPK PUSTAKA IMM SAINTEKMU</title>
     <style>
         body { font-family: Helvetica, Arial, sans-serif; font-size: 11px; color: #181818; line-height: 1.4; }
         .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #C62828; padding-bottom: 12px; }
@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="header">
-        <h1>RPK PUSTAKA IMM SAINTEK MU</h1>
+        <h1>RPK PUSTAKA IMM SAINTEKMU</h1>
         <p>Laporan Rekapitulasi Transaksi Sirkulasi Koleksi</p>
         <div class="meta">Dicetak pada: {{ now()->format('d M Y') }}</div>
     </div>
@@ -59,7 +59,7 @@
     </table>
 
     <div class="footer">
-        <p>RPK PUSTAKA IMM SAINTEK MU — Sistem Perpustakaan Digital Terintegrasi</p>
+        <p>RPK PUSTAKA IMM SAINTEKMU — Sistem Perpustakaan Digital Terintegrasi</p>
     </div>
 </body>
 </html>

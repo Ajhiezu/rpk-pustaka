@@ -4,7 +4,7 @@
             Data Akun & Afiliasi
         </h3>
         <p class="mt-1 text-xs text-neutral-muted leading-relaxed">
-            Perbarui nama lengkap dan alamat surel resmi yang digunakan untuk notifikasi sirkulasi peminjaman koleksi RPK PUSTAKA IMM SAINTEK MU.
+            Perbarui nama lengkap dan alamat surel resmi yang digunakan untuk notifikasi sirkulasi peminjaman koleksi RPK PUSTAKA IMM SAINTEKMU.
         </p>
     </header>
 

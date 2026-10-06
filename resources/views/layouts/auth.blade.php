@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>{{ $title ?? 'Autentikasi' }} — RPK PUSTAKA IMM SAINTEK MU</title>
+        <title>{{ $title ?? 'Autentikasi' }} — RPK PUSTAKA IMM SAINTEKMU</title>
         
         <!-- Favicon -->
         <link rel="icon" type="image/x-icon" href="{{ asset('images/logo-rpk.ico') }}">
@@ -27,15 +27,15 @@
         <div class="min-h-screen flex flex-col md:flex-row bg-white">
             <!-- Scholarly Brand Showcase Side (Red Background + White Text, Original Proportions) -->
             <div class="hidden md:flex md:w-1/2 bg-[#C62828] text-white flex-col justify-between p-16 relative overflow-hidden">
-                <!-- Top Institution Title with official RPK PUSTAKA IMM SAINTEK MU logo -->
+                <!-- Top Institution Title with official RPK PUSTAKA IMM SAINTEKMU logo -->
                 <div class="relative z-10">
                     <a href="{{ url('/') }}" class="inline-flex items-center space-x-3.5 group">
                         <div class="bg-white p-2 rounded-lg shadow-sm flex items-center justify-center shrink-0">
-                            <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-12 w-auto object-contain">
+                            <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-12 w-auto object-contain">
                         </div>
                         <div>
                             <span class="font-sans text-xl font-bold tracking-tight text-white block leading-none">RPK PUSTAKA</span>
-                            <span class="text-[10px] uppercase tracking-wider text-white/90 font-semibold block mt-1.5">IMM SAINTEK MU</span>
+                            <span class="text-[10px] uppercase tracking-wider text-white/90 font-semibold block mt-1.5 whitespace-nowrap">IMM SAINTEKMU</span>
                         </div>
                     </a>
                 </div>
@@ -59,7 +59,7 @@
                 
                 <!-- Bottom Scholarly Meta -->
                 <div class="relative z-10 flex items-center justify-between text-xs text-white/75 tracking-wide uppercase font-semibold border-t border-white/20 pt-6">
-                    <span>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEK MU</span>
+                    <span>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU</span>
                     <span class="text-white font-medium">Koleksi & Sirkulasi Terpadu</span>
                 </div>
             </div>
@@ -70,10 +70,10 @@
                     <!-- Mobile Logo -->
                     <div class="mb-10 flex items-center space-x-3 md:hidden">
                         <a href="{{ url('/') }}" class="inline-flex items-center space-x-3">
-                            <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEK MU" class="h-10 w-auto object-contain">
+                            <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain">
                             <div>
                                 <span class="font-sans text-lg font-bold text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                                <span class="text-[10px] uppercase tracking-wider text-primary font-semibold">IMM SAINTEK MU</span>
+                                <span class="text-[10px] uppercase tracking-wider text-primary font-semibold whitespace-nowrap">IMM SAINTEKMU</span>
                             </div>
                         </a>
                     </div>

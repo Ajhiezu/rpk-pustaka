@@ -11,7 +11,7 @@
             <span class="text-xs uppercase tracking-[0.2em] font-semibold text-primary block">Portal Anggota</span>
         </div>
         <h1 class="font-sans text-2xl sm:text-3xl font-bold text-neutral-dark tracking-tight leading-tight">Selamat Datang</h1>
-        <p class="text-sm text-neutral-body">Masuk ke akun RPK PUSTAKA IMM SAINTEK MU untuk mengakses katalog, reservasi, dan riwayat sirkulasi.</p>
+        <p class="text-sm text-neutral-body">Masuk ke akun RPK PUSTAKA IMM SAINTEKMU untuk mengakses katalog, reservasi, dan riwayat sirkulasi.</p>
     </div>
 
     @if (session('status'))

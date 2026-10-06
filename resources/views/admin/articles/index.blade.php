@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Kelola Artikel & Publikasi Ilmiah — RPK PUSTAKA IMM SAINTEK MU
+        Kelola Artikel & Publikasi Ilmiah — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <x-slot name="actions">

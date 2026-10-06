@@ -48,7 +48,7 @@ foreach ($booksWithoutCover as $book) {
   <text x="300" y="430" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#666666" text-anchor="middle">{$authorEscaped}</text>
   <rect x="220" y="480" width="160" height="32" rx="16" fill="#FEF2F2" stroke="#C62828" stroke-width="1"/>
   <text x="300" y="501" font-family="Inter, sans-serif" font-size="12" font-weight="bold" fill="#C62828" text-anchor="middle">NASKAH DIGITAL</text>
-  <text x="300" y="740" font-family="Inter, sans-serif" font-size="12" font-weight="bold" fill="#888888" text-anchor="middle">RPK PUSTAKA IMM SAINTEK MU</text>
+  <text x="300" y="740" font-family="Inter, sans-serif" font-size="12" font-weight="bold" fill="#888888" text-anchor="middle">RPK PUSTAKA IMM SAINTEKMU</text>
 </svg>
 SVG;
 

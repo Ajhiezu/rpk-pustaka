@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Lembar Publikasi Koleksi — RPK PUSTAKA IMM SAINTEK MU
+        Lembar Publikasi Koleksi — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     @php
@@ -203,7 +203,7 @@
                     <h3 class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-muted">Sinopsis & Ringkasan Koleksi</h3>
                     <div class="prose max-w-none text-sm text-neutral-body leading-relaxed font-normal">
                         <p>
-                            {{ $book->description ?? 'Deskripsi kuratorial belum tersedia untuk koleksi naskah ini. Silakan kunjungi meja layanan sirkulasi RPK PUSTAKA IMM SAINTEK MU untuk memeriksa koleksi naskah secara langsung.' }}
+                            {{ $book->description ?? 'Deskripsi kuratorial belum tersedia untuk koleksi naskah ini. Silakan kunjungi meja layanan sirkulasi RPK PUSTAKA IMM SAINTEKMU untuk memeriksa koleksi naskah secara langsung.' }}
                         </p>
                     </div>
                 </div>

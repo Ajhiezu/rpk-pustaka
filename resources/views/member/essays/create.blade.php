@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        Pengajuan Karya Tulis & Esai — RPK PUSTAKA IMM SAINTEK MU
+        Pengajuan Karya Tulis & Esai — RPK PUSTAKA IMM SAINTEKMU
     </x-slot>
 
     <div class="space-y-6 animate-in fade-in duration-300" x-data="{ mode: '{{ old('submission_type', 'online') }}' }">
