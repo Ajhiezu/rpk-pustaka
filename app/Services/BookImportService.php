@@ -802,6 +802,68 @@ class BookImportService
     }
 
     /**
+     * Save candidate data to an isolated candidate JSON file on disk to prevent session race conditions.
+     */
+    public function saveCandidate(string $batchId, array $candidate): void
+    {
+        $dir = 'temp/import/' . $batchId;
+        if (!Storage::disk('local')->exists($dir)) {
+            Storage::disk('local')->makeDirectory($dir);
+        }
+        $path = $dir . '/' . $candidate['id'] . '.json';
+        Storage::disk('local')->put($path, json_encode($candidate, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * Get all candidates for a batch from disk JSON files with session fallback.
+     */
+    public function getBatchCandidates(string $batchId): array
+    {
+        $dir = 'temp/import/' . $batchId;
+        $candidates = [];
+
+        if (Storage::disk('local')->exists($dir)) {
+            $files = Storage::disk('local')->files($dir);
+            foreach ($files as $file) {
+                if (str_ends_with($file, '.json')) {
+                    $content = Storage::disk('local')->get($file);
+                    $cand = json_decode($content, true);
+                    if ($cand && isset($cand['id'])) {
+                        $candidates[$cand['id']] = $cand;
+                    }
+                }
+            }
+        }
+
+        // Fallback to session if empty
+        if (empty($candidates)) {
+            $sessionKey = 'import_batch_' . $batchId;
+            $batch = session($sessionKey);
+            if ($batch && !empty($batch['candidates'])) {
+                $candidates = $batch['candidates'];
+            }
+        }
+
+        return $candidates;
+    }
+
+    /**
+     * Delete candidate JSON file and its associated temporary files.
+     */
+    public function removeCandidateFromBatch(string $batchId, string $candidateId): void
+    {
+        $candidates = $this->getBatchCandidates($batchId);
+        if (isset($candidates[$candidateId])) {
+            $cand = $candidates[$candidateId];
+            $this->removeCandidateFiles($cand);
+            $jsonPath = 'temp/import/' . $batchId . '/' . $candidateId . '.json';
+            if (Storage::disk('local')->exists($jsonPath)) {
+                Storage::disk('local')->delete($jsonPath);
+            }
+        }
+    }
+
+    /**
      * Clean up all temporary files of a specific batch.
      */
     public function cleanupBatch(string $batchId): void

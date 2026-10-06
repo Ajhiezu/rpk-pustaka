@@ -57,13 +57,6 @@ class BookImportController extends Controller
         $renderedCoversFiles = $request->file('rendered_covers', []);
         $skipPdfParse = $request->boolean('skip_pdf_parse', false);
 
-        $sessionKey = 'import_batch_' . $batchId;
-        $existingBatch = session($sessionKey, [
-            'batch_id' => $batchId,
-            'created_at' => time(),
-            'candidates' => [],
-        ]);
-
         $newCandidates = [];
 
         foreach ($uploadedFiles as $index => $file) {
@@ -76,7 +69,7 @@ class BookImportController extends Controller
                 }
 
                 $candidate = $this->importService->processDigitalFile($file, $batchId, $coverBase64, $manualCoverFile, $skipPdfParse);
-                $existingBatch['candidates'][$candidate['id']] = $candidate;
+                $this->importService->saveCandidate($batchId, $candidate);
                 $newCandidates[] = $candidate;
             } catch (\Throwable $e) {
                 Log::error("Error processing digital file {$file->getClientOriginalName()}: " . $e->getMessage());
@@ -104,17 +97,17 @@ class BookImportController extends Controller
                     'status' => 'WARNING',
                     'status_messages' => ['Gagal ekstraksi metadata otomatis: ' . Str::limit($e->getMessage(), 100)],
                 ];
-                $existingBatch['candidates'][$candidate['id']] = $candidate;
+                $this->importService->saveCandidate($batchId, $candidate);
                 $newCandidates[] = $candidate;
             }
         }
 
-        session([$sessionKey => $existingBatch]);
+        $allCandidates = $this->importService->getBatchCandidates($batchId);
 
         return response()->json([
             'success' => true,
             'batch_id' => $batchId,
-            'total_candidates' => count($existingBatch['candidates']),
+            'total_candidates' => count($allCandidates),
             'processed' => $newCandidates,
         ]);
     }
@@ -139,18 +132,9 @@ class BookImportController extends Controller
                 return redirect()->back()->with('error', 'Spreadsheet tidak memuat data buku atau format baris tidak dapat dikenali.');
             }
 
-            $sessionKey = 'import_batch_' . $batchId;
-            $batchData = [
-                'batch_id' => $batchId,
-                'created_at' => time(),
-                'candidates' => [],
-            ];
-
             foreach ($candidates as $cand) {
-                $batchData['candidates'][$cand['id']] = $cand;
+                $this->importService->saveCandidate($batchId, $cand);
             }
-
-            session([$sessionKey => $batchData]);
 
             return redirect()->route('admin.books.import.preview', ['batch_id' => $batchId])
                 ->with('success', count($candidates) . ' data buku fisik berhasil dibaca dari spreadsheet! Silakan tinjau dan lengkapi data sebelum import.');
@@ -170,16 +154,14 @@ class BookImportController extends Controller
             return redirect()->route('admin.books.import.create')->with('error', 'Batch import tidak ditemukan.');
         }
 
-        $sessionKey = 'import_batch_' . $batchId;
-        $batch = session($sessionKey);
+        $candidates = $this->importService->getBatchCandidates($batchId);
 
-        if (!$batch || empty($batch['candidates'])) {
+        if (empty($candidates)) {
             return redirect()->route('admin.books.import.create')->with('error', 'Tidak ada data buku kandidat di dalam antrean import ini.');
         }
 
         $categories = Category::all();
         $locations = Location::all();
-        $candidates = $batch['candidates'];
 
         return view('admin.books.import-preview', compact('batchId', 'candidates', 'categories', 'locations'));
     }
@@ -197,14 +179,13 @@ class BookImportController extends Controller
 
         $batchId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->input('batch_id'));
         $candId = $request->input('candidate_id');
-        $sessionKey = 'import_batch_' . $batchId;
-        $batch = session($sessionKey);
+        $candidates = $this->importService->getBatchCandidates($batchId);
 
-        if (!$batch || !isset($batch['candidates'][$candId])) {
+        if (!isset($candidates[$candId])) {
             return response()->json(['success' => false, 'message' => 'Candidate tidak ditemukan.'], 404);
         }
 
-        $candidate = $batch['candidates'][$candId];
+        $candidate = $candidates[$candId];
         // Remove old temp cover if any
         if (!empty($candidate['cover_path']) && Storage::disk('public')->exists($candidate['cover_path'])) {
             Storage::disk('public')->delete($candidate['cover_path']);
@@ -216,9 +197,9 @@ class BookImportController extends Controller
         Storage::disk('public')->putFileAs($tempDir, $coverFile, $coverFilename);
 
         $newCoverPath = $tempDir . '/' . $coverFilename;
-        $batch['candidates'][$candId]['cover_path'] = $newCoverPath;
+        $candidate['cover_path'] = $newCoverPath;
 
-        session([$sessionKey => $batch]);
+        $this->importService->saveCandidate($batchId, $candidate);
 
         return response()->json([
             'success' => true,
@@ -234,24 +215,18 @@ class BookImportController extends Controller
     {
         $batchId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->input('batch_id'));
         $candId = $request->input('candidate_id');
-        $sessionKey = 'import_batch_' . $batchId;
-        $batch = session($sessionKey);
 
-        if ($batch && isset($batch['candidates'][$candId])) {
-            $candidate = $batch['candidates'][$candId];
-            $this->importService->removeCandidateFiles($candidate);
-            unset($batch['candidates'][$candId]);
-            session([$sessionKey => $batch]);
-        }
+        $this->importService->removeCandidateFromBatch($batchId, $candId);
+        $remainingCandidates = $this->importService->getBatchCandidates($batchId);
 
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'remaining' => $batch ? count($batch['candidates']) : 0,
+                'remaining' => count($remainingCandidates),
             ]);
         }
 
-        if (empty($batch['candidates'])) {
+        if (empty($remainingCandidates)) {
             return redirect()->route('admin.books.import.create')->with('info', 'Semua naskah kandidat telah dihapus.');
         }
 
@@ -265,10 +240,9 @@ class BookImportController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $batchId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->input('batch_id'));
-        $sessionKey = 'import_batch_' . $batchId;
-        $batch = session($sessionKey);
+        $candidates = $this->importService->getBatchCandidates($batchId);
 
-        if (!$batch || empty($batch['candidates'])) {
+        if (empty($candidates)) {
             return redirect()->route('admin.books.import.create')->with('error', 'Sesi import telah kedaluwarsa atau tidak ditemukan.');
         }
 
@@ -276,7 +250,7 @@ class BookImportController extends Controller
         $submittedCandidates = $request->input('candidates', []);
         $mergedCandidates = [];
 
-        foreach ($batch['candidates'] as $id => $origCand) {
+        foreach ($candidates as $id => $origCand) {
             $updated = $submittedCandidates[$id] ?? [];
             $mergedCandidates[$id] = array_merge($origCand, [
                 'title' => trim($updated['title'] ?? $origCand['title']),
@@ -300,7 +274,7 @@ class BookImportController extends Controller
 
         // Clean up completed / removed batch temporary files
         $this->importService->cleanupBatch($batchId);
-        session()->forget($sessionKey);
+        session()->forget('import_batch_' . $batchId);
 
         // Flash detailed summary message
         $successCount = $importResult['imported'];
