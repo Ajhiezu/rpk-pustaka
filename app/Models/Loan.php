@@ -12,14 +12,15 @@ class Loan extends Model
 {
     use HasFactory;
 
-    public const STATUS_PENDING   = 'pending';
-    public const STATUS_APPROVED  = 'approved';
-    public const STATUS_BORROWED  = 'borrowed';
-    public const STATUS_RETURNED  = 'returned';
-    public const STATUS_REJECTED  = 'rejected';
-    public const STATUS_CANCELLED = 'cancelled';
-    public const STATUS_EXPIRED   = 'expired';
-    public const STATUS_OVERDUE   = 'overdue';
+    public const STATUS_PENDING            = 'pending';
+    public const STATUS_APPROVED           = 'approved';
+    public const STATUS_BORROWED           = 'borrowed';
+    public const STATUS_PARTIALLY_RETURNED = 'partially_returned';
+    public const STATUS_RETURNED           = 'returned';
+    public const STATUS_REJECTED           = 'rejected';
+    public const STATUS_CANCELLED          = 'cancelled';
+    public const STATUS_EXPIRED            = 'expired';
+    public const STATUS_OVERDUE            = 'overdue';
 
     protected $fillable = [
         'user_id',
@@ -134,7 +135,8 @@ class Loan extends Model
             'pending' => 'Menunggu Persetujuan',
             'approved' => 'Disetujui (Menunggu Pengambilan)',
             'borrowed' => 'Sedang Dipinjam',
-            'returned' => 'Dikembalikan',
+            'partially_returned' => 'Sebagian Dikembalikan',
+            'returned' => 'Dikembalikan (Lengkap)',
             'rejected' => 'Ditolak',
             'cancelled' => 'Dibatalkan',
             'expired' => 'Kedaluwarsa',

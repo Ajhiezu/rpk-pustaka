@@ -10,6 +10,7 @@ use App\Models\Fine;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class LibraryService
@@ -26,8 +27,8 @@ class LibraryService
         return DB::transaction(function () use ($data) {
             $loanType = $data['loan_type'] ?? 'physical';
             $defaultDuration = $loanType === 'digital'
-                ? (int) Setting::get('digital_loan_duration_days', 7)
-                : (int) Setting::get('physical_loan_duration_days', 14);
+                ? (int) $this->getSetting('digital_loan_duration_days', 7)
+                : (int) $this->getSetting('physical_loan_duration_days', 14);
             $dueDate = isset($data['due_date']) ? Carbon::parse($data['due_date']) : now()->addDays($defaultDuration);
             $userId = $data['user_id'];
             $bookIds = (array) $data['book_ids'];
@@ -48,17 +49,27 @@ class LibraryService
 
             // 2. Validate availability with row locking for concurrency protection
             $booksToLoan = [];
-            foreach ($bookIds as $bookId) {
-                if ($loanType === 'physical') {
-                    // Lock the book row to prevent race conditions on remaining stock
-                    $book = Book::where('id', $bookId)->lockForUpdate()->firstOrFail();
+            if ($loanType === 'physical') {
+                // Lock all rows in one query to prevent race conditions
+                $books = Book::whereIn('id', $bookIds)->lockForUpdate()->get()->keyBy('id');
+                foreach ($bookIds as $bookId) {
+                    $book = $books->get($bookId);
+                    if (!$book) {
+                        throw new \DomainException("Buku dengan ID {$bookId} tidak ditemukan.");
+                    }
                     if ($book->available_stock <= 0) {
                         throw new \DomainException("Buku fisik '{$book->title}' tidak tersedia untuk dipesan saat ini.");
                     }
                     $booksToLoan[] = $book;
-                } else {
-                    // Digital loan: ensure PDF exists
-                    $book = Book::findOrFail($bookId);
+                }
+            } else {
+                // Digital loan: ensure PDF exists — load in batch
+                $books = Book::whereIn('id', $bookIds)->get()->keyBy('id');
+                foreach ($bookIds as $bookId) {
+                    $book = $books->get($bookId);
+                    if (!$book) {
+                        throw new \DomainException("Buku dengan ID {$bookId} tidak ditemukan.");
+                    }
                     if (!$book->hasDigital()) {
                         throw new \DomainException("Versi digital untuk buku '{$book->title}' belum tersedia.");
                     }
@@ -67,13 +78,14 @@ class LibraryService
             }
 
             // 3. Determine Expiry Deadline and Unique Stable Loan Code
-            $expiryHours = (int) (Setting::where('key', 'physical_reservation_expiry_hours')->value('value') ?? 24);
+            $expiryHours = (int) ($this->getSetting('physical_reservation_expiry_hours', 24));
             $initialStatus = $data['status'] ?? ($loanType === 'physical' ? 'pending' : 'borrowed');
             $pickupDeadline = ($loanType === 'physical' && $initialStatus === 'pending') ? now()->addHours($expiryHours) : null;
             $approvedAt = in_array($initialStatus, ['approved', 'borrowed']) ? now() : null;
             $borrowedAt = $initialStatus === 'borrowed' ? now() : null;
 
             $datePrefix = date('Ymd');
+            // Single query to get today's count instead of looping
             $todayCount = Loan::whereDate('created_at', now()->toDateString())->count() + 1;
             $loanCode = 'RPK-LOAN-' . $datePrefix . '-' . sprintf('%03d', $todayCount);
 
@@ -98,15 +110,23 @@ class LibraryService
             ]);
 
             // 5. Attach Loan Details & decrement stock IMMEDIATELY upon physical reservation
+            $detailRows = [];
+            $now = now();
             foreach ($booksToLoan as $book) {
-                LoanDetail::create([
-                    'loan_id' => $loan->id,
-                    'book_id' => $book->id,
-                ]);
+                $detailRows[] = [
+                    'loan_id'    => $loan->id,
+                    'book_id'    => $book->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+            // Bulk insert all loan details in one query
+            LoanDetail::insert($detailRows);
 
-                if ($loanType === 'physical') {
-                    $book->decrement('available_stock');
-                }
+            // Bulk decrement stock for physical loans in one query
+            if ($loanType === 'physical') {
+                $bookIdsToDecrement = array_map(fn($b) => $b->id, $booksToLoan);
+                DB::table('books')->whereIn('id', $bookIdsToDecrement)->decrement('available_stock');
             }
 
             return $loan;
@@ -177,11 +197,10 @@ class LibraryService
             ]);
 
             if ($loanRecord->isPhysical()) {
-                foreach ($loanRecord->loanDetails as $detail) {
-                    $book = Book::where('id', $detail->book_id)->lockForUpdate()->first();
-                    if ($book) {
-                        $book->increment('available_stock');
-                    }
+                // Bulk restore stock in one query
+                $bookIds = $loanRecord->loanDetails->pluck('book_id')->toArray();
+                if (!empty($bookIds)) {
+                    DB::table('books')->whereIn('id', $bookIds)->increment('available_stock');
                 }
             }
 
@@ -211,11 +230,10 @@ class LibraryService
             ]);
 
             if ($loanRecord->isPhysical()) {
-                foreach ($loanRecord->loanDetails as $detail) {
-                    $book = Book::where('id', $detail->book_id)->lockForUpdate()->first();
-                    if ($book) {
-                        $book->increment('available_stock');
-                    }
+                // Bulk restore stock in one query
+                $bookIds = $loanRecord->loanDetails->pluck('book_id')->toArray();
+                if (!empty($bookIds)) {
+                    DB::table('books')->whereIn('id', $bookIds)->increment('available_stock');
                 }
             }
 
@@ -245,11 +263,10 @@ class LibraryService
             ]);
 
             if ($loanRecord->isPhysical()) {
-                foreach ($loanRecord->loanDetails as $detail) {
-                    $book = Book::where('id', $detail->book_id)->lockForUpdate()->first();
-                    if ($book) {
-                        $book->increment('available_stock');
-                    }
+                // Bulk restore stock in one query
+                $bookIds = $loanRecord->loanDetails->pluck('book_id')->toArray();
+                if (!empty($bookIds)) {
+                    DB::table('books')->whereIn('id', $bookIds)->increment('available_stock');
                 }
             }
 
@@ -259,23 +276,33 @@ class LibraryService
 
     /**
      * Automatically expire all unclaimed physical reservations past deadline.
+     * Uses bulk update + single stock restoration instead of N loops.
      */
     public function expireAllOverdueReservations(): int
     {
-        $expiredCount = 0;
         $overdueLoans = Loan::where('status', 'pending')
             ->where('loan_type', 'physical')
             ->whereNotNull('pickup_deadline')
             ->where('pickup_deadline', '<', now())
+            ->with('loanDetails') // eager load to avoid N+1 inside loop
             ->get();
 
-        foreach ($overdueLoans as $loan) {
-            if ($this->expireReservation($loan)) {
-                $expiredCount++;
-            }
+        if ($overdueLoans->isEmpty()) {
+            return 0;
         }
 
-        return $expiredCount;
+        $expiredLoanIds = $overdueLoans->pluck('id')->toArray();
+        $bookIdsToRestore = $overdueLoans->flatMap(fn($l) => $l->loanDetails->pluck('book_id'))->unique()->toArray();
+
+        // Bulk expire all overdue loans in one query
+        Loan::whereIn('id', $expiredLoanIds)->update(['status' => 'expired']);
+
+        // Bulk restore available_stock in one query
+        if (!empty($bookIdsToRestore)) {
+            DB::table('books')->whereIn('id', $bookIdsToRestore)->increment('available_stock');
+        }
+
+        return count($expiredLoanIds);
     }
 
     /**
@@ -293,13 +320,34 @@ class LibraryService
             $loanRecord = Loan::where('id', $loan->id)->lockForUpdate()->firstOrFail();
 
             if ($loanRecord->status === 'returned') {
-                throw new \DomainException('Peminjaman ini sudah dikembalikan sebelumnya.');
+                throw new \DomainException('Peminjaman ini sudah dikembalikan sepenuhnya sebelumnya.');
             }
 
-            if (!in_array($loanRecord->status, ['borrowed', 'overdue', 'approved'])) {
+            if (!in_array($loanRecord->status, ['borrowed', 'overdue', 'approved', 'partially_returned'])) {
                 throw new \DomainException('Transaksi tidak dalam status yang valid untuk diproses pengembaliannya.', 422);
             }
 
+            $detailIds = $data['detail_ids'] ?? [];
+            if (!is_array($detailIds)) {
+                $detailIds = [$detailIds];
+            }
+
+            // Get target loan details to return
+            $targetQuery = $loanRecord->loanDetails()->where(function ($q) {
+                $q->whereNull('status')->orWhere('status', '!=', 'returned');
+            });
+
+            if (!empty($detailIds)) {
+                $targetQuery->whereIn('id', $detailIds);
+            }
+
+            $detailsToReturn = $targetQuery->get();
+
+            if ($detailsToReturn->isEmpty()) {
+                throw new \DomainException('Tidak ada item buku yang dipilih untuk dikembalikan.');
+            }
+
+            // Create ReturnBook record
             $returnBook = ReturnBook::create([
                 'loan_id' => $loanRecord->id,
                 'return_date' => now(),
@@ -307,21 +355,39 @@ class LibraryService
                 'notes' => $data['notes'] ?? null,
             ]);
 
-            $loanRecord->update(['status' => 'returned']);
+            // Mark selected details as returned and restore physical stock
+            $detailIdsToReturn = $detailsToReturn->pluck('id')->toArray();
+            $bookIdsToRestore = [];
 
-            // Increase physical stock ONLY if loan was physical and condition is good
+            // Bulk update detail status in one query
+            LoanDetail::whereIn('id', $detailIdsToReturn)->update([
+                'status'      => 'returned',
+                'returned_at' => now(),
+            ]);
+
+            // Restore physical stock in bulk (only for 'good' condition)
             if ($loanRecord->isPhysical() && ($data['condition'] ?? 'good') === 'good') {
-                foreach ($loanRecord->loanDetails as $detail) {
-                    $book = Book::where('id', $detail->book_id)->lockForUpdate()->first();
-                    if ($book) {
-                        $book->increment('available_stock');
-                    }
+                $bookIdsToRestore = $detailsToReturn->pluck('book_id')->unique()->toArray();
+                if (!empty($bookIdsToRestore)) {
+                    DB::table('books')->whereIn('id', $bookIdsToRestore)->increment('available_stock');
                 }
             }
 
-            // Calculate fines only for physical loans
+            // Check if all details are now returned
+            $remainingUnreturned = $loanRecord->loanDetails()
+                ->where(function ($q) {
+                    $q->whereNull('status')->orWhere('status', '!=', 'returned');
+                })->count();
+
+            if ($remainingUnreturned === 0) {
+                $loanRecord->update(['status' => 'returned']);
+            } else {
+                $loanRecord->update(['status' => 'partially_returned']);
+            }
+
+            // Calculate fines for physical returns
             if ($loanRecord->isPhysical()) {
-                $this->calculateFine($loanRecord, $returnBook);
+                $this->calculateFine($loanRecord, $returnBook, $detailsToReturn);
             }
 
             return $returnBook;
@@ -331,58 +397,62 @@ class LibraryService
     /**
      * Calculate late or damaged/lost fines for physical loans.
      */
-    protected function calculateFine(Loan $loan, ReturnBook $returnBook)
+    protected function calculateFine(Loan $loan, ReturnBook $returnBook, $detailsToReturn = null)
     {
         $dueDate = Carbon::parse($loan->due_date);
         $returnDate = Carbon::parse($returnBook->return_date);
 
         // 1. Late Fine
         if ($returnDate->greaterThan($dueDate)) {
-            $lateFinePerDay = Setting::where('key', 'late_fine_per_day')->value('value') ?? 1000;
+            $lateFinePerDay = $this->getSetting('late_fine_per_day', 1000);
             $days = $returnDate->diffInDays($dueDate);
-            $amount = $days * $lateFinePerDay;
-            $amount = min($amount, 10000000); // Cap fine at 10M
+            $lateAmount = $days * $lateFinePerDay;
+            $lateAmount = min($lateAmount, 10000000); // Cap fine at 10M
 
-            Fine::create([
-                'loan_id' => $loan->id,
-                'amount' => $amount,
-                'type' => 'late',
-                'status' => 'unpaid',
-            ]);
+            if ($lateAmount > 0) {
+                $existingFine = Fine::where('loan_id', $loan->id)->where('status', 'unpaid')->first();
+                if ($existingFine) {
+                    $existingFine->update([
+                        'amount' => min($existingFine->amount + $lateAmount, 50000000),
+                    ]);
+                } else {
+                    Fine::create([
+                        'loan_id' => $loan->id,
+                        'amount'  => $lateAmount,
+                        'type'    => 'late',
+                        'status'  => 'unpaid',
+                    ]);
+                }
+            }
         }
 
-        // 2. Damage/Lost Fine
+        // 2. Damage/Lost Fine (Summed across all target returned books)
         if (in_array($returnBook->condition, ['damaged', 'lost'])) {
-            foreach ($loan->loanDetails as $detail) {
+            $targetDetails = ($detailsToReturn && count($detailsToReturn) > 0) ? $detailsToReturn : $loan->loanDetails;
+            $totalDamageFine = 0;
+
+            foreach ($targetDetails as $detail) {
                 $book = $detail->book;
                 if (!$book) continue;
 
-                $fineAmount = 0;
-                if ($book->fine_type === 'fixed' && !empty($book->fine_value)) {
-                    $fineAmount = (float) filter_var($book->fine_value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                } elseif ($book->fine_type === 'multiplier' && !empty($book->fine_value)) {
-                    $multiplierStr = preg_replace('/[^0-9.]/', '', $book->fine_value);
-                    $multiplier = (float) ($multiplierStr ?: 1);
-                    $priceStr = filter_var($book->price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                    $price = (float) $priceStr;
-                    $fineAmount = $price * $multiplier;
+                $totalDamageFine += $book->getCalculatedFineAmount();
+            }
+
+            $totalDamageFine = min($totalDamageFine, 50000000); // Cap fine at 50M
+
+            if ($totalDamageFine > 0) {
+                $existingFine = Fine::where('loan_id', $loan->id)->where('status', 'unpaid')->first();
+                if ($existingFine) {
+                    $existingFine->update([
+                        'amount' => min($existingFine->amount + $totalDamageFine, 50000000),
+                        'type'   => $returnBook->condition,
+                    ]);
                 } else {
-                    $val = !empty($book->fine_value) ? $book->fine_value : $book->price;
-                    $fineAmount = (float) filter_var($val, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                }
-
-                if ($fineAmount <= 0 && !empty($book->price)) {
-                    $fineAmount = (float) filter_var($book->price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                }
-
-                $fineAmount = min($fineAmount, 50000000); // Cap fine at 50M
-
-                if ($fineAmount > 0) {
                     Fine::create([
                         'loan_id' => $loan->id,
-                        'amount' => $fineAmount,
-                        'type' => $returnBook->condition,
-                        'status' => 'unpaid',
+                        'amount'  => $totalDamageFine,
+                        'type'    => $returnBook->condition,
+                        'status'  => 'unpaid',
                     ]);
                 }
             }
@@ -399,10 +469,20 @@ class LibraryService
         }
 
         $fine->update([
-            'status' => 'paid',
+            'status'       => 'paid',
             'payment_date' => $data['payment_date'] ?? now(),
         ]);
 
         return $fine;
+    }
+
+    /**
+     * Get a setting value with short-lived cache to reduce DB hits.
+     */
+    protected function getSetting(string $key, mixed $default = null): mixed
+    {
+        return Cache::remember("setting_{$key}", 120, function () use ($key, $default) {
+            return Setting::where('key', $key)->value('value') ?? $default;
+        });
     }
 }

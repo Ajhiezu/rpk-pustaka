@@ -40,10 +40,13 @@ class BookImportController extends Controller
      */
     public function uploadDigital(Request $request): JsonResponse
     {
+        @set_time_limit(180);
+        @ini_set('memory_limit', '512M');
+
         $request->validate([
             'batch_id' => 'required|string',
             'files' => 'required|array',
-            'files.*' => 'required|file|mimes:pdf,docx|max:51200', // max 50MB per file
+            'files.*' => 'required|file|max:51200', // max 50MB per file
             'rendered_covers' => 'nullable|array',
         ]);
 

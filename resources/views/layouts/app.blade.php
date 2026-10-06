@@ -68,27 +68,29 @@
         <aside
             x-show="isDesktop || mobileSidebarOpen"
             x-cloak
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-neutral-border transition-all duration-300 flex flex-col shadow-xs overflow-hidden lg:translate-x-0"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#C62828] text-white border-r border-[#A71D1D] transition-all duration-300 flex flex-col shadow-lg overflow-hidden lg:translate-x-0"
             :class="{
                 'lg:w-64': sidebarOpen,
                 'lg:w-20': !sidebarOpen
             }">
             
             <!-- Brand masthead area with official RPK PUSTAKA IMM SAINTEKMU logo -->
-            <div class="h-20 flex items-center border-b border-neutral-border flex-shrink-0 bg-white transition-all duration-300"
+            <div class="h-20 flex items-center border-b border-white/10 flex-shrink-0 bg-[#A71D1D] transition-all duration-300"
                  :class="sidebarOpen ? 'justify-between px-4' : 'justify-center px-2'">
                 <a href="{{ route('dashboard') }}" class="flex items-center min-w-0 group"
                    :class="sidebarOpen ? 'space-x-3' : 'justify-center'">
-                    <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-10 w-auto object-contain shrink-0">
+                    <div class="bg-white p-1.5 rounded-lg shadow-sm flex items-center justify-center shrink-0">
+                        <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA IMM SAINTEKMU" class="h-8 w-auto object-contain">
+                    </div>
                     <div class="transition-all duration-300 overflow-hidden whitespace-nowrap"
                          x-show="sidebarOpen" x-cloak>
-                        <span class="font-sans text-base font-bold tracking-tight text-neutral-dark block leading-none">RPK PUSTAKA</span>
-                        <span class="text-[10px] font-semibold text-neutral-muted uppercase tracking-wider block mt-0.5 whitespace-nowrap">IMM SAINTEKMU</span>
+                        <span class="font-sans text-base font-bold tracking-tight text-white block leading-none">RPK PUSTAKA</span>
+                        <span class="text-[10px] font-semibold text-accent uppercase tracking-wider block mt-1 whitespace-nowrap">IMM SAINTEKMU</span>
                     </div>
                 </a>
                 <button type="button"
                         @click="closeMobileSidebar()"
-                        class="lg:hidden shrink-0 p-1.5 rounded-md text-neutral-muted hover:text-primary hover:bg-primary-light transition-colors cursor-pointer"
+                        class="lg:hidden shrink-0 p-1.5 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
                         x-show="sidebarOpen"
                         title="Tutup Menu Mobile">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +102,7 @@
             <!-- Navigation Sidebar Links -->
             <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto custom-scrollbar">
 
-                <div class="px-3 pt-2 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
+                <div class="px-3 pt-2 pb-1 text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]"
                     x-show="sidebarOpen">Navigasi Utama</div>
 
                 <a href="{{ route('dashboard') }}"
@@ -140,7 +142,7 @@
 
                 @auth
                     @if(Auth::user()->isAnggota())
-                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
+                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]"
                             x-show="sidebarOpen">Layanan Anggota</div>
 
                         <a href="{{ route('anggota.books.index') }}"
@@ -217,7 +219,7 @@
                     @endif
 
                     @if(Auth::user()->isAdmin())
-                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
+                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]"
                             x-show="sidebarOpen">Katalog & Rak</div>
 
                         <a href="{{ route('admin.books.index') }}"
@@ -274,7 +276,7 @@
                                 Rak Penyimpanan</div>
                         </a>
 
-                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
+                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]"
                             x-show="sidebarOpen">Sirkulasi & Layanan</div>
 
                         <a href="{{ route('admin.loans.index') }}"
@@ -349,7 +351,7 @@
                                 Rekapitulasi & Arsip</div>
                         </a>
 
-                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
+                        <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]"
                             x-show="sidebarOpen">Pengguna & Akses</div>
 
                         <a href="{{ route('admin.users.index') }}"
@@ -392,7 +394,7 @@
                     @endif
                 @endauth
 
-                <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-neutral-muted uppercase tracking-[0.2em]"
+                <div class="px-3 pt-5 pb-1 text-[10px] font-bold text-white/60 uppercase tracking-[0.2em]"
                     x-show="sidebarOpen">Laman Publik</div>
 
                 <a href="{{ url('/') }}"
@@ -415,12 +417,12 @@
             </nav>
 
             <!-- Bottom Sidebar Profile / Logout -->
-            <div class="p-3 border-t border-neutral-border bg-white flex-shrink-0">
+            <div class="p-3 border-t border-white/20 bg-[#A71D1D] flex-shrink-0">
                 @auth
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
                         <button type="submit"
-                            class="flex items-center w-full py-2 text-xs font-semibold text-primary hover:bg-primary-light rounded-md transition-colors group cursor-pointer"
+                            class="flex items-center w-full py-2.5 text-xs font-semibold text-white hover:bg-white/10 rounded-md transition-colors group cursor-pointer"
                             :class="sidebarOpen ? 'justify-start px-3' : 'justify-center px-0'"
                             title="Keluar Sistem">
                             <svg class="w-4 h-4 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" fill="none"
@@ -433,7 +435,7 @@
                         </button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="btn-editorial w-full text-xs py-2" :class="!sidebarOpen && 'px-0 text-center'">
+                    <a href="{{ route('login') }}" class="flex items-center justify-center w-full py-2.5 text-xs font-bold text-[#C62828] bg-white hover:bg-neutral-surface rounded-md transition-colors" :class="!sidebarOpen && 'px-0 text-center'">
                         <span x-show="sidebarOpen">Masuk Akun</span>
                         <svg x-show="!sidebarOpen" class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
@@ -447,10 +449,10 @@
         <div class="flex-1 min-w-0 transition-all duration-300 flex flex-col min-h-screen bg-white" :class="sidebarOpen ? 'lg:pl-64' : 'lg:pl-20'">
             <!-- Topbar -->
             <header
-                class="h-18 bg-white/95 backdrop-blur-md border-b border-neutral-border sticky top-0 z-40 flex items-center justify-between px-6 lg:px-10">
-                <div class="flex items-center space-x-4">
+                class="h-16 bg-[#C62828] border-b border-[#A71D1D] sticky top-0 z-40 flex items-center justify-between px-4 lg:px-8 shadow-md">
+                <div class="flex items-center space-x-3">
                     <button @click="toggleSidebar()"
-                        class="w-9 h-9 flex items-center justify-center hover:bg-neutral-surface rounded-md transition-colors text-neutral-dark border border-neutral-border cursor-pointer"
+                        class="w-8 h-8 flex items-center justify-center hover:bg-white/15 rounded-md transition-colors text-white cursor-pointer"
                         title="Alihkan Sidebar">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -459,59 +461,64 @@
                     </button>
 
                     <div class="hidden sm:flex items-center gap-2">
-                        <span class="font-sans text-sm tracking-wide uppercase font-semibold text-neutral-dark">RPK PUSTAKA</span>
-                        <span class="text-neutral-muted text-xs">•</span>
-                        <span class="text-xs text-neutral-body">IMM SAINTEKMU</span>
+                        <svg class="w-3 h-3 text-accent fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2l2.4 7.2h7.6l-6.2 4.5 2.4 7.3-6.2-4.6-6.2 4.6 2.4-7.3-6.2-4.5h7.6z"/>
+                        </svg>
+                        <span class="font-sans text-sm tracking-wide uppercase font-bold text-white">RPK PUSTAKA</span>
+                        <span class="text-white/40 text-xs">•</span>
+                        <span class="text-xs text-white/70 font-medium">IMM SAINTEKMU</span>
                     </div>
                 </div>
 
-                <div class="flex items-center space-x-5">
+                <div class="flex items-center space-x-3">
                     @auth
-                        <div class="flex items-center space-x-3 pr-4 border-r border-neutral-border">
+                        <div class="flex items-center space-x-3">
                             <div class="text-right hidden sm:block">
-                                <p class="text-xs font-semibold text-neutral-dark leading-tight">{{ Auth::user()->name }}</p>
-                                <span class="inline-block mt-0.5 px-2 py-0.2 bg-primary-light text-[10px] font-bold text-primary uppercase tracking-wider rounded border border-red-200">{{ Auth::user()->role }}</span>
+                                <p class="text-xs font-semibold text-white leading-tight">{{ Auth::user()->name }}</p>
+                                <span class="inline-block mt-0.5 px-2 py-px bg-white/15 text-[10px] font-bold text-white uppercase tracking-wider rounded border border-white/20">{{ Auth::user()->role }}</span>
                             </div>
-                            <div
-                                class="w-9 h-9 bg-primary-light text-primary font-sans font-bold text-sm rounded-md flex items-center justify-center border border-red-200 uppercase shadow-xs">
-                                {{ substr(Auth::user()->name, 0, 1) }}
-                            </div>
+                            <a href="{{ route('profile.edit') }}" title="Pengaturan Profil">
+                                <div class="w-9 h-9 bg-white text-primary font-sans font-bold text-sm rounded-lg flex items-center justify-center shadow-sm uppercase hover:bg-neutral-surface transition-colors">
+                                    {{ substr(Auth::user()->name, 0, 1) }}
+                                </div>
+                            </a>
                         </div>
-
-                        <a href="{{ route('profile.edit') }}"
-                            class="w-9 h-9 flex items-center justify-center hover:bg-neutral-surface rounded-md transition-colors text-neutral-body hover:text-primary border border-transparent hover:border-neutral-border"
-                            title="Pengaturan Profil">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z">
-                                </path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                            </svg>
-                        </a>
                     @else
                         <div class="flex items-center space-x-3">
-                            <a href="{{ route('login') }}" class="text-xs font-semibold text-neutral-dark hover:text-primary transition-colors">Masuk</a>
-                            <a href="{{ route('register') }}" class="btn-editorial text-xs py-1.5 px-3.5">Daftar</a>
+                            <a href="{{ route('login') }}" class="text-xs font-semibold text-white/80 hover:text-white transition-colors">Masuk</a>
+                            <a href="{{ route('register') }}" class="inline-flex items-center bg-white text-primary hover:bg-neutral-surface text-xs py-1.5 px-3.5 rounded-md font-bold transition-all">Daftar</a>
                         </div>
                     @endauth
                 </div>
             </header>
 
             <!-- Page Content Area -->
-            <main class="flex-1 px-6 lg:px-12 py-10 max-w-7xl w-full mx-auto">
+            <main class="flex-1 px-5 lg:px-10 py-8 max-w-7xl w-full mx-auto">
                 @isset($header)
-                    <div class="mb-8 pb-6 border-b border-neutral-border flex flex-col md:flex-row md:items-baseline md:justify-between gap-4">
-                        <div>
-                            <h1 class="font-sans text-2xl sm:text-3xl font-bold text-neutral-dark tracking-tight">{{ $header }}</h1>
-                            <p class="text-xs text-neutral-muted font-normal mt-1.5 uppercase tracking-wider">RPK PUSTAKA IMM SAINTEKMU, Sistem Perpustakaan & Arsip Akademik</p>
-                        </div>
+                    <!-- Page Header Banner -->
+                    <div class="mb-8 bg-[#C62828] rounded-xl px-7 py-6 relative overflow-hidden shadow-lg">
+                        <!-- Ambient decorations -->
+                        <div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
+                        <div class="absolute right-20 -bottom-6 w-24 h-24 rounded-full bg-black/10 pointer-events-none"></div>
 
-                        @isset($actions)
-                            <div class="flex items-center space-x-3">
-                                {{ $actions }}
+                        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                            <div>
+                                <div class="flex items-center gap-1.5 mb-2">
+                                    <svg class="w-3 h-3 text-accent fill-current" viewBox="0 0 24 24">
+                                        <path d="M12 2l2.4 7.2h7.6l-6.2 4.5 2.4 7.3-6.2-4.6-6.2 4.6 2.4-7.3-6.2-4.5h7.6z"/>
+                                    </svg>
+                                    <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.2em]">RPK PUSTAKA IMM SAINTEKMU</span>
+                                </div>
+                                <h1 class="font-sans text-xl sm:text-2xl font-extrabold text-white tracking-tight leading-tight">{{ $header }}</h1>
+                                <p class="text-[11px] text-white/60 font-medium mt-1 uppercase tracking-widest">Sistem Perpustakaan & Arsip Akademik</p>
                             </div>
-                        @endisset
+
+                            @isset($actions)
+                                <div class="flex items-center space-x-3 shrink-0 [&_.btn-editorial]:bg-white [&_.btn-editorial]:text-[#C62828] [&_.btn-editorial]:border-white [&_.btn-editorial]:hover:bg-[#F8F8F7] [&_.btn-editorial]:hover:text-[#A71D1D] [&_.btn-editorial]:font-bold [&_.btn-editorial]:shadow-md [&_.btn-editorial-outline]:bg-white/10 [&_.btn-editorial-outline]:border-white/50 [&_.btn-editorial-outline]:text-white [&_.btn-editorial-outline]:hover:bg-white/20 [&_.btn-editorial-outline]:hover:border-white">
+                                    {{ $actions }}
+                                </div>
+                            @endisset
+                        </div>
                     </div>
                 @endisset
 
@@ -521,12 +528,17 @@
             </main>
 
             <!-- Refined Academic Footer -->
-            <footer class="mt-auto border-t border-neutral-border bg-white px-6 lg:px-12 py-6 text-center text-xs text-neutral-muted">
+            <footer class="mt-auto border-t border-neutral-border bg-[#F8F8F7] px-5 lg:px-10 py-5 text-center text-xs text-neutral-muted">
                 <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-                    <p>&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU, Hak Cipta Dilindungi. Perpustakaan Riset & Akademik.</p>
                     <div class="flex items-center gap-2">
-                        <span class="w-1.5 h-1.5 rounded-full bg-accent"></span>
-                        <p class="font-sans italic text-neutral-body">Veritas et Sapientia</p>
+                        <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA" class="h-5 w-auto object-contain opacity-60">
+                        <p class="font-medium text-neutral-body">&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU &mdash; Perpustakaan Riset & Akademik.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-2.5 h-2.5 text-accent fill-current" viewBox="0 0 24 24">
+                            <path d="M12 2l2.4 7.2h7.6l-6.2 4.5 2.4 7.3-6.2-4.6-6.2 4.6 2.4-7.3-6.2-4.5h7.6z"/>
+                        </svg>
+                        <p class="font-sans italic text-neutral-body font-medium">Veritas et Sapientia</p>
                     </div>
                 </div>
             </footer>

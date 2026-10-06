@@ -9,6 +9,7 @@ use App\Models\Book;
 use App\Models\User;
 use App\Services\LibraryService;
 use App\Models\Setting;
+use Illuminate\Support\Facades\Cache;
 
 class LoanController extends Controller
 {
@@ -21,10 +22,24 @@ class LoanController extends Controller
 
     public function index(Request $request)
     {
-        // Trigger auto-expiry check on index view so stale pending reservations are updated
-        $this->libraryService->expireAllOverdueReservations();
+        // Only run expiry check when there are pending loans (avoid full scan every page load)
+        $hasPending = Cache::remember('has_pending_reservations', 30, function () {
+            return Loan::where('status', Loan::STATUS_PENDING)
+                ->where('loan_type', 'physical')
+                ->whereNotNull('pickup_deadline')
+                ->where('pickup_deadline', '<', now())
+                ->exists();
+        });
+        if ($hasPending) {
+            $this->libraryService->expireAllOverdueReservations();
+            Cache::forget('has_pending_reservations');
+        }
 
-        $query = Loan::with(['user', 'loanDetails.book', 'fine']);
+        $query = Loan::with([
+            'user:id,name,email',
+            'loanDetails.book:id,title,image',
+            'fine:id,loan_id,amount,status',
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->search;
@@ -61,12 +76,19 @@ class LoanController extends Controller
 
         $loans = $query->latest()->paginate(10)->withQueryString();
 
-        // Summary counts for dashboard badges
+        // Single aggregated query for summary counts
+        $summaryRaw = Loan::selectRaw("
+            SUM(CASE WHEN status = 'pending'  THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+            SUM(CASE WHEN status = 'borrowed' THEN 1 ELSE 0 END) as borrowed,
+            SUM(CASE WHEN status = 'overdue'  THEN 1 ELSE 0 END) as overdue
+        ")->first();
+
         $summary = [
-            'pending'   => Loan::where('status', Loan::STATUS_PENDING)->count(),
-            'approved'  => Loan::where('status', Loan::STATUS_APPROVED)->count(),
-            'borrowed'  => Loan::where('status', Loan::STATUS_BORROWED)->count(),
-            'overdue'   => Loan::where('status', Loan::STATUS_OVERDUE)->count(),
+            'pending'  => (int) ($summaryRaw->pending ?? 0),
+            'approved' => (int) ($summaryRaw->approved ?? 0),
+            'borrowed' => (int) ($summaryRaw->borrowed ?? 0),
+            'overdue'  => (int) ($summaryRaw->overdue ?? 0),
         ];
 
         return view('officer.loans.index', compact('loans', 'summary'));
@@ -74,8 +96,12 @@ class LoanController extends Controller
 
     public function create()
     {
-        $borrowers = User::where('role', 'anggota')->get();
-        $books = Book::where('available_stock', '>', 0)->with('location')->get();
+        $borrowers = User::select('id', 'name', 'email')->where('role', 'anggota')->orderBy('name')->get();
+        $books = Book::select('id', 'title', 'author', 'book_code', 'available_stock', 'location_id')
+            ->where('available_stock', '>', 0)
+            ->with('location:id,name,description')
+            ->orderBy('title')
+            ->get();
         return view('officer.loans.create', compact('borrowers', 'books'));
     }
 
@@ -116,22 +142,12 @@ class LoanController extends Controller
     {
         $loan->load(['user', 'loanDetails.book.location', 'returnBook', 'fine']);
 
-        $estimatedFine = (float) $loan->loanDetails->sum(function ($detail) {
-            $book = $detail->book;
-            if (!$book) return 0;
-            if ($book->fine_type === 'fixed' && !empty($book->fine_value)) {
-                return (float) filter_var($book->fine_value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-            } elseif ($book->fine_type === 'multiplier' && !empty($book->fine_value)) {
-                $multiplierStr = preg_replace('/[^0-9.]/', '', $book->fine_value);
-                $multiplier = (float) ($multiplierStr ?: 1);
-                $price = (float) filter_var($book->price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                return $price * $multiplier;
-            } else {
-                $val = !empty($book->fine_value) ? $book->fine_value : $book->price;
-                $fine = (float) filter_var($val, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-                return $fine > 0 ? $fine : (float) filter_var($book->price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
-            }
-        });
+        $estimatedFine = (float) $loan->loanDetails
+            ->filter(fn($detail) => !$detail->isReturned())
+            ->sum(function ($detail) {
+                $book = $detail->book;
+                return $book ? $book->getCalculatedFineAmount() : 0;
+            });
 
         return view('officer.loans.show', compact('loan', 'estimatedFine'));
     }
@@ -184,17 +200,21 @@ class LoanController extends Controller
     {
         if ($loan->isDigital()) {
             $data = [
-                'condition' => 'good',
-                'notes'     => $request->input('notes'),
+                'condition'  => 'good',
+                'notes'      => $request->input('notes'),
+                'detail_ids' => $request->input('detail_ids', []),
             ];
         } else {
             $request->validate([
-                'condition' => 'required|in:good,damaged,lost',
-                'notes'     => 'nullable|string',
+                'condition'    => 'required|in:good,damaged,lost',
+                'notes'        => 'nullable|string',
+                'detail_ids'   => 'nullable|array',
+                'detail_ids.*' => 'integer',
             ]);
             $data = [
-                'condition' => $request->input('condition'),
-                'notes'     => $request->input('notes'),
+                'condition'  => $request->input('condition'),
+                'notes'      => $request->input('notes'),
+                'detail_ids' => $request->input('detail_ids', []),
             ];
         }
 

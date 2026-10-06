@@ -16,7 +16,7 @@ class GoogleAuthController extends Controller
     /**
      * Redirect user to Google OAuth provider.
      */
-    public function redirectToGoogle(): RedirectResponse
+    public function redirectToGoogle(Request $request): RedirectResponse
     {
         $clientId = config('services.google.client_id');
         $clientSecret = config('services.google.client_secret');
@@ -24,6 +24,13 @@ class GoogleAuthController extends Controller
         if (empty($clientId) || empty($clientSecret)) {
             return redirect()->route('login')->with('error', 'Konfigurasi Google Login belum lengkap (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET belum diisi di .env).');
         }
+
+        if ($request->query('intent') === 'register') {
+            $request->session()->put('google_auth_intent', 'register');
+        } else {
+            $request->session()->forget('google_auth_intent');
+        }
+        $request->session()->save();
 
         return Socialite::driver('google')->redirect();
     }
@@ -43,6 +50,7 @@ class GoogleAuthController extends Controller
 
         $email = $googleUser->getEmail();
         $googleId = $googleUser->getId();
+        $intent = session()->pull('google_auth_intent', 'login');
 
         if (empty($email)) {
             return redirect()->route('login')->with('error', 'Gagal mengambil alamat email dari akun Google Anda.');
@@ -63,7 +71,7 @@ class GoogleAuthController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        // Case C / D: Existing user with matching email (register with email/password previously)
+        // Case C: Existing user with matching email (registered previously with email/password)
         $user = User::where('email', $email)->first();
 
         if ($user) {
@@ -81,23 +89,30 @@ class GoogleAuthController extends Controller
                 ->with('status', 'Akun Anda berhasil ditautkan dengan Google.');
         }
 
-        // Case A: New user from Google (Role is strictly 'anggota' / member)
-        $newUser = User::create([
-            'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Anggota RPK',
-            'email' => $email,
-            'google_id' => $googleId,
-            'avatar' => $googleUser->getAvatar(),
-            'role' => 'anggota',
-            'email_verified_at' => now(),
-            'password' => null,
-        ]);
+        // Case A: User intentionally clicked "Daftar dengan Google" from the Register page
+        if ($intent === 'register') {
+            $newUser = User::create([
+                'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Anggota RPK',
+                'email' => $email,
+                'google_id' => $googleId,
+                'avatar' => $googleUser->getAvatar(),
+                'role' => 'anggota',
+                'email_verified_at' => now(),
+                'password' => null,
+            ]);
 
-        event(new Registered($newUser));
+            event(new Registered($newUser));
 
-        Auth::login($newUser, true);
-        $request->session()->regenerate();
+            Auth::login($newUser, true);
+            $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false))
-            ->with('status', 'Selamat datang di RPK PUSTAKA IMM SAINTEKMU! Akun Anda berhasil terdaftar melalui Google.');
+            return redirect()->intended(route('dashboard', absolute: false))
+                ->with('status', 'Selamat datang di RPK PUSTAKA IMM SAINTEKMU! Akun Anda berhasil terdaftar melalui Google.');
+        }
+
+        // Case D: Non-registered user attempting to LOGIN via Google -> REJECT & REDIRECT TO REGISTER
+        return redirect()->route('register')
+            ->withInput(['email' => $email, 'name' => $googleUser->getName()])
+            ->with('error', 'Akun Google Anda (' . $email . ') belum terdaftar sebagai anggota RPK PUSTAKA. Silakan lakukan pendaftaran terlebih dahulu.');
     }
 }

@@ -104,4 +104,36 @@ class Book extends Model
         $cleanPath = ltrim(str_replace(['public/', 'storage/'], '', $this->image), '/');
         return asset('storage/' . $cleanPath);
     }
+
+    /**
+     * Calculate damaged / lost fine amount according to fine_type and fine_value.
+     */
+    public function getCalculatedFineAmount(): float
+    {
+        $price = (float) filter_var($this->price, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+
+        if ($this->fine_type === 'multiplier' && !empty($this->fine_value)) {
+            $multiplierStr = preg_replace('/[^0-9.]/', '', (string) $this->fine_value);
+            $multiplier = (float) ($multiplierStr ?: 1);
+            if ($price > 0) {
+                return $price * $multiplier;
+            }
+        }
+
+        if ($this->fine_type === 'fixed' && !empty($this->fine_value)) {
+            $val = (float) filter_var($this->fine_value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+            if ($val > 0) {
+                return $val;
+            }
+        }
+
+        if (!empty($this->fine_value)) {
+            $val = (float) filter_var($this->fine_value, FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
+            if ($val > 0) {
+                return $val;
+            }
+        }
+
+        return $price > 0 ? $price : 50000.0;
+    }
 }

@@ -46,6 +46,10 @@
                                 Aktif Dipinjam
                             </span>
                         @endif
+                    @elseif($loan->status === 'partially_returned')
+                        <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-bold bg-amber-50 text-amber-900 border border-amber-300 rounded">
+                            Sebagian Dikembalikan
+                        </span>
                     @elseif($loan->isReturned())
                         <span class="inline-flex items-center px-2.5 py-0.5 text-xs font-bold bg-[#EDF7ED] text-success border border-[#C8E6C9] rounded">
                             Selesai Dikembalikan
@@ -198,6 +202,15 @@
                     <div class="divide-y divide-neutral-border">
                         @foreach($loan->loanDetails as $detail)
                         <div class="p-6 flex flex-col sm:flex-row items-start gap-5 hover:bg-[#F8F8F7]/50 transition-colors">
+                            @if(!$detail->isReturned() && ($loan->isBorrowed() || $loan->isOverdue() || $loan->status === 'partially_returned'))
+                                <div class="pt-2 shrink-0">
+                                    <label class="flex items-center gap-2 cursor-pointer" title="Pilih buku ini untuk dikembalikan">
+                                        <input type="checkbox" name="detail_ids[]" value="{{ $detail->id }}" form="return-form" checked class="w-4 h-4 text-primary rounded border-neutral-border focus:ring-primary cursor-pointer">
+                                        <span class="text-[10px] font-bold text-neutral-dark uppercase">Kembalikan</span>
+                                    </label>
+                                </div>
+                            @endif
+
                             <div class="w-20 h-28 sm:w-24 sm:h-32 bg-[#F8F8F7] border border-neutral-border overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs rounded">
                                 @if($detail->book && $detail->book->image)
                                     <img src="{{ asset('storage/'.$detail->book->image) }}" alt="{{ $detail->book->title }}" class="w-full h-full object-cover">
@@ -221,9 +234,13 @@
                                             Rak: {{ $detail->book->location->name }}
                                         </span>
                                     @endif
-                                    @if($detail->book && $detail->book->book_code)
-                                        <span class="text-[10px] font-mono text-neutral-muted">
-                                            Kode: {{ $detail->book->book_code }}
+                                    @if($detail->isReturned())
+                                        <span class="text-[10px] font-bold text-emerald-800 bg-[#EDF7ED] px-2.5 py-0.5 rounded border border-[#C8E6C9] inline-flex items-center gap-1">
+                                            ✓ Dikembalikan {{ $detail->returned_at ? '('.$detail->returned_at->format('d M Y H:i').')' : '' }}
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded border border-amber-200">
+                                            Masih Dipinjam
                                         </span>
                                     @endif
                                 </div>
@@ -263,14 +280,14 @@
                     </div>
                 </div>
 
-                @if($loan->isBorrowed() || $loan->isOverdue())
+                @if($loan->isBorrowed() || $loan->isOverdue() || $loan->status === 'partially_returned')
                 <!-- Return Processing Form Card -->
                 <div class="bg-white border border-neutral-border rounded-lg overflow-hidden shadow-xs">
                     <div class="px-6 py-4 border-b border-neutral-border bg-[#F8F8F7] flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-primary"></span>
                             <h3 class="text-xs font-bold text-neutral-dark uppercase tracking-wider">
-                                {{ $loan->isDigital() ? 'Formulir Pengembalian Naskah Digital' : 'Formulir Pengembalian Koleksi Fisik' }}
+                                {{ $loan->isDigital() ? 'Formulir Pengembalian Naskah Digital' : 'Formulir Pengembalian Koleksi Fisik (Parsial / Sekaligus)' }}
                             </h3>
                         </div>
                         <span class="text-xs font-mono font-semibold text-neutral-muted">
@@ -278,7 +295,7 @@
                         </span>
                     </div>
 
-                    <form action="{{ route('admin.loans.returnBook', $loan) }}" method="POST" class="p-6 sm:p-8 space-y-6">
+                    <form id="return-form" action="{{ route('admin.loans.returnBook', $loan) }}" method="POST" class="p-6 sm:p-8 space-y-6">
                         @csrf
 
                         @if($loan->isDigital())

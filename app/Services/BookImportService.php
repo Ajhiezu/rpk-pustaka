@@ -28,6 +28,9 @@ class BookImportService
      */
     public function processDigitalFile(UploadedFile $file, string $batchId, ?string $renderedCoverBase64 = null, ?UploadedFile $manualCover = null): array
     {
+        @set_time_limit(180);
+        @ini_set('memory_limit', '512M');
+
         $candidateId = 'cand_' . Str::random(12);
         $originalFilename = $file->getClientOriginalName();
         $extension = strtolower($file->getClientOriginalExtension());
@@ -367,7 +370,7 @@ class BookImportService
                     // Ignore text extraction errors gracefully
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $msg = strtolower($e->getMessage());
             if (str_contains($msg, 'password') || str_contains($msg, 'encrypted') || str_contains($msg, 'secured')) {
                 $result['warning'] = 'Berkas PDF terenkripsi/berpassword. Ekstraksi metadata otomatis dilewati.';
@@ -493,6 +496,9 @@ class BookImportService
      */
     public function executeFinalImport(array $candidates, array $selectedIds = []): array
     {
+        @set_time_limit(300);
+        @ini_set('memory_limit', '512M');
+
         $total = count($candidates);
         $imported = 0;
         $duplicateCount = 0;

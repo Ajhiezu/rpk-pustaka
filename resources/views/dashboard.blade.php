@@ -1,36 +1,41 @@
 <x-app-layout>
-    <x-slot name="header">
-        Ringkasan & Dasbor Pustaka
-    </x-slot>
-
     @php
         $digitalLoanDays = (int) \App\Models\Setting::get('digital_loan_duration_days', 7);
     @endphp
 
     <div class="space-y-10 animate-in fade-in duration-300">
-        <!-- Editorial Welcome Header -->
-        <div class="bg-white p-6 sm:p-8 rounded-lg border border-neutral-border shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div class="space-y-1.5">
-                <span class="text-xs uppercase tracking-[0.2em] font-semibold text-primary block">
-                    {{ Auth::user()->isAnggota() ? 'Portal Pembaca Anggota' : 'Pusat Kendali Administrator' }}
-                </span>
-                <h2 class="font-sans text-2xl sm:text-3xl font-bold text-neutral-dark tracking-tight">
-                    Selamat Datang, {{ Auth::user()->name }}
+        <!-- Editorial Welcome Header (RPK Red #C62828 Theme) - TOP MOST ELEMENT -->
+        <div class="bg-[#C62828] p-6 sm:p-8 rounded-xl shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-6 overflow-hidden relative">
+            <!-- Subtle ambient bg circle -->
+            <div class="absolute -right-12 -top-12 w-52 h-52 rounded-full bg-white/5 pointer-events-none"></div>
+            <div class="absolute -left-8 -bottom-10 w-40 h-40 rounded-full bg-black/10 pointer-events-none"></div>
+
+            <div class="space-y-2 relative z-10">
+                <div class="flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-accent fill-current shrink-0" viewBox="0 0 24 24">
+                        <path d="M12 2l2.4 7.2h7.6l-6.2 4.5 2.4 7.3-6.2-4.6-6.2 4.6 2.4-7.3-6.2-4.5h7.6z"/>
+                    </svg>
+                    <span class="text-[11px] uppercase tracking-[0.2em] font-bold text-white/80 block">
+                        {{ Auth::user()->isAnggota() ? 'Portal Pembaca Anggota' : 'Pusat Kendali Administrator' }}
+                    </span>
+                </div>
+                <h2 class="font-sans text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                    {{ Auth::user()->isAnggota() ? 'Selamat Datang, '.Auth::user()->name : 'Selamat Datang, Administrator Pustaka' }}
                 </h2>
-                <p class="text-xs sm:text-sm text-neutral-body">
+                <p class="text-xs sm:text-sm text-white/80 leading-relaxed max-w-2xl">
                     {{ Auth::user()->isAnggota() 
                         ? 'Kelola koleksi pinjaman aktif, nikmati bacaan digital PDF, telusuri buku fisik di rak, dan kontribusikan tulisan esai Anda.' 
                         : 'Pantau kelancaran sirkulasi buku fisik & digital, ketersediaan eksemplar, kepatuhan pengembalian, dan kurasi karya esai anggota.' }}
                 </p>
             </div>
 
-            <div class="shrink-0 flex items-center gap-3">
+            <div class="shrink-0 flex items-center gap-3 relative z-10">
                 @if(Auth::user()->isAnggota())
-                    <a href="{{ route('anggota.books.index') }}" class="btn-editorial text-xs py-2.5 px-5 uppercase tracking-wider font-semibold">
+                    <a href="{{ route('anggota.books.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-primary hover:bg-neutral-surface font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition-all hover:scale-[1.02]">
                         Jelajahi Katalog &rarr;
                     </a>
                 @else
-                    <a href="{{ route('admin.loans.create') }}" class="btn-editorial text-xs py-2.5 px-5 uppercase tracking-wider font-semibold">
+                    <a href="{{ route('admin.loans.create') }}" class="inline-flex items-center justify-center px-6 py-3 bg-white text-primary hover:bg-neutral-surface font-bold text-xs uppercase tracking-wider rounded-lg shadow-md transition-all hover:scale-[1.02]">
                         + Catat Pinjaman
                     </a>
                 @endif
@@ -39,103 +44,99 @@
 
         <!-- Role-based Circulation Metrics -->
         @if(Auth::user()->isAdmin())
-            <!-- Admin 6-Column Hybrid Metrics Grid -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                <div class="bg-white p-4 rounded-lg border border-neutral-border shadow-xs">
-                    <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Stok Fisik</span>
-                    <span class="font-sans text-2xl font-bold text-neutral-dark block leading-tight mt-1">
-                        {{ number_format($stats['total_physical_stock'] ?? $stats['total_books']) }}
-                    </span>
-                    <span class="text-[10px] text-neutral-muted">Eksemplar di rak</span>
-                </div>
+            <!-- Admin 6-Column Hybrid Metrics Grid (RPK Red #C62828 Theme) -->
+            <div class="bg-[#C62828] rounded-xl p-5 sm:p-6 shadow-xl">
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Stok Fisik</span>
+                        <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">
+                            {{ number_format($stats['total_physical_stock'] ?? $stats['total_books']) }}
+                        </span>
+                        <span class="text-[10px] text-white/60">Eksemplar di rak</span>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg border border-neutral-border shadow-xs">
-                    <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Buku Digital</span>
-                    <span class="font-sans text-2xl font-bold text-accent block leading-tight mt-1">
-                        {{ number_format($stats['total_digital_books'] ?? 0) }}
-                    </span>
-                    <span class="text-[10px] text-neutral-muted">Tersedia e-book</span>
-                </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Buku Digital</span>
+                        <span class="font-sans text-2xl sm:text-3xl font-extrabold text-accent block leading-none tracking-tight">
+                            {{ number_format($stats['total_digital_books'] ?? 0) }}
+                        </span>
+                        <span class="text-[10px] text-white/60">Tersedia e-book</span>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg border border-neutral-border shadow-xs">
-                    <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Anggota</span>
-                    <span class="font-sans text-2xl font-bold text-neutral-dark block leading-tight mt-1">
-                        {{ number_format($stats['total_members']) }}
-                    </span>
-                    <span class="text-[10px] text-neutral-muted">Terdaftar aktif</span>
-                </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Anggota</span>
+                        <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">
+                            {{ number_format($stats['total_members']) }}
+                        </span>
+                        <span class="text-[10px] text-white/60">Terdaftar aktif</span>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg border border-neutral-border shadow-xs">
-                    <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Pinjaman Fisik</span>
-                    <span class="font-sans text-2xl font-bold text-primary block leading-tight mt-1">
-                        {{ number_format($stats['active_physical_loans'] ?? $stats['active_loans']) }}
-                    </span>
-                    <span class="text-[10px] text-neutral-muted">Sirkulasi berjalan</span>
-                </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Pinjaman Fisik</span>
+                        <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">
+                            {{ number_format($stats['active_physical_loans'] ?? $stats['active_loans']) }}
+                        </span>
+                        <span class="text-[10px] text-white/60">Sirkulasi berjalan</span>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg border border-neutral-border shadow-xs">
-                    <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Akses Digital</span>
-                    <span class="font-sans text-2xl font-bold text-green-700 block leading-tight mt-1">
-                        {{ number_format($stats['active_digital_loans'] ?? 0) }}
-                    </span>
-                    <span class="text-[10px] text-neutral-muted">Sedang dipinjam</span>
-                </div>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Akses Digital</span>
+                        <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">
+                            {{ number_format($stats['active_digital_loans'] ?? 0) }}
+                        </span>
+                        <span class="text-[10px] text-white/60">Sedang dipinjam</span>
+                    </div>
 
-                <div class="bg-white p-4 rounded-lg border border-neutral-border shadow-xs">
-                    <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Kurasi Esai</span>
-                    <span class="font-sans text-2xl font-bold text-amber-700 block leading-tight mt-1">
-                        {{ number_format($stats['pending_essays'] ?? 0) }}
-                    </span>
-                    <span class="text-[10px] text-neutral-muted">Menunggu review</span>
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Kurasi Esai</span>
+                        <span class="font-sans text-2xl sm:text-3xl font-extrabold text-accent block leading-none tracking-tight">
+                            {{ number_format($stats['pending_essays'] ?? 0) }}
+                        </span>
+                        <span class="text-[10px] text-white/60">Menunggu review</span>
+                    </div>
                 </div>
             </div>
         @else
-            <!-- Anggota 4-Column Reading Stats -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-lg border border-neutral-border shadow-xs">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="w-10 h-10 rounded-md bg-primary-light text-primary flex items-center justify-center shrink-0 border border-red-200">
+            <!-- Anggota 4-Column Reading Stats (RPK Red #C62828 Theme) -->
+            <div class="bg-[#C62828] rounded-xl p-5 sm:p-6 shadow-xl">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Pinjaman Fisik</span>
-                            <span class="font-sans text-2xl font-bold text-neutral-dark block leading-tight">{{ $stats['my_borrowed'] ?? 0 }}</span>
+                        <div class="space-y-0.5">
+                            <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Pinjaman Fisik</span>
+                            <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">{{ $stats['my_borrowed'] ?? 0 }}</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white p-5 rounded-lg border border-neutral-border shadow-xs">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="w-10 h-10 rounded-md bg-amber-50 text-accent flex items-center justify-center shrink-0 border border-amber-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Akses Digital</span>
-                            <span class="font-sans text-2xl font-bold text-neutral-dark block leading-tight">{{ $stats['my_digital_active'] ?? 0 }}</span>
+                        <div class="space-y-0.5">
+                            <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Akses Digital</span>
+                            <span class="font-sans text-2xl sm:text-3xl font-extrabold text-accent block leading-none tracking-tight">{{ $stats['my_digital_active'] ?? 0 }}</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white p-5 rounded-lg border border-neutral-border shadow-xs">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="w-10 h-10 rounded-md bg-[#F8F8F7] text-neutral-dark flex items-center justify-center shrink-0 border border-neutral-border">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Total Riwayat</span>
-                            <span class="font-sans text-2xl font-bold text-neutral-dark block leading-tight">{{ $stats['my_loans'] ?? 0 }}</span>
+                        <div class="space-y-0.5">
+                            <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Total Riwayat</span>
+                            <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">{{ $stats['my_loans'] ?? 0 }}</span>
                         </div>
                     </div>
-                </div>
 
-                <div class="bg-white p-5 rounded-lg border border-neutral-border shadow-xs">
-                    <div class="flex items-center space-x-3.5">
-                        <div class="w-10 h-10 rounded-md bg-purple-50 text-purple-700 flex items-center justify-center shrink-0 border border-purple-200">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0 border border-white/20">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </div>
-                        <div>
-                            <span class="text-[10px] font-bold text-neutral-muted uppercase tracking-wider block">Esai Saya</span>
-                            <span class="font-sans text-2xl font-bold text-neutral-dark block leading-tight">{{ $stats['my_essays'] ?? 0 }}</span>
+                        <div class="space-y-0.5">
+                            <span class="text-[10px] font-bold text-white/70 uppercase tracking-[0.18em] block">Esai Saya</span>
+                            <span class="font-sans text-2xl sm:text-3xl font-extrabold text-white block leading-none tracking-tight">{{ $stats['my_essays'] ?? 0 }}</span>
                         </div>
                     </div>
                 </div>

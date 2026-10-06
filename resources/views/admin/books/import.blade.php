@@ -320,8 +320,8 @@
 
                     this.progressPercent = 35;
 
-                    // Step 2: Upload in small batches (3 files per request to ensure stable payload)
-                    const batchChunkSize = 3;
+                    // Step 2: Upload 1-by-1 sequentially to prevent post_max_size / timeout issues on bulk uploads
+                    const batchChunkSize = 1;
                     for (let i = 0; i < totalFiles; i += batchChunkSize) {
                         const chunk = this.fileQueue.slice(i, i + batchChunkSize);
                         const formData = new FormData();
@@ -339,7 +339,7 @@
                             }
                         });
 
-                        this.currentStepMessage = `Mengunggah & memproses berkas (${Math.min(i + batchChunkSize, totalFiles)}/${totalFiles})...`;
+                        this.currentStepMessage = `Mengunggah & memproses naskah (${Math.min(i + batchChunkSize, totalFiles)}/${totalFiles})...`;
 
                         try {
                             const response = await fetch('{{ route("admin.books.import.digital") }}', {
@@ -351,37 +351,51 @@
                                 body: formData,
                             });
 
-                            const data = await response.json();
-                            if (data.success) {
-                                chunk.forEach(item => {
-                                    item.status = 'done';
-                                    item.statusText = '✓ Selesai';
-                                    this.completedCount++;
-                                });
-                            } else {
+                            if (!response.ok) {
+                                let errLabel = `Gagal (HTTP ${response.status})`;
+                                if (response.status === 413) errLabel = 'File Terlalu Besar';
+                                if (response.status === 500) errLabel = 'Gagal Server';
                                 chunk.forEach(item => {
                                     item.status = 'error';
-                                    item.statusText = 'Gagal';
+                                    item.statusText = errLabel;
                                 });
+                            } else {
+                                const data = await response.json();
+                                if (data.success) {
+                                    chunk.forEach(item => {
+                                        item.status = 'done';
+                                        item.statusText = '✓ Selesai';
+                                        this.completedCount++;
+                                    });
+                                } else {
+                                    chunk.forEach(item => {
+                                        item.status = 'error';
+                                        item.statusText = 'Gagal Ekstraksi';
+                                    });
+                                }
                             }
                         } catch (uploadErr) {
-                            console.error('Batch upload error:', uploadErr);
+                            console.error('File upload error:', uploadErr);
                             chunk.forEach(item => {
                                 item.status = 'error';
-                                item.statusText = 'Gagal koneksi';
+                                item.statusText = 'Gagal Koneksi';
                             });
                         }
 
-                        this.progressPercent = 35 + Math.round(((i + chunk.length) / totalFiles) * 60);
+                        this.progressPercent = 35 + Math.round(((i + chunk.length) / totalFiles) * 65);
                     }
 
                     this.progressPercent = 100;
                     this.isUploading = false;
-                    this.currentStepMessage = 'Selesai! Mengarahkan ke halaman Pratinjau...';
 
-                    setTimeout(() => {
-                        window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
-                    }, 500);
+                    if (this.completedCount > 0) {
+                        this.currentStepMessage = `Selesai! ${this.completedCount} berkas berhasil diproses. Mengarahkan ke Pratinjau...`;
+                        setTimeout(() => {
+                            window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
+                        }, 800);
+                    } else {
+                        this.currentStepMessage = 'Tidak ada berkas yang berhasil diproses. Silakan periksa pesan kesalahan.';
+                    }
                 }
             };
         }
