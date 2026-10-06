@@ -48,12 +48,14 @@ class BookImportController extends Controller
             'files' => 'required|array',
             'files.*' => 'required|file|max:51200', // max 50MB per file
             'rendered_covers' => 'nullable|array',
+            'skip_pdf_parse' => 'nullable|boolean',
         ]);
 
         $batchId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->input('batch_id'));
         $uploadedFiles = $request->file('files', []);
         $renderedCoversInput = $request->input('rendered_covers', []);
         $renderedCoversFiles = $request->file('rendered_covers', []);
+        $skipPdfParse = $request->boolean('skip_pdf_parse', false);
 
         $sessionKey = 'import_batch_' . $batchId;
         $existingBatch = session($sessionKey, [
@@ -73,19 +75,21 @@ class BookImportController extends Controller
                     $manualCoverFile = null;
                 }
 
-                $candidate = $this->importService->processDigitalFile($file, $batchId, $coverBase64, $manualCoverFile);
+                $candidate = $this->importService->processDigitalFile($file, $batchId, $coverBase64, $manualCoverFile, $skipPdfParse);
                 $existingBatch['candidates'][$candidate['id']] = $candidate;
                 $newCandidates[] = $candidate;
             } catch (\Throwable $e) {
                 Log::error("Error processing digital file {$file->getClientOriginalName()}: " . $e->getMessage());
-                $newCandidates[] = [
-                    'id' => 'err_' . Str::random(8),
+                
+                $title = $this->importService->normalizeFilenameToTitle($file->getClientOriginalName());
+                $candidate = [
+                    'id' => 'cand_' . Str::random(12),
                     'original_filename' => $file->getClientOriginalName(),
                     'file_path' => null,
                     'file_hash' => null,
                     'cover_path' => null,
                     'collection_type' => 'digital',
-                    'title' => $this->importService->normalizeFilenameToTitle($file->getClientOriginalName()),
+                    'title' => $title,
                     'author' => null,
                     'category_id' => null,
                     'location_id' => null,
@@ -97,9 +101,11 @@ class BookImportController extends Controller
                     'language' => 'Indonesia',
                     'page_count' => null,
                     'description' => null,
-                    'status' => 'ERROR',
-                    'status_messages' => ['Gagal memproses berkas: ' . Str::limit($e->getMessage(), 120)],
+                    'status' => 'WARNING',
+                    'status_messages' => ['Gagal ekstraksi metadata otomatis: ' . Str::limit($e->getMessage(), 100)],
                 ];
+                $existingBatch['candidates'][$candidate['id']] = $candidate;
+                $newCandidates[] = $candidate;
             }
         }
 

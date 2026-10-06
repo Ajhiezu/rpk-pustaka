@@ -26,7 +26,7 @@ class BookImportService
     /**
      * Process an uploaded digital book file (PDF or DOCX) and generate candidate metadata.
      */
-    public function processDigitalFile(UploadedFile $file, string $batchId, ?string $renderedCoverBase64 = null, ?UploadedFile $manualCover = null): array
+    public function processDigitalFile(UploadedFile $file, string $batchId, ?string $renderedCoverBase64 = null, ?UploadedFile $manualCover = null, bool $skipPdfParse = false): array
     {
         @set_time_limit(180);
         @ini_set('memory_limit', '512M');
@@ -86,18 +86,22 @@ class BookImportService
         $statusMessages = [];
 
         if ($extension === 'pdf') {
-            $pdfExtraction = $this->extractPdfMetadata($file->getRealPath(), $originalFilename);
-            $metadata['title'] = $pdfExtraction['title'] ?: $metadata['title'];
-            $metadata['author'] = $pdfExtraction['author'];
-            $metadata['year'] = $pdfExtraction['year'];
-            $metadata['page_count'] = $pdfExtraction['page_count'];
+            if (!$skipPdfParse) {
+                $pdfExtraction = $this->extractPdfMetadata($file->getRealPath(), $originalFilename);
+                $metadata['title'] = $pdfExtraction['title'] ?: $metadata['title'];
+                $metadata['author'] = $pdfExtraction['author'];
+                $metadata['year'] = $pdfExtraction['year'];
+                $metadata['page_count'] = $pdfExtraction['page_count'];
 
-            if (!empty($pdfExtraction['error'])) {
-                $status = 'ERROR';
-                $statusMessages[] = $pdfExtraction['error'];
-            } elseif (!empty($pdfExtraction['warning'])) {
-                $status = 'WARNING';
-                $statusMessages[] = $pdfExtraction['warning'];
+                if (!empty($pdfExtraction['error'])) {
+                    $status = 'WARNING';
+                    $statusMessages[] = $pdfExtraction['error'];
+                } elseif (!empty($pdfExtraction['warning'])) {
+                    $status = 'WARNING';
+                    $statusMessages[] = $pdfExtraction['warning'];
+                }
+            } else {
+                $statusMessages[] = 'Ekstraksi PDF server dilewati (menggunakan nama berkas).';
             }
         } elseif ($extension === 'docx') {
             $docxExtraction = $this->extractDocxMetadata($file->getRealPath(), $originalFilename);
@@ -307,17 +311,10 @@ class BookImportService
         ];
 
         try {
-            $pdf = $this->pdfParser->parseFile($realPath);
+            // Fresh parser instance per call to avoid memory accumulation
+            $parser = new PdfParser();
+            $pdf = $parser->parseFile($realPath);
             $details = $pdf->getDetails();
-
-            // Page Count
-            try {
-                $pages = $pdf->getPages();
-                $result['page_count'] = count($pages);
-            } catch (\Throwable $e) {
-                // Keep page count as null if cannot be determined
-                $result['page_count'] = null;
-            }
 
             // Priority 1: PDF Document Metadata Dictionary
             if (!empty($details['Title']) && is_string($details['Title']) && strlen(trim($details['Title'])) > 2) {
@@ -344,38 +341,37 @@ class BookImportService
                 }
             }
 
-            // Priority 2: Extract text from first page if title or author is still missing
-            if (empty($result['title']) || empty($result['author'])) {
-                try {
-                    $firstPage = $pdf->getPages()[0] ?? null;
-                    if ($firstPage) {
-                        $text = $firstPage->getText();
-                        $lines = array_filter(array_map('trim', explode("\n", $text)));
-                        $cleanLines = array_values(array_filter($lines, fn($l) => strlen($l) > 2 && strlen($l) < 100));
+            // Priority 2: Safely extract page count and first page text
+            try {
+                $pages = $pdf->getPages();
+                $result['page_count'] = count($pages);
 
-                        if (empty($result['title']) && isset($cleanLines[0])) {
-                            // If first line looks like a valid title line
-                            if (!preg_match('/^(bab|chapter|halaman|page|\d+)/i', $cleanLines[0])) {
-                                $result['title'] = $cleanLines[0];
-                            }
-                        }
+                if ((empty($result['title']) || empty($result['author'])) && isset($pages[0])) {
+                    $text = $pages[0]->getText();
+                    $lines = array_filter(array_map('trim', explode("\n", $text)));
+                    $cleanLines = array_values(array_filter($lines, fn($l) => strlen($l) > 2 && strlen($l) < 100));
 
-                        if (empty($result['author']) && isset($cleanLines[1])) {
-                            if (preg_match('/(oleh|by|penulis|author)\s*[:\-]?\s*(.+)/i', $cleanLines[1], $m)) {
-                                $result['author'] = trim($m[2]);
-                            }
+                    if (empty($result['title']) && isset($cleanLines[0])) {
+                        if (!preg_match('/^(bab|chapter|halaman|page|\d+)/i', $cleanLines[0])) {
+                            $result['title'] = $cleanLines[0];
                         }
                     }
-                } catch (\Throwable $e) {
-                    // Ignore text extraction errors gracefully
+
+                    if (empty($result['author']) && isset($cleanLines[1])) {
+                        if (preg_match('/(oleh|by|penulis|author)\s*[:\-]?\s*(.+)/i', $cleanLines[1], $m)) {
+                            $result['author'] = trim($m[2]);
+                        }
+                    }
                 }
+            } catch (\Throwable $e) {
+                // Ignore page structure errors gracefully
             }
         } catch (\Throwable $e) {
             $msg = strtolower($e->getMessage());
             if (str_contains($msg, 'password') || str_contains($msg, 'encrypted') || str_contains($msg, 'secured')) {
                 $result['warning'] = 'Berkas PDF terenkripsi/berpassword. Ekstraksi metadata otomatis dilewati.';
             } else {
-                $result['error'] = 'Berkas PDF tidak valid atau rusak: ' . Str::limit($e->getMessage(), 100);
+                $result['warning'] = 'Ekstraksi PDF terbatas: ' . Str::limit($e->getMessage(), 80);
             }
         }
 
