@@ -532,7 +532,7 @@
                 <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
                         <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA" class="h-5 w-auto object-contain opacity-60">
-                        <p class="font-medium text-neutral-body">&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU &mdash; Perpustakaan Riset & Akademik.</p>
+                        <p class="font-medium text-neutral-body">&copy; {{ date('Y') }} RPK PUSTAKA IMM SAINTEKMU<span class="hidden sm:inline mx-1.5">·</span><br class="sm:hidden"><span class="sm:inline">Perpustakaan Riset & Akademik.</span></p>
                     </div>
                     <div class="flex items-center gap-2">
                         <svg class="w-2.5 h-2.5 text-accent fill-current" viewBox="0 0 24 24">

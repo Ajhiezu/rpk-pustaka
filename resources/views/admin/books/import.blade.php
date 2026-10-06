@@ -374,6 +374,122 @@
                     }
                 },
 
+                async processItem(item) {
+                    if (item.status === 'done') {
+                        this.completedCount++;
+                        return true;
+                    }
+
+                    // 1. Render cover with 2-second timeout guard
+                    if (item.name.toLowerCase().endsWith('.pdf') && !item.coverBlob && !item.renderedCover) {
+                        item.status = 'rendering';
+                        item.statusText = 'Merender sampul...';
+                        try {
+                            if (window.renderPdfFirstPage) {
+                                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ success: false }), 2000));
+                                const renderPromise = window.renderPdfFirstPage(item.file, 12000);
+                                const renderRes = await Promise.race([renderPromise, timeoutPromise]);
+
+                                if (renderRes && renderRes.success && (renderRes.blob || renderRes.imageBase64)) {
+                                    item.coverBlob = renderRes.blob;
+                                    item.renderedCover = renderRes.imageBase64;
+                                }
+                            }
+                        } catch (err) {
+                            console.warn('Cover render timeout/skipped:', err);
+                        }
+                    }
+
+                    // 2. Upload item
+                    return await this.uploadSingleItem(item, true);
+                },
+
+                async uploadSingleItem(item, autoRetry = true) {
+                    const formData = new FormData();
+                    formData.append('batch_id', this.batchId);
+                    formData.append('_token', '{{ csrf_token() }}');
+                    formData.append('files[0]', item.file);
+
+                    if (item.coverBlob) {
+                        formData.append('rendered_covers[0]', item.coverBlob, 'cover_0.webp');
+                    } else if (item.renderedCover) {
+                        formData.append('rendered_covers[0]', item.renderedCover);
+                    }
+
+                    if (item.skipPdfParse) {
+                        formData.append('skip_pdf_parse', '1');
+                    }
+
+                    item.status = 'uploading';
+                    item.statusText = item.skipPdfParse ? 'Mengunggah (Mode Ringan)...' : 'Mengunggah...';
+
+                    try {
+                        const response = await fetch('{{ route("admin.books.import.digital") }}', {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                            },
+                            body: formData,
+                        });
+
+                        if (!response.ok) {
+                            if (autoRetry && !item.skipPdfParse && (response.status === 503 || response.status === 504 || response.status === 500)) {
+                                item.skipPdfParse = true;
+                                item.statusText = 'Mencoba Ulang (Mode Ringan)...';
+                                return await this.uploadSingleItem(item, false);
+                            }
+
+                            let errLabel = `Gagal (HTTP ${response.status})`;
+                            if (response.status === 413) errLabel = 'File Terlalu Besar';
+                            if (response.status === 500) errLabel = 'Gagal Server';
+                            if (response.status === 503) errLabel = 'Gagal (HTTP 503)';
+                            item.status = 'error';
+                            item.statusText = errLabel;
+                            return false;
+                        }
+
+                        const data = await response.json();
+                        if (data.success) {
+                            item.status = 'done';
+                            item.statusText = '✓ Selesai';
+                            this.completedCount++;
+                            return true;
+                        } else {
+                            item.status = 'error';
+                            item.statusText = 'Gagal Ekstraksi';
+                            return false;
+                        }
+                    } catch (uploadErr) {
+                        console.error('File upload error:', uploadErr);
+                        if (autoRetry && !item.skipPdfParse) {
+                            item.skipPdfParse = true;
+                            item.statusText = 'Mencoba Ulang (Mode Ringan)...';
+                            return await this.uploadSingleItem(item, false);
+                        }
+                        item.status = 'error';
+                        item.statusText = 'Gagal Koneksi';
+                        return false;
+                    }
+                },
+
+                async retrySingleItem(idx) {
+                    const item = this.fileQueue[idx];
+                    if (!item || this.isUploading) return;
+
+                    this.isUploading = true;
+                    item.skipPdfParse = true; // Always use lightweight mode on manual retry
+                    const success = await this.uploadSingleItem(item, false);
+                    this.isUploading = false;
+
+                    if (success && this.completedCount > 0) {
+                        this.currentStepMessage = 'Berkas berhasil diproses ulang. Membuka Pratinjau...';
+                        setTimeout(() => {
+                            window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
+                        }, 600);
+                    }
+                },
+
                 async startUploadProcess() {
                     if (this.fileQueue.length === 0 || this.isUploading) return;
                     this.isUploading = true;
@@ -382,60 +498,35 @@
                     const totalFiles = this.fileQueue.length;
                     this.progressPercent = 5;
 
-                    // Step 1: Render PDF covers with PDF.js
-                    for (let idx = 0; idx < totalFiles; idx++) {
-                        const item = this.fileQueue[idx];
-                        if (item.status === 'done') continue; // Skip already completed items
+                    // Concurrency Worker Pool (3 parallel workers)
+                    const CONCURRENCY = 3;
+                    let nextIndex = 0;
+                    let processedSoFar = 0;
 
-                        if (item.name.toLowerCase().endsWith('.pdf')) {
-                            item.status = 'rendering';
-                            item.statusText = `Merender sampul (${idx + 1}/${totalFiles})...`;
-                            this.currentStepMessage = `Merender sampul hal 1: ${item.name}...`;
-                            try {
-                                if (window.renderPdfFirstPage) {
-                                    const renderRes = await window.renderPdfFirstPage(item.file, 12000);
-                                    if (renderRes.success && (renderRes.blob || renderRes.imageBase64)) {
-                                        item.coverBlob = renderRes.blob;
-                                        item.renderedCover = renderRes.imageBase64;
-                                        item.statusText = 'Sampul hal 1 OK';
-                                    } else {
-                                        item.statusText = 'Sampul manual';
-                                    }
-                                }
-                            } catch (err) {
-                                console.warn('Render skipped:', err);
-                                item.statusText = 'Sampul manual';
-                            }
-                        } else {
-                            item.statusText = 'DOCX siap';
+                    const worker = async () => {
+                        while (nextIndex < totalFiles) {
+                            const idx = nextIndex++;
+                            const item = this.fileQueue[idx];
+                            
+                            this.currentStepMessage = `Memproses (${processedSoFar + 1}/${totalFiles}): ${item.name}...`;
+                            await this.processItem(item);
+
+                            processedSoFar++;
+                            this.progressPercent = Math.min(99, Math.round((processedSoFar / totalFiles) * 100));
                         }
-                        this.progressPercent = 5 + Math.round(((idx + 1) / totalFiles) * 30);
-                    }
+                    };
 
-                    this.progressPercent = 35;
-
-                    // Step 2: Upload 1-by-1 sequentially with auto-retry fallback
-                    for (let i = 0; i < totalFiles; i++) {
-                        const item = this.fileQueue[i];
-                        if (item.status === 'done') {
-                            this.completedCount++;
-                            continue;
-                        }
-
-                        this.currentStepMessage = `Mengunggah & memproses naskah (${i + 1}/${totalFiles})...`;
-                        await this.uploadSingleItem(item, true);
-
-                        this.progressPercent = 35 + Math.round(((i + 1) / totalFiles) * 65);
-                    }
+                    const workers = Array(Math.min(CONCURRENCY, totalFiles)).fill(0).map(() => worker());
+                    await Promise.all(workers);
 
                     this.progressPercent = 100;
                     this.isUploading = false;
 
                     if (this.completedCount > 0) {
-                        this.currentStepMessage = `Selesai! ${this.completedCount} berkas berhasil diproses. Mengarahkan ke Pratinjau...`;
+                        this.currentStepMessage = `Selesai! ${this.completedCount} dari ${totalFiles} berkas berhasil diproses. Mengarahkan ke Pratinjau...`;
                         setTimeout(() => {
                             window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
-                        }, 800);
+                        }, 600);
                     } else {
                         this.currentStepMessage = 'Tidak ada berkas yang berhasil diproses. Silakan periksa atau klik Coba Lagi.';
                     }

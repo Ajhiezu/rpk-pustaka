@@ -42,12 +42,19 @@
 }
 
 @layer base {
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
+
     html {
         font-family: var(--font-sans);
         background-color: var(--color-bg-main);
         color: var(--color-neutral-dark);
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        overflow-x: hidden;
     }
     
     body {
@@ -56,11 +63,45 @@
         color: var(--color-neutral-dark);
         line-height: 1.6;
         font-weight: 400;
+        overflow-x: hidden;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 
     h1, h2, h3, h4, h5, h6, .font-editorial {
         font-family: var(--font-sans);
         letter-spacing: -0.02em;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
+    img,
+    svg,
+    video,
+    canvas,
+    audio,
+    iframe,
+    embed,
+    object {
+        display: block;
+        max-width: 100%;
+        height: auto;
+    }
+
+    input,
+    button,
+    textarea,
+    select {
+        font: inherit;
+        max-width: 100%;
+    }
+
+    p,
+    li,
+    blockquote,
+    span {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
 }
 

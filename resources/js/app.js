@@ -127,5 +127,31 @@ window.renderPdfFirstPage = async function(file, timeoutMs = 12000) {
     return Promise.race([renderPromise, timeoutPromise]);
 };
 
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (e) {
+        const btn = e.target.closest('[data-password-toggle]');
+        if (!btn) return;
+
+        e.preventDefault();
+        const targetId = btn.getAttribute('data-target');
+        if (!targetId) return;
+
+        const input = document.getElementById(targetId);
+        if (!input) return;
+
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+
+        const eyeIcon = btn.querySelector('.password-toggle-icon-eye');
+        const eyeOffIcon = btn.querySelector('.password-toggle-icon-eye-off');
+        if (eyeIcon && eyeOffIcon) {
+            eyeIcon.classList.toggle('hidden', !isHidden);
+            eyeOffIcon.classList.toggle('hidden', isHidden);
+        }
+
+        btn.setAttribute('aria-label', isHidden ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+    });
+});
+
 window.Alpine = Alpine;
 Alpine.start();
