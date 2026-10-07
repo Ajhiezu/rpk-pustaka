@@ -35,6 +35,21 @@ class Book extends Model
         'pdf_path',
     ];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Book $book) {
+            // Nullify ISBN when soft deleting so it won't block creating new active books with the same ISBN
+            if (!empty($book->isbn)) {
+                $book->isbn = null;
+            }
+            // Suffix book_code when soft deleting so it won't block reusing or manually entering the book_code
+            if (!empty($book->book_code) && !str_contains($book->book_code, '_DEL_')) {
+                $book->book_code = $book->book_code . '_DEL_' . $book->id;
+            }
+            $book->saveQuietly();
+        });
+    }
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

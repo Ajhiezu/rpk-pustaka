@@ -10,6 +10,7 @@ use App\Models\Location;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class BookController extends Controller
 {
@@ -70,14 +71,14 @@ class BookController extends Controller
 
         // Base validation rules
         $rules = [
-            'book_code' => 'nullable|string|max:50|unique:books,book_code',
+            'book_code' => ['nullable', 'string', 'max:50', Rule::unique('books', 'book_code')->whereNull('deleted_at')],
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'collection_type' => 'required|in:fisik,digital,fisik_digital',
             'publisher' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1800|max:' . (date('Y') + 1),
-            'isbn' => 'nullable|string|max:50|unique:books,isbn',
+            'isbn' => ['nullable', 'string', 'max:50', Rule::unique('books', 'isbn')->whereNull('deleted_at')],
             'language' => 'nullable|string|max:50',
             'page_count' => 'nullable|integer|min:1',
             'price' => 'nullable|numeric|min:0',
@@ -130,6 +131,17 @@ class BookController extends Controller
             // Guarantee unique book_code
             if (empty($validated['book_code'])) {
                 $validated['book_code'] = $this->generateUniqueBookCode();
+            } else {
+                // Free up any soft-deleted book that has the exact same book_code
+                Book::withTrashed()->where('book_code', $validated['book_code'])->whereNotNull('deleted_at')->get()->each(function ($delBook) {
+                    $delBook->book_code = $delBook->book_code . '_DEL_' . $delBook->id;
+                    $delBook->saveQuietly();
+                });
+            }
+
+            // If a soft-deleted book has the exact same ISBN, nullify its ISBN so DB unique constraint won't fail
+            if (!empty($validated['isbn'])) {
+                Book::withTrashed()->where('isbn', $validated['isbn'])->whereNotNull('deleted_at')->update(['isbn' => null]);
             }
 
             $validated['slug'] = Str::slug($request->title) . '-' . uniqid();
@@ -245,14 +257,14 @@ class BookController extends Controller
         }
 
         $rules = [
-            'book_code' => 'required|string|max:50|unique:books,book_code,' . $book->id,
+            'book_code' => ['required', 'string', 'max:50', Rule::unique('books', 'book_code')->ignore($book->id)->whereNull('deleted_at')],
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'collection_type' => 'required|in:fisik,digital,fisik_digital',
             'publisher' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1800|max:' . (date('Y') + 1),
-            'isbn' => 'nullable|string|max:50|unique:books,isbn,' . $book->id,
+            'isbn' => ['nullable', 'string', 'max:50', Rule::unique('books', 'isbn')->ignore($book->id)->whereNull('deleted_at')],
             'language' => 'nullable|string|max:50',
             'page_count' => 'nullable|integer|min:1',
             'price' => 'nullable|numeric|min:0',

@@ -553,11 +553,11 @@ class BookImportService
      */
     public function checkDuplicate(?string $title, ?string $author, ?string $isbn): array
     {
-        // Check 1: ISBN Match
+        // Check 1: ISBN Match (only active books)
         if (!empty($isbn)) {
             $cleanIsbn = preg_replace('/[^0-9Xx]/', '', $isbn);
             if (!empty($cleanIsbn)) {
-                $existingByIsbn = Book::withTrashed()->where(function($q) use ($isbn, $cleanIsbn) {
+                $existingByIsbn = Book::where(function($q) use ($isbn, $cleanIsbn) {
                     $q->where('isbn', $isbn)->orWhere('isbn', $cleanIsbn);
                 })->first();
                 if ($existingByIsbn) {
@@ -569,10 +569,10 @@ class BookImportService
             }
         }
 
-        // Check 2: Exact Title Match
+        // Check 2: Exact Title Match (only active books)
         if (!empty($title)) {
             $cleanTitle = trim(strtolower($title));
-            $existingTitle = Book::withTrashed()->whereRaw('LOWER(TRIM(title)) = ?', [$cleanTitle])->first();
+            $existingTitle = Book::whereRaw('LOWER(TRIM(title)) = ?', [$cleanTitle])->first();
             if ($existingTitle) {
                 return [
                     'is_duplicate' => true,
@@ -708,6 +708,11 @@ class BookImportService
                 $cleanDescription = !empty($cand['description']) && trim($cand['description']) !== '' ? trim($cand['description']) : null;
                 $cleanYear = !empty($cand['year']) ? (int)$cand['year'] : null;
                 $cleanPageCount = !empty($cand['page_count']) ? (int)$cand['page_count'] : null;
+
+                // Clear any soft-deleted books with matching ISBN so MySQL unique constraint won't fail
+                if (!empty($cleanIsbn)) {
+                    Book::withTrashed()->where('isbn', $cleanIsbn)->whereNotNull('deleted_at')->update(['isbn' => null]);
+                }
 
                 $book = Book::create([
                     'book_code' => $bookCode,

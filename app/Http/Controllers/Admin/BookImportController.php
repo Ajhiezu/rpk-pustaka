@@ -237,12 +237,15 @@ class BookImportController extends Controller
     /**
      * Execute final batch import into database.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $batchId = preg_replace('/[^a-zA-Z0-9_\-]/', '', $request->input('batch_id'));
         $candidates = $this->importService->getBatchCandidates($batchId);
 
         if (empty($candidates)) {
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json(['success' => false, 'message' => 'Sesi import telah kedaluwarsa atau tidak ditemukan.'], 400);
+            }
             return redirect()->route('admin.books.import.create')->with('error', 'Sesi import telah kedaluwarsa atau tidak ditemukan.');
         }
 
@@ -268,15 +271,36 @@ class BookImportController extends Controller
         }
 
         $selectedIds = $request->input('selected_ids', array_keys($mergedCandidates));
+        if (is_string($selectedIds)) {
+            $selectedIds = json_decode($selectedIds, true) ?? array_keys($mergedCandidates);
+        }
+
+        $isChunk = $request->boolean('is_chunk', false) || $request->wantsJson() || $request->ajax();
+        $isLastChunk = $request->boolean('is_last_chunk', true);
 
         // Execute import
         $importResult = $this->importService->executeFinalImport($mergedCandidates, $selectedIds);
 
-        // Clean up completed / removed batch temporary files
-        $this->importService->cleanupBatch($batchId);
-        session()->forget('import_batch_' . $batchId);
+        // Clean up completed batch temporary files when last chunk finishes
+        if ($isLastChunk) {
+            $this->importService->cleanupBatch($batchId);
+            session()->forget('import_batch_' . $batchId);
+        }
 
-        // Flash detailed summary message
+        // Return JSON for AJAX chunk requests
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'imported' => $importResult['imported'],
+                'duplicate' => $importResult['duplicate'],
+                'failed' => $importResult['failed'],
+                'results' => $importResult['results'],
+                'is_last_chunk' => $isLastChunk,
+                'redirect_url' => route('admin.books.index'),
+            ]);
+        }
+
+        // Flash detailed summary message for standard form submit
         $successCount = $importResult['imported'];
         $dupCount = $importResult['duplicate'];
         $failCount = $importResult['failed'];

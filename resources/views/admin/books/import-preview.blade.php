@@ -9,7 +9,7 @@
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Tambah Berkas
             </a>
-            <button type="button" @click="document.getElementById('importForm').submit()" class="btn-editorial text-xs py-2 px-4 font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 cursor-pointer">
+            <button type="button" @click="startBatchImport()" class="btn-editorial text-xs py-2 px-4 font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 Import Semua Naskah
             </button>
@@ -48,7 +48,7 @@
                     <a href="{{ route('admin.books.import.create') }}" class="btn-editorial-outline text-xs py-2 px-4 text-center w-1/2 sm:w-auto">
                         Batalkan Sesi
                     </a>
-                    <button type="button" @click="document.getElementById('importForm').submit()" class="btn-editorial text-xs py-2 px-5 font-bold uppercase tracking-wider shadow-xs w-1/2 sm:w-auto cursor-pointer flex items-center justify-center gap-1.5">
+                    <button type="button" @click="startBatchImport()" class="btn-editorial text-xs py-2 px-5 font-bold uppercase tracking-wider shadow-xs w-1/2 sm:w-auto cursor-pointer flex items-center justify-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                         Import Semua Naskah
                     </button>
@@ -57,7 +57,7 @@
         </div>
 
         <!-- Form Submission for Final Import -->
-        <form id="importForm" action="{{ route('admin.books.import.store') }}" method="POST">
+        <form id="importForm" action="{{ route('admin.books.import.store') }}" method="POST" @submit.prevent="startBatchImport()">
             @csrf
             <input type="hidden" name="batch_id" value="{{ $batchId }}">
 
@@ -223,7 +223,9 @@
                                         <label class="block font-sans text-xs font-bold uppercase tracking-wider text-neutral-dark mb-1">
                                             Nomor ISBN
                                         </label>
-                                        <input type="text" name="candidates[{{ $id }}][isbn]" value="{{ $cand['isbn'] }}" placeholder="Nomor ISBN..."
+                                        <input type="text" name="candidates[{{ $id }}][isbn]" value="{{ $cand['isbn'] }}" placeholder="Contoh: 9786020298032"
+                                               inputmode="numeric" pattern="[0-9]*" maxlength="13"
+                                               oninput="this.value=this.value.replace(/[^0-9]/g,'')"
                                                class="w-full px-3 py-2 bg-white border border-neutral-border rounded-md text-xs text-neutral-dark font-mono focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                                     </div>
                                 </div>
@@ -299,6 +301,46 @@
                 </div>
             </div>
         </form>
+
+        <!-- Chunked Import Progress Modal Overlay -->
+        <div x-show="isImporting" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4" style="display: none;">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-neutral-border space-y-5 text-center">
+                <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto animate-pulse">
+                    <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-extrabold text-neutral-dark">Memproses Import Massal</h3>
+                    <p class="text-xs text-neutral-body mt-1" x-text="statusText"></p>
+                </div>
+                <!-- Progress Bar -->
+                <div class="space-y-2">
+                    <div class="w-full bg-neutral-surface rounded-full h-3 overflow-hidden border border-neutral-border">
+                        <div class="bg-primary h-full transition-all duration-300 rounded-full" :style="`width: ${importProgress}%`"></div>
+                    </div>
+                    <div class="flex justify-between text-xs font-semibold text-neutral-muted">
+                        <span x-text="`${processedCount} / ${totalCount} Naskah`"></span>
+                        <span x-text="`${importProgress}%`"></span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-2 pt-2 text-center text-xs">
+                    <div class="p-2 bg-[#EDF7ED] rounded border border-[#C8E6C9]">
+                        <span class="block text-[10px] uppercase font-bold text-success">Berhasil</span>
+                        <span class="font-extrabold text-success text-sm" x-text="importedSuccess"></span>
+                    </div>
+                    <div class="p-2 bg-[#F3E8FF] rounded border border-[#E9D5FF]">
+                        <span class="block text-[10px] uppercase font-bold text-[#7E22CE]">Duplikat</span>
+                        <span class="font-extrabold text-[#7E22CE] text-sm" x-text="importedDuplicate"></span>
+                    </div>
+                    <div class="p-2 bg-[#FDEDED] rounded border border-[#FFCDD2]">
+                        <span class="block text-[10px] uppercase font-bold text-danger">Gagal</span>
+                        <span class="font-extrabold text-danger text-sm" x-text="importedFailed"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     @push('scripts')
@@ -310,6 +352,87 @@
                 validCount: {{ count(array_filter($candidates, fn($c) => $c['status'] === 'VALID')) }},
                 warningCount: {{ count(array_filter($candidates, fn($c) => in_array($c['status'], ['WARNING', 'ERROR']))) }},
                 duplicateCount: {{ count(array_filter($candidates, fn($c) => $c['status'] === 'DUPLICATE')) }},
+
+                isImporting: false,
+                importProgress: 0,
+                processedCount: 0,
+                importedSuccess: 0,
+                importedDuplicate: 0,
+                importedFailed: 0,
+                statusText: 'Mempersiapkan import massal...',
+
+                async startBatchImport() {
+                    if (this.isImporting) return;
+                    
+                    const form = document.getElementById('importForm');
+                    const candidateIds = @json(array_values(array_keys($candidates)));
+                    const total = candidateIds.length;
+                    const chunkSize = 5;
+
+                    if (total === 0) {
+                        alert('Tidak ada kandidat untuk diimport.');
+                        return;
+                    }
+
+                    this.isImporting = true;
+                    this.importProgress = 0;
+                    this.processedCount = 0;
+                    this.importedSuccess = 0;
+                    this.importedDuplicate = 0;
+                    this.importedFailed = 0;
+
+                    for (let i = 0; i < total; i += chunkSize) {
+                        const chunkIds = candidateIds.slice(i, i + chunkSize);
+                        const isLastChunk = (i + chunkSize) >= total;
+                        
+                        this.statusText = `Mengimport naskah ${i + 1} s.d. ${Math.min(i + chunkSize, total)} dari ${total}...`;
+
+                        const reqData = new FormData(form);
+                        reqData.delete('selected_ids[]');
+                        reqData.delete('selected_ids');
+                        chunkIds.forEach(id => reqData.append('selected_ids[]', id));
+                        reqData.append('is_chunk', '1');
+                        reqData.append('is_last_chunk', isLastChunk ? '1' : '0');
+
+                        try {
+                            const res = await fetch(form.action, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                },
+                                body: reqData
+                            });
+
+                            const data = await res.json();
+                            if (data.success) {
+                                this.importedSuccess += (data.imported || 0);
+                                this.importedDuplicate += (data.duplicate || 0);
+                                this.importedFailed += (data.failed || 0);
+                            } else {
+                                this.importedFailed += chunkIds.length;
+                            }
+                        } catch (err) {
+                            console.error('Chunk import error:', err);
+                            this.importedFailed += chunkIds.length;
+                        }
+
+                        this.processedCount = Math.min(i + chunkSize, total);
+                        this.importProgress = Math.round((this.processedCount / total) * 100);
+                    }
+
+                    this.statusText = 'Proses import selesai!';
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Import Massal Selesai!',
+                        html: `<p class="text-xs text-neutral-body leading-relaxed">Proses import selesai! Total: <strong>${total}</strong> naskah<br>• Berhasil: <strong>${this.importedSuccess}</strong><br>• Duplikat dilewati: <strong>${this.importedDuplicate}</strong><br>• Gagal: <strong>${this.importedFailed}</strong></p>`,
+                        confirmButtonColor: '#C62828',
+                        background: '#FFFFFF',
+                    }).then(() => {
+                        window.location.href = '{{ route("admin.books.index") }}';
+                    });
+                },
 
                 async uploadManualCover(candidateId, event) {
                     const file = event.target.files[0];

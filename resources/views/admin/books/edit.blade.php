@@ -136,9 +136,14 @@
                                 label="Nomor ISBN (Opsional)" 
                                 name="isbn" 
                                 id="isbn" 
+                                type="text"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                maxlength="13"
                                 :value="old('isbn', $book->isbn)" 
-                                placeholder="Kosongkan jika tidak ada ISBN"
+                                placeholder="Contoh: 9786020298032"
                                 :error="$errors->first('isbn')"
+                                oninput="this.value=this.value.replace(/[^0-9]/g,'')"
                             />
                         </div>
 
