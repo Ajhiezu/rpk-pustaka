@@ -139,17 +139,18 @@ document.addEventListener('DOMContentLoaded', function () {
         const input = document.getElementById(targetId);
         if (!input) return;
 
-        const isHidden = input.type === 'password';
-        input.type = isHidden ? 'text' : 'password';
+        const isCurrentlyPassword = input.type === 'password';
+        input.type = isCurrentlyPassword ? 'text' : 'password';
 
         const eyeIcon = btn.querySelector('.password-toggle-icon-eye');
         const eyeOffIcon = btn.querySelector('.password-toggle-icon-eye-off');
         if (eyeIcon && eyeOffIcon) {
-            eyeIcon.classList.toggle('hidden', !isHidden);
-            eyeOffIcon.classList.toggle('hidden', isHidden);
+            const isTextVisible = input.type === 'text';
+            eyeIcon.classList.toggle('hidden', !isTextVisible);
+            eyeOffIcon.classList.toggle('hidden', isTextVisible);
         }
 
-        btn.setAttribute('aria-label', isHidden ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
+        btn.setAttribute('aria-label', input.type === 'text' ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi');
     });
 });
 
