@@ -557,7 +557,9 @@ class BookImportService
         if (!empty($isbn)) {
             $cleanIsbn = preg_replace('/[^0-9Xx]/', '', $isbn);
             if (!empty($cleanIsbn)) {
-                $existingByIsbn = Book::where('isbn', $isbn)->orWhere('isbn', $cleanIsbn)->first();
+                $existingByIsbn = Book::withTrashed()->where(function($q) use ($isbn, $cleanIsbn) {
+                    $q->where('isbn', $isbn)->orWhere('isbn', $cleanIsbn);
+                })->first();
                 if ($existingByIsbn) {
                     return [
                         'is_duplicate' => true,
@@ -570,7 +572,7 @@ class BookImportService
         // Check 2: Exact Title Match
         if (!empty($title)) {
             $cleanTitle = trim(strtolower($title));
-            $existingTitle = Book::whereRaw('LOWER(TRIM(title)) = ?', [$cleanTitle])->first();
+            $existingTitle = Book::withTrashed()->whereRaw('LOWER(TRIM(title)) = ?', [$cleanTitle])->first();
             if ($existingTitle) {
                 return [
                     'is_duplicate' => true,
@@ -776,12 +778,14 @@ class BookImportService
      */
     public function generateUniqueBookCode(): string
     {
-        $lastId = Book::max('id') ?? 0;
+        $lastId = Book::withTrashed()->max('id') ?? 0;
         $number = $lastId + 1;
         do {
             $code = 'RPK-B' . str_pad($number, 4, '0', STR_PAD_LEFT);
-            $exists = in_array($code, $this->allocatedCodes) || Book::where('book_code', $code)->exists();
-            $number++;
+            $exists = in_array($code, $this->allocatedCodes) || Book::withTrashed()->where('book_code', $code)->exists();
+            if ($exists) {
+                $number++;
+            }
         } while ($exists);
 
         $this->allocatedCodes[] = $code;

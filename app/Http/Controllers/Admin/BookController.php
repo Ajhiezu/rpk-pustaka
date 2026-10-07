@@ -448,12 +448,14 @@ class BookController extends Controller
 
     protected function generateUniqueBookCode(): string
     {
-        $lastId = Book::max('id') ?? 0;
+        $lastId = Book::withTrashed()->max('id') ?? 0;
         $number = $lastId + 1;
         do {
             $code = 'RPK-B' . str_pad($number, 4, '0', STR_PAD_LEFT);
-            $exists = Book::where('book_code', $code)->exists();
-            $number++;
+            $exists = Book::withTrashed()->where('book_code', $code)->exists();
+            if ($exists) {
+                $number++;
+            }
         } while ($exists);
         return $code;
     }
