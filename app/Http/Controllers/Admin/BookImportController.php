@@ -321,4 +321,67 @@ class BookImportController extends Controller
             return redirect()->route('admin.books.import.create')->with('error', $summaryMsg);
         }
     }
+
+    /**
+     * Download CSV template for physical books import.
+     */
+    public function downloadTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $headers = [
+            'Content-Type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="template_import_buku_fisik.csv"',
+        ];
+
+        return response()->stream(function () {
+            $handle = fopen('php://output', 'w');
+            // UTF-8 BOM for Microsoft Excel compatibility
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // Header row
+            fputcsv($handle, [
+                'judul',
+                'penulis',
+                'kategori',
+                'lokasi',
+                'stok',
+                'penerbit',
+                'tahun',
+                'isbn',
+                'bahasa',
+                'halaman',
+                'deskripsi'
+            ]);
+
+            // Sample rows with realistic data
+            fputcsv($handle, [
+                'Pemrograman Web Modern dengan Laravel & Vue',
+                'Budi Santoso',
+                'Teknologi',
+                'Rak A1',
+                '5',
+                'Informatika Press',
+                '2024',
+                '9786020298032',
+                'Indonesia',
+                '320',
+                'Buku panduan lengkap penguraian dan pengembangan aplikasi web modern.'
+            ]);
+
+            fputcsv($handle, [
+                'Dasar-Dasar Kecerdasan Buatan & Machine Learning',
+                'Dr. Irwan Wijaya',
+                'Sains',
+                'Rak B2',
+                '3',
+                'Sains Media',
+                '2023',
+                '9789792098765',
+                'Indonesia',
+                '280',
+                'Pengenalan konsep dasar kecerdasan buatan dan algoritma pembelajarannya.'
+            ]);
+
+            fclose($handle);
+        }, 200, $headers);
+    }
 }

@@ -60,6 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
         // Master Data & Import
         Route::get('books/import', [AdminBookImportController::class, 'create'])->name('books.import.create');
+        Route::get('books/import/template', [AdminBookImportController::class, 'downloadTemplate'])->name('books.import.template');
         Route::post('books/import/digital', [AdminBookImportController::class, 'uploadDigital'])->name('books.import.digital');
         Route::post('books/import/spreadsheet', [AdminBookImportController::class, 'uploadSpreadsheet'])->name('books.import.spreadsheet');
         Route::get('books/import/preview', [AdminBookImportController::class, 'preview'])->name('books.import.preview');
