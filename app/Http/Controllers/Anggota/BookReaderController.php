@@ -32,16 +32,22 @@ class BookReaderController extends Controller
             // Admin can preview digital books anytime
             $activeLoan = null;
         } else {
-            $activeLoan = $user ? $this->getActiveDigitalLoan($user->id, $book->id) : null;
+            // Fetch loan regardless of due_date so we can show the correct error
+            $activeLoan = $user ? $this->getDigitalLoan($user->id, $book->id) : null;
 
             if (!$activeLoan) {
                 return redirect()->route('anggota.books.show', $book)
-                    ->with('error', 'Anda belum memiliki peminjaman digital aktif untuk buku ini. Silakan ajukan pinjaman digital terlebih dahulu.');
+                    ->with('error', 'Anda belum memiliki peminjaman digital untuk buku ini. Silakan ajukan pinjaman digital terlebih dahulu.');
             }
 
             if ($activeLoan->isExpired()) {
+                return redirect()->route('anggota.loans.index')
+                    ->with('error', 'Masa peminjaman digital buku "' . $book->title . '" telah berakhir pada ' . $activeLoan->due_date->format('d/m/Y') . '. Ajukan peminjaman baru untuk membaca kembali.');
+            }
+
+            if ($activeLoan->status === 'returned') {
                 return redirect()->route('anggota.books.show', $book)
-                    ->with('error', 'Masa peminjaman digital buku ini telah berakhir.');
+                    ->with('error', 'Peminjaman digital buku ini sudah dikembalikan.');
             }
         }
 
@@ -68,20 +74,20 @@ class BookReaderController extends Controller
             abort(404, 'File digital tidak ditemukan.');
         }
 
-        // 2. Strict Access Control
+        // 2. Strict Access Control — double-check at stream level
         if (!$user->isAdmin()) {
-            $activeLoan = $this->getActiveDigitalLoan($user->id, $book->id);
+            $activeLoan = $this->getDigitalLoan($user->id, $book->id);
 
             if (!$activeLoan) {
-                abort(403, 'Akses ditolak: Anda belum memiliki peminjaman digital aktif.');
+                abort(403, 'Akses ditolak: Anda belum memiliki peminjaman digital untuk buku ini.');
             }
 
             if ($activeLoan->isExpired()) {
-                abort(403, 'Akses ditolak: Masa peminjaman digital telah berakhir.');
+                abort(403, 'Akses ditolak: Masa peminjaman digital buku ini telah berakhir. Silakan ajukan peminjaman baru.');
             }
 
             if ($activeLoan->status === 'returned') {
-                abort(403, 'Akses ditolak: Peminjaman telah selesai dikembalikan.');
+                abort(403, 'Akses ditolak: Peminjaman digital telah selesai dikembalikan.');
             }
         }
 
@@ -108,14 +114,14 @@ class BookReaderController extends Controller
     }
 
     /**
-     * Find active digital loan for a specific user and book.
+     * Find any digital loan (active OR expired) for a specific user and book.
+     * The caller is responsible for checking isExpired() / status.
      */
-    protected function getActiveDigitalLoan(int $userId, int $bookId): ?Loan
+    protected function getDigitalLoan(int $userId, int $bookId): ?Loan
     {
         return Loan::where('user_id', $userId)
             ->where('loan_type', 'digital')
-            ->where('status', 'borrowed')
-            ->whereDate('due_date', '>=', now()->toDateString())
+            ->whereIn('status', ['borrowed', 'overdue'])
             ->whereHas('loanDetails', function ($q) use ($bookId) {
                 $q->where('book_id', $bookId);
             })
