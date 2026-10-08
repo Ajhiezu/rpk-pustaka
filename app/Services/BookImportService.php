@@ -589,6 +589,7 @@ class BookImportService
 
     /**
      * Execute final batch import with per-candidate transaction and partial success handling.
+     * Optimized: pre-loads all existing titles/ISBNs/codes into memory to avoid N+1 DB queries.
      */
     public function executeFinalImport(array $candidates, array $selectedIds = []): array
     {
@@ -605,6 +606,36 @@ class BookImportService
             'duplicate' => [],
             'failed' => [],
         ];
+
+        // ── Pre-load existing data to avoid N+1 queries ──────────────────────
+        // Load all existing titles (lowercase) into a Set for O(1) lookup
+        $existingTitles = Book::whereNull('deleted_at')
+            ->pluck('title')
+            ->map(fn($t) => strtolower(trim($t)))
+            ->flip()
+            ->all();
+
+        // Load all existing ISBNs into a Set for O(1) lookup
+        $existingIsbns = Book::whereNull('deleted_at')
+            ->whereNotNull('isbn')
+            ->pluck('isbn')
+            ->flip()
+            ->all();
+
+        // Load all existing book codes (including trashed) to skip in generator
+        $this->allocatedCodes = Book::withTrashed()
+            ->pluck('book_code')
+            ->all();
+
+        // Pre-compute next book code start number (one query, not per-book)
+        $this->nextCodeNumber = (Book::withTrashed()->max('id') ?? 0) + 1;
+
+        // Resolve default category once
+        $defaultCategoryId = null;
+
+        // Resolve valid category IDs in one query
+        $validCategoryIds = Category::pluck('id')->flip()->all();
+        // ─────────────────────────────────────────────────────────────────────
 
         foreach ($candidates as $cand) {
             $candId = $cand['id'] ?? '';
@@ -633,10 +664,14 @@ class BookImportService
                 $author = 'Tanpa Penulis';
             }
 
-            // Auto-fallback for category to 'Umum' if not selected
-            if (empty($categoryId) || !Category::where('id', $categoryId)->exists()) {
-                $defaultCat = Category::firstOrCreate(['name' => 'Umum'], ['slug' => 'umum']);
-                $categoryId = $defaultCat->id;
+            // Auto-fallback for category to 'Umum' — resolved once, no per-book DB query
+            if (empty($categoryId) || !isset($validCategoryIds[$categoryId])) {
+                if ($defaultCategoryId === null) {
+                    $defaultCat = Category::firstOrCreate(['name' => 'Umum'], ['slug' => 'umum']);
+                    $defaultCategoryId = $defaultCat->id;
+                    $validCategoryIds[$defaultCategoryId] = true;
+                }
+                $categoryId = $defaultCategoryId;
             }
 
             if ($collectionType === 'digital') {
@@ -647,7 +682,6 @@ class BookImportService
                 if ($stock < 1) {
                     $stock = 1;
                 }
-                // Location is optional for physical books
             }
 
             if (!empty($errors)) {
@@ -660,14 +694,33 @@ class BookImportService
                 continue;
             }
 
-            // 2. Duplicate Check
-            $dupCheck = $this->checkDuplicate($title, $author, $cand['isbn'] ?? null);
-            if ($dupCheck['is_duplicate']) {
+            // 2. In-memory duplicate check (no DB query)
+            $cleanIsbn = !empty($cand['isbn']) && trim($cand['isbn']) !== '' ? trim($cand['isbn']) : null;
+            $isDuplicate = false;
+            $dupReason = '';
+
+            if (!empty($cleanIsbn)) {
+                $cleanIsbnStripped = preg_replace('/[^0-9Xx]/', '', $cleanIsbn);
+                if (isset($existingIsbns[$cleanIsbn]) || isset($existingIsbns[$cleanIsbnStripped])) {
+                    $isDuplicate = true;
+                    $dupReason = "Duplikat ISBN: Nomor ISBN {$cleanIsbn} sudah terdaftar di katalog.";
+                }
+            }
+
+            if (!$isDuplicate && !empty($title)) {
+                $titleKey = strtolower(trim($title));
+                if (isset($existingTitles[$titleKey])) {
+                    $isDuplicate = true;
+                    $dupReason = "Kemungkinan Duplikat: Judul \"{$title}\" sudah terdaftar di katalog pustaka.";
+                }
+            }
+
+            if ($isDuplicate) {
                 $duplicateCount++;
                 $results['duplicate'][] = [
                     'id' => $candId,
                     'title' => $title,
-                    'reason' => $dupCheck['message'],
+                    'reason' => $dupReason,
                 ];
                 continue;
             }
@@ -678,10 +731,10 @@ class BookImportService
 
             DB::beginTransaction();
             try {
-                // Generate Unique Book Code (Reusing existing RPK project standard)
-                $bookCode = $this->generateUniqueBookCode();
+                // Generate Unique Book Code (in-memory, no per-book DB query)
+                $bookCode = $this->generateUniqueBookCodeFast();
 
-                // Generate Unique Slug (Reusing existing RPK project standard)
+                // Generate Unique Slug
                 $slug = Str::slug($title) . '-' . uniqid();
 
                 // Move temporary PDF to permanent private storage
@@ -702,8 +755,7 @@ class BookImportService
                     $movedCoverPath = $finalCoverPath;
                 }
 
-                // Create Book Record with properly sanitized NULL values for unique/nullable columns
-                $cleanIsbn = !empty($cand['isbn']) && trim($cand['isbn']) !== '' ? trim($cand['isbn']) : null;
+                // Sanitize values
                 $cleanPublisher = !empty($cand['publisher']) && trim($cand['publisher']) !== '' ? trim($cand['publisher']) : null;
                 $cleanDescription = !empty($cand['description']) && trim($cand['description']) !== '' ? trim($cand['description']) : null;
                 $cleanYear = !empty($cand['year']) ? (int)$cand['year'] : null;
@@ -738,6 +790,12 @@ class BookImportService
                 ]);
 
                 DB::commit();
+
+                // Add to in-memory sets so subsequent candidates in same batch don't collide
+                $existingTitles[strtolower(trim($title))] = true;
+                if (!empty($cleanIsbn)) {
+                    $existingIsbns[$cleanIsbn] = true;
+                }
 
                 $imported++;
                 $results['success'][] = [
@@ -777,23 +835,43 @@ class BookImportService
     }
 
     protected array $allocatedCodes = [];
+    protected int $nextCodeNumber = 0;
+
+    /**
+     * Generate unique book code — fast in-memory version for batch imports.
+     * Requires $allocatedCodes and $nextCodeNumber to be pre-populated before the loop.
+     */
+    public function generateUniqueBookCodeFast(): string
+    {
+        if ($this->nextCodeNumber === 0) {
+            $this->nextCodeNumber = (Book::withTrashed()->max('id') ?? 0) + 1;
+            $this->allocatedCodes = Book::withTrashed()->pluck('book_code')->all();
+        }
+
+        $allocatedSet = array_flip($this->allocatedCodes);
+        do {
+            $code = 'RPK-B' . str_pad($this->nextCodeNumber, 4, '0', STR_PAD_LEFT);
+            $this->nextCodeNumber++;
+        } while (isset($allocatedSet[$code]));
+
+        $this->allocatedCodes[] = $code;
+        return $code;
+    }
 
     /**
      * Generate unique book code following RPK standard (RPK-B0001).
+     * Single-use version (for non-batch contexts like single book creation).
      */
     public function generateUniqueBookCode(): string
     {
         $lastId = Book::withTrashed()->max('id') ?? 0;
         $number = $lastId + 1;
+        $existingCodes = array_flip(Book::withTrashed()->pluck('book_code')->all());
         do {
             $code = 'RPK-B' . str_pad($number, 4, '0', STR_PAD_LEFT);
-            $exists = in_array($code, $this->allocatedCodes) || Book::withTrashed()->where('book_code', $code)->exists();
-            if ($exists) {
-                $number++;
-            }
-        } while ($exists);
+            $number++;
+        } while (isset($existingCodes[$code]));
 
-        $this->allocatedCodes[] = $code;
         return $code;
     }
 
