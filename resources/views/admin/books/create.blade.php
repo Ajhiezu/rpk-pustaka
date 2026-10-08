@@ -303,7 +303,7 @@
                                 <span class="text-[11px] text-emerald-700 italic">Pilih berkas baru di bawah jika ingin mengganti</span>
                             </div>
                         @else
-                            <p class="text-xs text-neutral-muted">Berkas PDF naskah wajib diunggah untuk koleksi berformat Digital atau Fisik & Digital. Berkas disimpan di storage privat yang aman.</p>
+                            <p class="text-xs text-neutral-muted">Berkas PDF naskah wajib diunggah untuk koleksi berformat Digital atau Fisik & Digital (Format PDF, Maksimal 2MB). Berkas disimpan di storage privat yang aman.</p>
                         @endif
 
                         <input type="file" name="pdf_file" id="pdf_file_input" accept=".pdf" onchange="renderPdfCoverPreview(this)" class="w-full text-xs text-neutral-dark file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark cursor-pointer bg-white p-2 border border-neutral-border rounded">

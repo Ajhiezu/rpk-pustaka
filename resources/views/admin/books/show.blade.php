@@ -9,7 +9,7 @@
             Kembali
         </a>
         @if($book->hasDigital())
-            <a href="{{ route('admin.books.reader', $book) }}" target="_blank" class="px-3.5 py-2 text-xs font-semibold uppercase tracking-wider bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A] hover:bg-amber-100 rounded transition-colors inline-flex items-center shadow-xs">
+            <a href="{{ route('admin.books.reader', $book) }}" target="_blank" class="px-3.5 py-2 text-xs font-bold uppercase tracking-wider bg-white text-[#B45309] border border-amber-200 hover:bg-amber-50 rounded transition-colors inline-flex items-center shadow-md">
                 <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                 Baca Digital
             </a>
@@ -56,8 +56,8 @@
                 </p>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-                <a href="{{ route('admin.books.index') }}" class="btn-editorial-outline text-xs py-2 px-3.5 uppercase tracking-wider inline-flex items-center">
+            <div class="flex items-center gap-2 shrink-0 pt-1 sm:pt-0">
+                <a href="{{ route('admin.books.index') }}" class="btn-editorial-outline text-xs py-2 px-3.5 uppercase tracking-wider inline-flex items-center justify-center w-full sm:w-auto">
                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     Kembali ke Katalog
                 </a>

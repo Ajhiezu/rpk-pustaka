@@ -347,7 +347,7 @@
                         @endif
 
                         <div class="pt-2">
-                            <label class="block text-xs font-semibold text-neutral-dark mb-1">Unggah Berkas PDF Baru / Pengganti:</label>
+                            <label class="block text-xs font-semibold text-neutral-dark mb-1">Unggah Berkas PDF Baru / Pengganti (Maksimal 2MB):</label>
                             <input type="file" name="pdf_file" id="pdf_file_input" accept=".pdf" onchange="renderPdfCoverPreview(this)" class="w-full text-xs text-neutral-dark file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-dark cursor-pointer bg-white p-2 border border-neutral-border rounded">
                             <input type="hidden" name="auto_pdf_cover" id="auto_pdf_cover">
                             <x-input-error :messages="$errors->get('pdf_file')" class="mt-1" />

@@ -493,17 +493,17 @@
             </header>
 
             <!-- Page Content Area -->
-            <main class="flex-1 px-5 lg:px-10 py-8 max-w-7xl w-full mx-auto">
+            <main class="flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 max-w-7xl w-full mx-auto">
                 @isset($header)
                     <!-- Page Header Banner -->
-                    <div class="mb-8 bg-[#C62828] rounded-xl px-7 py-6 relative overflow-hidden shadow-lg">
+                    <div class="mb-6 sm:mb-8 bg-[#C62828] rounded-xl p-5 sm:p-7 relative overflow-hidden shadow-lg">
                         <!-- Ambient decorations -->
                         <div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
                         <div class="absolute right-20 -bottom-6 w-24 h-24 rounded-full bg-black/10 pointer-events-none"></div>
 
-                        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+                        <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sm:gap-5">
                             <div>
-                                <div class="flex items-center gap-1.5 mb-2">
+                                <div class="flex items-center gap-1.5 mb-1.5 sm:mb-2">
                                     <svg class="w-3 h-3 text-accent fill-current" viewBox="0 0 24 24">
                                         <path d="M12 2l2.4 7.2h7.6l-6.2 4.5 2.4 7.3-6.2-4.6-6.2 4.6 2.4-7.3-6.2-4.5h7.6z"/>
                                     </svg>
@@ -514,7 +514,7 @@
                             </div>
 
                             @isset($actions)
-                                <div class="flex items-center space-x-3 shrink-0 [&_.btn-editorial]:bg-white [&_.btn-editorial]:text-[#C62828] [&_.btn-editorial]:border-white [&_.btn-editorial]:hover:bg-[#F8F8F7] [&_.btn-editorial]:hover:text-[#A71D1D] [&_.btn-editorial]:font-bold [&_.btn-editorial]:shadow-md [&_.btn-editorial-outline]:bg-white/10 [&_.btn-editorial-outline]:border-white/50 [&_.btn-editorial-outline]:text-white [&_.btn-editorial-outline]:hover:bg-white/20 [&_.btn-editorial-outline]:hover:border-white">
+                                <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0 pt-1 md:pt-0 [&_.btn-editorial]:bg-white [&_.btn-editorial]:text-[#C62828] [&_.btn-editorial]:border-white [&_.btn-editorial]:hover:bg-[#F8F8F7] [&_.btn-editorial]:hover:text-[#A71D1D] [&_.btn-editorial]:font-bold [&_.btn-editorial]:shadow-md [&_.btn-editorial-outline]:bg-white/10 [&_.btn-editorial-outline]:border-white/50 [&_.btn-editorial-outline]:text-white [&_.btn-editorial-outline]:hover:bg-white/20 [&_.btn-editorial-outline]:hover:border-white">
                                     {{ $actions }}
                                 </div>
                             @endisset

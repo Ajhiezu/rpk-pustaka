@@ -38,7 +38,7 @@
                     <div class="space-y-1 text-xs">
                         <h4 class="font-bold text-neutral-dark text-sm">Alur Import Buku Digital Massal</h4>
                         <p class="text-neutral-body leading-relaxed">
-                            Pilih atau tarik hingga <strong>50 dokumen (PDF atau DOCX)</strong> sekaligus. Sistem akan mengekstrak judul dari nama berkas/metadata, menghitung jumlah halaman, serta <strong>merender sampul otomatis dari halaman pertama</strong>. Semua data akan disajikan di halaman Pratinjau untuk Anda periksa sebelum disimpan ke katalog.
+                            Pilih atau tarik berkas dokumen digital <strong>(PDF atau DOCX, maksimal 2MB per berkas)</strong>. Sistem akan mengekstrak judul dari nama berkas/metadata, menghitung jumlah halaman, serta <strong>merender sampul otomatis dari halaman pertama</strong>. Semua data akan disajikan di halaman Pratinjau untuk Anda periksa sebelum disimpan ke katalog.
                         </p>
                     </div>
                 </div>
@@ -60,10 +60,10 @@
                     </div>
                     <div>
                         <p class="font-sans font-bold text-sm text-neutral-dark">Tarik & Lepaskan berkas PDF/DOCX di sini</p>
-                        <p class="text-xs text-neutral-muted mt-1">atau klik untuk memilih dari perangkat (Maks. 50MB per berkas, hingga 50 naskah per sesi)</p>
+                        <p class="text-xs text-neutral-muted mt-1">atau klik untuk memilih dari perangkat (Maks. 2MB per berkas, hingga 50 naskah per sesi)</p>
                     </div>
                     <div class="flex items-center justify-center gap-2 pt-2">
-                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-neutral-surface border border-neutral-border rounded text-neutral-body">PDF Document</span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-neutral-surface border border-neutral-border rounded text-neutral-body">PDF Document (Maks 2MB)</span>
                         <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-neutral-surface border border-neutral-border rounded text-neutral-body">DOCX Document</span>
                     </div>
                 </div>
