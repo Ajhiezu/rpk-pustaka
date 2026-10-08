@@ -27,6 +27,7 @@ async function ensureWorkerSrc() {
 }
 
 ensureWorkerSrc();
+window.pdfjsLib = pdfjsLib;
 
 /**
  * Render page 1 of a PDF file to a WebP/JPEG Blob and base64 image using PDF.js.

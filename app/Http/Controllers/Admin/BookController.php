@@ -282,6 +282,9 @@ class BookController extends Controller
         } elseif ($collectionType === 'fisik_digital') {
             $rules['stock'] = 'required|integer|min:1';
             $rules['location_id'] = 'required|exists:locations,id';
+        } else {
+            $rules['stock'] = 'nullable';
+            $rules['location_id'] = 'nullable';
         }
 
         $messages = [
@@ -334,7 +337,7 @@ class BookController extends Controller
             $validated['available_stock'] = 0;
             $validated['location_id'] = null;
         } else {
-            $newStock = (int) $request->stock;
+            $newStock = max(1, (int) ($request->stock ?? 1));
             $stockDiff = $newStock - $book->stock;
             $validated['stock'] = $newStock;
             $validated['available_stock'] = max(0, $book->available_stock + $stockDiff);

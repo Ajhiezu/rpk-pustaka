@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 class BookImportController extends Controller
 {
@@ -323,65 +329,152 @@ class BookImportController extends Controller
     }
 
     /**
-     * Download CSV template for physical books import.
+     * Download Excel (.xlsx) template for physical books import.
      */
     public function downloadTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse
     {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Template Import Buku');
+
+        // Header columns (Row 1)
         $headers = [
-            'Content-Type'        => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="template_import_buku_fisik.csv"',
+            'A1' => 'Judul',
+            'B1' => 'Penulis',
+            'C1' => 'Kategori',
+            'D1' => 'Lokasi Rak',
+            'E1' => 'Stok',
+            'F1' => 'Penerbit',
+            'G1' => 'Tahun',
+            'H1' => 'ISBN',
+            'I1' => 'Bahasa',
+            'J1' => 'Halaman',
+            'K1' => 'Deskripsi',
         ];
 
-        return response()->stream(function () {
-            $handle = fopen('php://output', 'w');
-            // UTF-8 BOM for Microsoft Excel compatibility
-            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+        }
 
-            // Header row
-            fputcsv($handle, [
-                'judul',
-                'penulis',
-                'kategori',
-                'lokasi',
-                'stok',
-                'penerbit',
-                'tahun',
-                'isbn',
-                'bahasa',
-                'halaman',
-                'deskripsi'
-            ]);
+        // Style headers: RPK Red (#C62828) background, White Bold Text, Centered
+        $headerRange = 'A1:K1';
+        $sheet->getStyle($headerRange)->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF'],
+                'size' => 11,
+                'name' => 'Calibri',
+            ],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => 'C62828'],
+            ],
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => 'A71D1D'],
+                ],
+            ],
+        ]);
+        $sheet->getRowDimension(1)->setRowHeight(28);
 
-            // Sample rows with realistic data
-            fputcsv($handle, [
+        // Sample rows with realistic, neatly aligned data
+        $sampleData = [
+            [
                 'Pemrograman Web Modern dengan Laravel & Vue',
                 'Budi Santoso',
-                'Teknologi',
+                'Umum',
                 'Rak A1',
-                '5',
+                5,
                 'Informatika Press',
-                '2024',
+                2024,
                 '9786020298032',
                 'Indonesia',
-                '320',
-                'Buku panduan lengkap penguraian dan pengembangan aplikasi web modern.'
-            ]);
-
-            fputcsv($handle, [
+                320,
+                'Buku panduan lengkap penguraian dan pengembangan aplikasi web modern.',
+            ],
+            [
                 'Dasar-Dasar Kecerdasan Buatan & Machine Learning',
                 'Dr. Irwan Wijaya',
-                'Sains',
+                'Umum',
                 'Rak B2',
-                '3',
+                3,
                 'Sains Media',
-                '2023',
+                2023,
                 '9789792098765',
                 'Indonesia',
-                '280',
-                'Pengenalan konsep dasar kecerdasan buatan dan algoritma pembelajarannya.'
-            ]);
+                280,
+                'Pengenalan konsep dasar kecerdasan buatan dan algoritma pembelajarannya.',
+            ],
+            [
+                'Psikologi Kepemimpinan & Manajemen Organisasi',
+                'Prof. Hendra Saputra',
+                'Psikologi',
+                'Rak C3',
+                4,
+                'Pustaka Akademika',
+                2022,
+                '9786028765432',
+                'Indonesia',
+                240,
+                'Kajian komprehensif tentang dinamika kepemimpinan dalam organisasi modern.',
+            ],
+        ];
 
-            fclose($handle);
+        $rowNum = 2;
+        foreach ($sampleData as $row) {
+            $colLetter = 'A';
+            foreach ($row as $val) {
+                // Ensure ISBN is treated as text so Excel does not format it as scientific notation
+                if ($colLetter === 'H') {
+                    $sheet->setCellValueExplicit($colLetter . $rowNum, (string)$val, DataType::TYPE_STRING);
+                } else {
+                    $sheet->setCellValue($colLetter . $rowNum, $val);
+                }
+                $colLetter++;
+            }
+            $sheet->getRowDimension($rowNum)->setRowHeight(22);
+            $rowNum++;
+        }
+
+        // Apply borders and zebra styling to sample rows
+        $dataRange = 'A2:K' . ($rowNum - 1);
+        $sheet->getStyle($dataRange)->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN,
+                    'color' => ['rgb' => 'E5E5E5'],
+                ],
+            ],
+            'alignment' => [
+                'vertical' => Alignment::VERTICAL_CENTER,
+            ],
+        ]);
+
+        // Specific column center alignments
+        $sheet->getStyle('E2:E' . ($rowNum - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('G2:G' . ($rowNum - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('H2:H' . ($rowNum - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('J2:J' . ($rowNum - 1))->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+
+        // Auto-fit column widths
+        foreach (range('A', 'K') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $headers = [
+            'Content-Type'        => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="template_import_buku_fisik.xlsx"',
+            'Cache-Control'       => 'max-age=0',
+        ];
+
+        return response()->stream(function () use ($spreadsheet) {
+            $writer = new Xlsx($spreadsheet);
+            $writer->save('php://output');
         }, 200, $headers);
     }
 }

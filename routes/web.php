@@ -27,6 +27,11 @@ use App\Http\Controllers\StorageController;
 // Public Landing Page
 Route::get('/', function () {
     $books = \App\Models\Book::with(['category', 'location'])->latest()->limit(8)->get();
+    // Hanya ambil kategori yang sudah memiliki koleksi buku aktif
+    $categories = \App\Models\Category::whereHas('books')
+        ->withCount('books')
+        ->orderByDesc('books_count')
+        ->get();
     
     // Ambil pencarian populer dari kategori yang memiliki koleksi buku
     $popularSearches = \App\Models\Category::whereHas('books')
@@ -36,10 +41,11 @@ Route::get('/', function () {
         ->limit(4)
         ->pluck('name');
 
+    $totalBooksCount = \App\Models\Book::count();
     $latestArticles = \App\Models\Article::published()->with('user')->latest('published_at')->limit(3)->get();
     $publishedEssays = \App\Models\Essay::published()->with('user')->latest()->limit(3)->get();
 
-    return view('welcome', compact('books', 'popularSearches', 'latestArticles', 'publishedEssays'));
+    return view('welcome', compact('books', 'categories', 'totalBooksCount', 'popularSearches', 'latestArticles', 'publishedEssays'));
 })->name('home');
 
 // Public Book Detail

@@ -23,7 +23,11 @@
             .font-serif { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
         </style>
     </head>
-    <body class="antialiased bg-white text-neutral-dark selection:bg-primary/10 selection:text-primary">
+    <body class="antialiased bg-white text-neutral-dark selection:bg-primary/10 selection:text-primary"
+          x-data="{
+              searchQuery: '',
+              selectedCategory: 'all'
+          }">
         @php
             $physicalLoanDays = (int) \App\Models\Setting::get('physical_loan_duration_days', 14);
         @endphp
@@ -90,25 +94,7 @@
         </nav>
 
         <!-- Section Pertama: Hero Section (Kembali Putih Seperti Semula) -->
-        <header class="pt-10 sm:pt-14 md:pt-16 pb-12 sm:pb-16 md:pb-20 relative overflow-hidden border-b border-neutral-border bg-white"
-                x-data="{
-                    searchQuery: '',
-                    selectedCategory: 'all',
-                    get filteredBooks() {
-                        const q = this.searchQuery.toLowerCase().trim();
-                        return window.initialBooks.filter(book => {
-                            const matchQuery = !q || 
-                                book.title.toLowerCase().includes(q) || 
-                                book.author.toLowerCase().includes(q) ||
-                                (book.category && book.category.name.toLowerCase().includes(q)) ||
-                                (book.isbn && book.isbn.includes(q));
-                            const matchCat = this.selectedCategory === 'all' || 
-                                (book.category && book.category.slug === this.selectedCategory);
-                            return matchQuery && matchCat;
-                        });
-                    }
-                }">
-
+        <header class="pt-10 sm:pt-14 md:pt-16 pb-12 sm:pb-16 md:pb-20 relative overflow-hidden border-b border-neutral-border bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 <!-- Academic Masthead Tag with Small Gold Star Detail -->
                 <div class="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
@@ -161,16 +147,16 @@
                                 <div class="flex items-center flex-wrap gap-1 sm:gap-1.5">
                                     <span class="font-semibold text-neutral-dark">Populer:</span>
                                     @foreach($popularSearches as $popular)
-                                        <button @click="searchQuery = '{{ $popular }}'" class="hover:text-primary underline decoration-neutral-border underline-offset-2 transition-colors cursor-pointer">{{ $popular }}</button>
+                                        <button type="button" @click="searchQuery = '{{ addslashes($popular) }}'" class="hover:text-primary underline decoration-neutral-border underline-offset-2 transition-colors cursor-pointer touch-manipulation">{{ $popular }}</button>
                                         @if(!$loop->last)
                                             <span>•</span>
                                         @endif
                                     @endforeach
                                 </div>
                             @endif
-                            @if($books->count() > 0)
+                            @if(($totalBooksCount ?? $books->count()) > 0)
                                 <div class="font-medium text-[11px] sm:text-xs text-neutral-muted {{ (empty($popularSearches) || $popularSearches->count() === 0) ? 'w-full sm:text-right' : '' }}">
-                                    Total: {{ $books->count() }} Koleksi
+                                    Total: {{ $totalBooksCount ?? $allCategories->sum('books_count') }} Koleksi
                                 </div>
                             @endif
                         </div>
@@ -212,25 +198,40 @@
                     </div>
 
                     @php
-                        $uniqueCategories = $books->pluck('category')->filter()->unique('id');
+                        $allCategories = $categories ?? \App\Models\Category::whereHas('books')->withCount('books')->orderByDesc('books_count')->get();
                     @endphp
-                    @if($uniqueCategories->isNotEmpty())
-                        <!-- Category Chips -->
-                        <div class="flex items-center flex-wrap gap-1.5 sm:gap-2">
-                            <button 
-                                @click="selectedCategory = 'all'" 
-                                :class="selectedCategory === 'all' ? 'bg-primary text-white border-primary' : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary hover:text-primary'"
-                                class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-[11px] sm:text-xs md:text-[13px] font-semibold uppercase tracking-wide border transition-colors cursor-pointer whitespace-nowrap">
-                                Semua
-                            </button>
-                            @foreach($uniqueCategories as $cat)
+                    @if($allCategories->isNotEmpty())
+                        <!-- Category Chips Bar (Smooth Horizontal Scroll on Mobile, Clean Flow on Desktop) -->
+                        <div class="w-full md:w-auto overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pt-1 pb-1 touch-pan-x">
+                            <div class="flex items-center gap-1.5 sm:gap-2 min-w-max py-0.5">
                                 <button 
-                                    @click="selectedCategory = '{{ $cat->slug }}'" 
-                                    :class="selectedCategory === '{{ $cat->slug }}' ? 'bg-primary text-white border-primary' : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary hover:text-primary'"
-                                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-md text-[11px] sm:text-xs md:text-[13px] font-semibold uppercase tracking-wide border transition-colors cursor-pointer whitespace-nowrap">
-                                    {{ $cat->name }}
+                                    type="button"
+                                    @click="selectedCategory = 'all'" 
+                                    :class="selectedCategory === 'all' 
+                                        ? 'bg-primary text-white border-primary shadow-xs font-bold' 
+                                        : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary/60 hover:text-neutral-dark font-medium'"
+                                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs md:text-[13px] uppercase tracking-wide border transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1 touch-manipulation select-none active:scale-95">
+                                    <span>Semua</span>
+                                    <span class="text-[10px] opacity-75 font-mono">({{ $totalBooksCount ?? $allCategories->sum('books_count') }})</span>
                                 </button>
-                            @endforeach
+                                @foreach($allCategories as $cat)
+                                    @php
+                                        $catSlug = $cat->slug ?: Str::slug($cat->name);
+                                    @endphp
+                                    <button 
+                                        type="button"
+                                        @click="selectedCategory = '{{ $catSlug }}'" 
+                                        :class="selectedCategory === '{{ $catSlug }}' 
+                                            ? 'bg-primary text-white border-primary shadow-xs font-bold' 
+                                            : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary/60 hover:text-neutral-dark font-medium'"
+                                        class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs md:text-[13px] uppercase tracking-wide border transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1 touch-manipulation select-none active:scale-95">
+                                        <span>{{ $cat->name }}</span>
+                                        @if(!empty($cat->books_count))
+                                            <span class="text-[10px] opacity-75 font-mono">({{ $cat->books_count }})</span>
+                                        @endif
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
                     @endif
                 </div>
@@ -238,8 +239,13 @@
                 <!-- Filtered Grid View of Book Cards -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 lg:gap-8">
                     @forelse($books as $book)
+                        @php
+                            $bookCatSlug = $book->category ? ($book->category->slug ?: Str::slug($book->category->name)) : 'umum';
+                        @endphp
                         <article 
-                            x-show="(!searchQuery || '{{ strtolower(addslashes($book->title . ' ' . $book->author . ' ' . ($book->category->name ?? ''))) }}'.includes(searchQuery.toLowerCase().trim())) && (selectedCategory === 'all' || selectedCategory === '{{ $book->category->slug ?? '' }}')"
+                            data-category="{{ $bookCatSlug }}"
+                            data-search="{{ strtolower($book->title . ' ' . $book->author . ' ' . ($book->category->name ?? '')) }}"
+                            x-show="(selectedCategory === 'all' || selectedCategory === '{{ $bookCatSlug }}') && (!searchQuery || $el.dataset.search.includes(searchQuery.toLowerCase().trim()))"
                             class="group flex flex-col bg-white border border-neutral-border rounded-lg overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-md">
                             
                             <!-- Book Cover as Focal Point -->
@@ -345,7 +351,7 @@
                     @else
                         <div class="mt-8 sm:mt-10 md:mt-14 text-center">
                             <a href="{{ route('member.books.index') }}" class="btn-editorial-outline inline-flex items-center justify-center px-4 sm:px-6 md:px-8 py-2.5 sm:py-3 md:py-3.5 text-[11px] sm:text-xs md:text-sm uppercase tracking-wider font-semibold whitespace-normal text-center leading-snug max-w-2xl mx-auto">
-                                Lihat Seluruh Katalog ({{ $books->count() }}+ Buku) &rarr;
+                                Lihat Seluruh Katalog ({{ $totalBooksCount ?? $allCategories->sum('books_count') }}+ Buku) &rarr;
                             </a>
                         </div>
                     @endif

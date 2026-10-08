@@ -194,7 +194,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <label class="flex items-center gap-3 p-3.5 border rounded-lg cursor-pointer transition-all"
                                :class="collectionType === 'fisik' ? 'border-primary bg-primary-light/40 shadow-xs' : 'border-neutral-border bg-white hover:bg-neutral-surface'">
-                            <input type="radio" name="collection_type" value="fisik" x-model="collectionType" class="text-primary focus:ring-primary">
+                            <input type="radio" name="collection_type" value="fisik" x-model="collectionType" class="text-primary focus:ring-primary" {{ old('collection_type', $book->collection_type) === 'fisik' ? 'checked' : '' }}>
                             <div>
                                 <span class="block text-xs font-bold text-neutral-dark uppercase tracking-wider">Buku Fisik</span>
                                 <span class="block text-[11px] text-neutral-muted">Hanya tersedia cetak fisik di rak</span>
@@ -203,7 +203,7 @@
 
                         <label class="flex items-center gap-3 p-3.5 border rounded-lg cursor-pointer transition-all"
                                :class="collectionType === 'digital' ? 'border-primary bg-primary-light/40 shadow-xs' : 'border-neutral-border bg-white hover:bg-neutral-surface'">
-                            <input type="radio" name="collection_type" value="digital" x-model="collectionType" class="text-primary focus:ring-primary">
+                            <input type="radio" name="collection_type" value="digital" x-model="collectionType" class="text-primary focus:ring-primary" {{ old('collection_type', $book->collection_type) === 'digital' ? 'checked' : '' }}>
                             <div>
                                 <span class="block text-xs font-bold text-neutral-dark uppercase tracking-wider">Buku Digital</span>
                                 <span class="block text-[11px] text-neutral-muted">Hanya naskah digital (PDF) via website</span>
@@ -212,7 +212,7 @@
 
                         <label class="flex items-center gap-3 p-3.5 border rounded-lg cursor-pointer transition-all"
                                :class="collectionType === 'fisik_digital' ? 'border-primary bg-primary-light/40 shadow-xs' : 'border-neutral-border bg-white hover:bg-neutral-surface'">
-                            <input type="radio" name="collection_type" value="fisik_digital" x-model="collectionType" class="text-primary focus:ring-primary">
+                            <input type="radio" name="collection_type" value="fisik_digital" x-model="collectionType" class="text-primary focus:ring-primary" {{ old('collection_type', $book->collection_type) === 'fisik_digital' ? 'checked' : '' }}>
                             <div>
                                 <span class="block text-xs font-bold text-neutral-dark uppercase tracking-wider">Fisik & Digital</span>
                                 <span class="block text-[11px] text-neutral-muted">Tersedia fisik di rak dan PDF online</span>
@@ -239,18 +239,23 @@
                                 type="number" 
                                 name="stock" 
                                 id="stock" 
-                                :value="old('stock', $book->stock)" 
+                                :value="old('stock', $book->stock > 0 ? $book->stock : 1)" 
                                 min="1"
                                 placeholder="Minimal 1"
+                                ::disabled="collectionType === 'digital'"
                                 :error="$errors->first('stock')"
                             />
-                            <p class="text-[11px] text-neutral-muted mt-1">Stok saat ini: {{ $book->available_stock }} eksemplar tersedia di rak.</p>
+                            @if($book->hasPhysical())
+                                <p class="text-[11px] text-neutral-muted mt-1">Stok saat ini: {{ $book->available_stock }} eksemplar tersedia di rak.</p>
+                            @else
+                                <p class="text-[11px] text-neutral-muted mt-1">Buku ini sebelumnya merupakan naskah digital (tanpa stok fisik).</p>
+                            @endif
                         </div>
 
                         <!-- Location -->
                         <div>
                             <label class="block text-xs font-semibold text-neutral-dark uppercase tracking-wider mb-2 px-0.5">Lokasi Rak Simpan *</label>
-                            <select name="location_id" class="w-full px-3.5 py-2.5 bg-white border border-neutral-border rounded-md text-sm text-neutral-dark focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-xs">
+                            <select name="location_id" ::disabled="collectionType === 'digital'" class="w-full px-3.5 py-2.5 bg-white border border-neutral-border rounded-md text-sm text-neutral-dark focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary shadow-xs disabled:opacity-50 disabled:bg-[#F8F8F7]">
                                 <option value="">Pilih Rak Perpustakaan</option>
                                 @foreach($locations as $location)
                                     <option value="{{ $location->id }}" {{ old('location_id', $book->location_id) == $location->id ? 'selected' : '' }}>{{ $location->name }}</option>
