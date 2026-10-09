@@ -111,116 +111,224 @@
             </form>
         </div>
 
-        <!-- Table View -->
-        <x-table :headers="['KODE & PEMINJAM', 'JENIS', 'KOLEKSI BUKU', 'BATAS MAKSIMAL / TENGGAT', 'STATUS SANITY', 'DENDA', 'AKSI']">
+        <!-- ============================================== -->
+        <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+        <!-- ============================================== -->
+        <div class="block md:hidden space-y-3">
             @forelse($loans as $loan)
-                <tr class="hover:bg-[#F8F8F7] transition-colors">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="font-mono text-xs font-bold text-primary block leading-tight">{{ $loan->loan_code }}</span>
-                        <span class="font-sans text-sm font-semibold text-neutral-dark block mt-0.5">{{ $loan->user->name }}</span>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($loan->isDigital())
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
-                                Digital
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 text-slate-700 border border-neutral-border">
-                                Fisik
-                            </span>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="text-xs text-neutral-dark line-clamp-1 max-w-[280px]">
-                            {{ $loan->loanDetails->first()->book->title ?? 'Koleksi Perpustakaan' }}
-                            @if($loan->loanDetails->count() > 1)
-                                <span class="text-accent font-semibold text-[10px] ml-1">(+{{ $loan->loanDetails->count() - 1 }} lainnya)</span>
-                            @endif
+                <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <div>
+                                <span class="font-mono text-xs font-bold text-primary block leading-tight">{{ $loan->loan_code }}</span>
+                                <span class="font-sans text-sm font-bold text-neutral-dark block mt-0.5">{{ $loan->user->name }}</span>
+                            </div>
+                            <div class="shrink-0 flex items-center gap-1.5">
+                                @if($loan->isDigital())
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                                        Digital
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 text-slate-700 border border-neutral-border">
+                                        Fisik
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-body">
-                        @if(($loan->isPending() || $loan->isApproved()) && $loan->pickup_deadline)
-                            <span class="font-bold text-primary block">{{ $loan->pickup_deadline->format('d M Y, H:i') }}</span>
-                            <span class="text-[10px] text-amber-700">Pickup Deadline</span>
-                        @else
-                            <span class="font-medium text-neutral-dark block">{{ \Carbon\Carbon::parse($loan->due_date)->format('d M Y') }}</span>
-                            @if($loan->status === 'borrowed')
-                                <span class="text-[10px] text-neutral-muted">{{ ceil(now()->diffInDays($loan->due_date, false)) }} hari tersisa</span>
-                            @endif
+
+                        <div class="text-xs text-neutral-dark bg-neutral-surface p-2.5 rounded border border-neutral-border/60">
+                            <span class="text-[10px] text-neutral-muted block font-semibold uppercase tracking-wider mb-0.5">Koleksi:</span>
+                            <span class="font-medium line-clamp-2">
+                                {{ $loan->loanDetails->first()->book->title ?? 'Koleksi Perpustakaan' }}
+                                @if($loan->loanDetails->count() > 1)
+                                    <span class="text-accent font-semibold text-[10px] ml-1">(+{{ $loan->loanDetails->count() - 1 }} lainnya)</span>
+                                @endif
+                            </span>
+                        </div>
+
+                        <div class="flex items-center justify-between gap-2 pt-1 text-xs">
+                            <div>
+                                <span class="text-[10px] text-neutral-muted block">Batas Waktu:</span>
+                                @if(($loan->isPending() || $loan->isApproved()) && $loan->pickup_deadline)
+                                    <span class="font-bold text-primary text-xs">{{ $loan->pickup_deadline->format('d M Y, H:i') }}</span>
+                                @else
+                                    <span class="font-semibold text-neutral-dark text-xs">{{ \Carbon\Carbon::parse($loan->due_date)->format('d M Y') }}</span>
+                                @endif
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-neutral-muted block">Status:</span>
+                                @if($loan->isPending())
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 rounded">
+                                        Pending
+                                    </span>
+                                @elseif($loan->isApproved())
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-300 rounded">
+                                        Siap Pickup
+                                    </span>
+                                @elseif($loan->status === 'borrowed')
+                                    @if(\Carbon\Carbon::parse($loan->due_date)->isPast())
+                                        <x-badge variant="rose">Terlambat</x-badge>
+                                    @else
+                                        <x-badge variant="primary">Dipinjam</x-badge>
+                                    @endif
+                                @elseif($loan->status === 'returned')
+                                    <x-badge variant="emerald">Kembali</x-badge>
+                                @elseif($loan->isCancelled())
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
+                                        Dibatalkan
+                                    </span>
+                                @elseif($loan->isRejected())
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
+                                        Ditolak
+                                    </span>
+                                @elseif($loan->isExpiredState())
+                                    <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-700 border border-gray-300 rounded">
+                                        Kedaluwarsa
+                                    </span>
+                                @else
+                                    <x-badge variant="rose">{{ ucfirst($loan->status) }}</x-badge>
+                                @endif
+                            </div>
+                        </div>
+
+                        @if($loan->fine && $loan->fine->amount > 0)
+                            <div class="pt-1 flex items-center justify-between text-xs border-t border-neutral-border/60">
+                                <span class="text-neutral-muted text-[11px]">Denda:</span>
+                                <span class="font-mono font-bold {{ $loan->fine->status === 'paid' ? 'text-success' : 'text-danger' }}">
+                                    Rp {{ number_format($loan->fine->amount, 0, ',', '.') }} ({{ $loan->fine->status === 'paid' ? 'Lunas' : 'Belum Lunas' }})
+                                </span>
+                            </div>
                         @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($loan->isPending())
-                            <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 rounded">
-                                🔒 Pending Reservasi
-                            </span>
-                        @elseif($loan->isApproved())
-                            <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-300 rounded">
-                                ✓ Disetujui (Siap Pickup)
-                            </span>
-                        @elseif($loan->status === 'borrowed')
-                            @if(\Carbon\Carbon::parse($loan->due_date)->isPast())
-                                <x-badge variant="rose">Terlambat Pinjam</x-badge>
-                            @else
-                                <x-badge variant="primary">Sedang Dipinjam</x-badge>
-                            @endif
-                        @elseif($loan->status === 'returned')
-                            <x-badge variant="emerald">Telah Kembali</x-badge>
-                        @elseif($loan->isCancelled())
-                            <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
-                                Dibatalkan
-                            </span>
-                        @elseif($loan->isRejected())
-                            <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
-                                Ditolak
-                            </span>
-                        @elseif($loan->isExpiredState())
-                            <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-700 border border-gray-300 rounded">
-                                Kedaluwarsa
-                            </span>
-                        @else
-                            <x-badge variant="rose">{{ ucfirst($loan->status) }}</x-badge>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($loan->fine)
-                            @if($loan->fine->status === 'unpaid')
-                                <div class="space-y-0.5">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-danger border border-red-200">
-                                        Belum Lunas
-                                    </span>
-                                    <span class="block text-xs font-mono font-bold text-danger">
-                                        Rp {{ number_format($loan->fine->amount, 0, ',', '.') }}
-                                    </span>
-                                </div>
-                            @else
-                                <div class="space-y-0.5">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDF7ED] text-success border border-[#C8E6C9]">
-                                        Lunas
-                                    </span>
-                                    <span class="block text-[11px] font-mono text-neutral-muted">
-                                        Rp {{ number_format($loan->fine->amount, 0, ',', '.') }}
-                                    </span>
-                                </div>
-                            @endif
-                        @else
-                            <span class="text-xs text-neutral-muted font-mono italic">-</span>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">
-                        <a href="{{ route('admin.loans.show', $loan) }}" class="btn-editorial-outline text-xs py-1.5 px-3 uppercase tracking-wider font-semibold">
-                            Kelola &rarr;
+                    </div>
+
+                    <!-- Bottom Action Bar -->
+                    <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                        <a href="{{ route('admin.loans.show', $loan) }}" class="btn-editorial text-xs py-1.5 px-3.5 uppercase tracking-wider font-semibold inline-flex items-center gap-1 shadow-xs">
+                            Kelola Peminjaman &rarr;
                         </a>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             @empty
-                <tr>
-                    <td colspan="7" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
-                        Belum ada data transaksi peminjaman yang sesuai dengan filter.
-                    </td>
-                </tr>
+                <div class="bg-white p-8 rounded-lg border border-neutral-border text-center text-xs text-neutral-muted italic">
+                    Belum ada data transaksi peminjaman yang sesuai dengan filter.
+                </div>
             @endforelse
-        </x-table>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+        <!-- ============================================== -->
+        <div class="hidden md:block">
+            <x-table :headers="['KODE & PEMINJAM', 'JENIS', 'KOLEKSI BUKU', 'BATAS MAKSIMAL / TENGGAT', 'STATUS SANITY', 'DENDA', 'AKSI']">
+                @forelse($loans as $loan)
+                    <tr class="hover:bg-[#F8F8F7] transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="font-mono text-xs font-bold text-primary block leading-tight">{{ $loan->loan_code }}</span>
+                            <span class="font-sans text-sm font-semibold text-neutral-dark block mt-0.5">{{ $loan->user->name }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($loan->isDigital())
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+                                    Digital
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-50 text-slate-700 border border-neutral-border">
+                                    Fisik
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-xs text-neutral-dark line-clamp-1 max-w-[280px]">
+                                {{ $loan->loanDetails->first()->book->title ?? 'Koleksi Perpustakaan' }}
+                                @if($loan->loanDetails->count() > 1)
+                                    <span class="text-accent font-semibold text-[10px] ml-1">(+{{ $loan->loanDetails->count() - 1 }} lainnya)</span>
+                                @endif
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-body">
+                            @if(($loan->isPending() || $loan->isApproved()) && $loan->pickup_deadline)
+                                <span class="font-bold text-primary block">{{ $loan->pickup_deadline->format('d M Y, H:i') }}</span>
+                                <span class="text-[10px] text-amber-700">Pickup Deadline</span>
+                            @else
+                                <span class="font-medium text-neutral-dark block">{{ \Carbon\Carbon::parse($loan->due_date)->format('d M Y') }}</span>
+                                @if($loan->status === 'borrowed')
+                                    <span class="text-[10px] text-neutral-muted">{{ ceil(now()->diffInDays($loan->due_date, false)) }} hari tersisa</span>
+                                @endif
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($loan->isPending())
+                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300 rounded">
+                                    🔒 Pending Reservasi
+                                </span>
+                            @elseif($loan->isApproved())
+                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-900 border border-blue-300 rounded">
+                                    ✓ Disetujui (Siap Pickup)
+                                </span>
+                            @elseif($loan->status === 'borrowed')
+                                @if(\Carbon\Carbon::parse($loan->due_date)->isPast())
+                                    <x-badge variant="rose">Terlambat Pinjam</x-badge>
+                                @else
+                                    <x-badge variant="primary">Sedang Dipinjam</x-badge>
+                                @endif
+                            @elseif($loan->status === 'returned')
+                                <x-badge variant="emerald">Telah Kembali</x-badge>
+                            @elseif($loan->isCancelled())
+                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
+                                    Dibatalkan
+                                </span>
+                            @elseif($loan->isRejected())
+                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
+                                    Ditolak
+                                </span>
+                            @elseif($loan->isExpiredState())
+                                <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-700 border border-gray-300 rounded">
+                                    Kedaluwarsa
+                                </span>
+                            @else
+                                <x-badge variant="rose">{{ ucfirst($loan->status) }}</x-badge>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($loan->fine)
+                                @if($loan->fine->status === 'unpaid')
+                                    <div class="space-y-0.5">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-danger border border-red-200">
+                                            Belum Lunas
+                                        </span>
+                                        <span class="block text-xs font-mono font-bold text-danger">
+                                            Rp {{ number_format($loan->fine->amount, 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <div class="space-y-0.5">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-[#EDF7ED] text-success border border-[#C8E6C9]">
+                                            Lunas
+                                        </span>
+                                        <span class="block text-[11px] font-mono text-neutral-muted">
+                                            Rp {{ number_format($loan->fine->amount, 0, ',', '.') }}
+                                        </span>
+                                    </div>
+                                @endif
+                            @else
+                                <span class="text-xs text-neutral-muted font-mono italic">-</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <a href="{{ route('admin.loans.show', $loan) }}" class="btn-editorial-outline text-xs py-1.5 px-3 uppercase tracking-wider font-semibold">
+                                Kelola &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
+                            Belum ada data transaksi peminjaman yang sesuai dengan filter.
+                        </td>
+                    </tr>
+                @endforelse
+            </x-table>
+        </div>
 
         <div class="pt-4">
             {{ $loans->links() }}

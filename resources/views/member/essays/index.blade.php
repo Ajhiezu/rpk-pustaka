@@ -25,70 +25,142 @@
                 <span class="text-xs text-neutral-muted">Total: {{ $myEssays->total() }} Naskah</span>
             </div>
 
-            <x-table :headers="['Judul Naskah', 'Metode Pengajuan', 'Tanggal Diajukan', 'Status Kurasi', 'Catatan Evaluasi', 'Aksi']">
+            <!-- ============================================== -->
+            <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+            <!-- ============================================== -->
+            <div class="block md:hidden space-y-3">
                 @forelse($myEssays as $essay)
-                    <tr class="group transition-colors hover:bg-neutral-surface">
-                        <td class="px-6 py-4">
-                            <a href="{{ route('anggota.essays.show', $essay) }}" class="font-serif text-sm font-semibold text-neutral-dark hover:text-primary transition-colors block line-clamp-1">
+                    <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                        <div class="p-4 space-y-2.5">
+                            <div class="flex items-center justify-between gap-2">
+                                <div>
+                                    @if($essay->isOnline())
+                                        <span class="text-[10px] font-semibold text-primary bg-primary-light px-2 py-0.5 rounded border border-red-200">
+                                            Tulis Online
+                                        </span>
+                                    @else
+                                        <span class="text-[10px] font-semibold text-[#B45309] bg-[#FFF9ED] px-2 py-0.5 rounded border border-[#FDE68A]">
+                                            Berkas {{ strtoupper($essay->file_type ?? 'Dokumen') }}
+                                        </span>
+                                    @endif
+                                    <span class="text-[10px] text-neutral-muted ml-1.5">{{ $essay->created_at->format('d M Y') }}</span>
+                                </div>
+                                <div class="shrink-0">
+                                    @if($essay->status === 'submitted')
+                                        <x-badge variant="indigo">Menunggu</x-badge>
+                                    @elseif($essay->status === 'approved')
+                                        <x-badge variant="emerald">Disetujui</x-badge>
+                                    @elseif($essay->status === 'published')
+                                        <x-badge variant="primary">Published</x-badge>
+                                    @elseif($essay->status === 'revision')
+                                        <x-badge variant="amber">Revisi</x-badge>
+                                    @elseif($essay->status === 'rejected')
+                                        <x-badge variant="rose">Ditolak</x-badge>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <a href="{{ route('anggota.essays.show', $essay) }}" class="font-serif text-sm font-bold text-neutral-dark hover:text-primary transition-colors block leading-snug line-clamp-2">
                                 {{ $essay->title }}
                             </a>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($essay->isOnline())
-                                <span class="text-[11px] font-semibold text-primary bg-primary-light px-2.5 py-0.5 rounded border border-red-200">
-                                    Tulis Online
-                                </span>
-                            @else
-                                <span class="text-[11px] font-semibold text-[#B45309] bg-[#FFF9ED] px-2.5 py-0.5 rounded border border-[#FDE68A]">
-                                    Berkas {{ strtoupper($essay->file_type ?? 'Dokumen') }}
-                                </span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-muted">
-                            {{ $essay->created_at->format('d M Y') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            @if($essay->status === 'submitted')
-                                <x-badge variant="indigo">Menunggu Review</x-badge>
-                            @elseif($essay->status === 'approved')
-                                <x-badge variant="emerald">Disetujui</x-badge>
-                            @elseif($essay->status === 'published')
-                                <x-badge variant="primary">Published</x-badge>
-                            @elseif($essay->status === 'revision')
-                                <x-badge variant="amber">Perlu Revisi</x-badge>
-                            @elseif($essay->status === 'rejected')
-                                <x-badge variant="rose">Ditolak</x-badge>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-xs text-neutral-dark max-w-xs">
+
                             @if($essay->review_note)
-                                <span class="line-clamp-1 italic text-neutral-body" title="{{ $essay->review_note }}">
-                                    "{{ $essay->review_note }}"
-                                </span>
-                            @else
-                                <span class="text-neutral-muted italic">—</span>
+                                <div class="bg-neutral-surface p-2.5 rounded border border-neutral-border/60 text-xs">
+                                    <span class="text-[10px] text-neutral-muted block font-semibold">Catatan Evaluasi:</span>
+                                    <span class="italic text-neutral-body line-clamp-2">"{{ $essay->review_note }}"</span>
+                                </div>
                             @endif
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ route('anggota.essays.show', $essay) }}" class="text-xs font-semibold text-primary hover:underline">
-                                Buka Lembar &rarr;
+                        </div>
+
+                        <!-- Bottom Action Bar -->
+                        <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                            <a href="{{ route('anggota.essays.show', $essay) }}" class="btn-editorial text-xs py-1.5 px-3.5 uppercase tracking-wider font-semibold inline-flex items-center gap-1 shadow-xs">
+                                Buka Lembar Naskah &rarr;
                             </a>
-                        </td>
-                    </tr>
+                        </div>
+                    </div>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center">
-                            <p class="font-serif text-base font-semibold text-neutral-dark">Anda Belum Mengirimkan Karya Tulis</p>
-                            <p class="text-xs text-neutral-muted mt-1">Tuangkan pemikiran kritis Anda dalam bentuk esai atau unggah naskah ilmiah Anda.</p>
-                            <div class="mt-4">
-                                <a href="{{ route('anggota.essays.create') }}" class="btn-editorial text-xs py-2 px-5">
-                                    Ajukan Tulisan Pertama
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+                    <div class="bg-white p-8 rounded-lg border border-neutral-border text-center">
+                        <p class="font-serif text-base font-semibold text-neutral-dark">Anda Belum Mengirimkan Karya Tulis</p>
+                        <p class="text-xs text-neutral-muted mt-1">Tuangkan pemikiran kritis Anda dalam bentuk esai atau unggah naskah ilmiah Anda.</p>
+                        <div class="mt-4">
+                            <a href="{{ route('anggota.essays.create') }}" class="btn-editorial text-xs py-2 px-5">
+                                Ajukan Tulisan Pertama
+                            </a>
+                        </div>
+                    </div>
                 @endforelse
-            </x-table>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+            <!-- ============================================== -->
+            <div class="hidden md:block">
+                <x-table :headers="['Judul Naskah', 'Metode Pengajuan', 'Tanggal Diajukan', 'Status Kurasi', 'Catatan Evaluasi', 'Aksi']">
+                    @forelse($myEssays as $essay)
+                        <tr class="group transition-colors hover:bg-neutral-surface">
+                            <td class="px-6 py-4">
+                                <a href="{{ route('anggota.essays.show', $essay) }}" class="font-serif text-sm font-semibold text-neutral-dark hover:text-primary transition-colors block line-clamp-1">
+                                    {{ $essay->title }}
+                                </a>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($essay->isOnline())
+                                    <span class="text-[11px] font-semibold text-primary bg-primary-light px-2.5 py-0.5 rounded border border-red-200">
+                                        Tulis Online
+                                    </span>
+                                @else
+                                    <span class="text-[11px] font-semibold text-[#B45309] bg-[#FFF9ED] px-2.5 py-0.5 rounded border border-[#FDE68A]">
+                                        Berkas {{ strtoupper($essay->file_type ?? 'Dokumen') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-muted">
+                                {{ $essay->created_at->format('d M Y') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($essay->status === 'submitted')
+                                    <x-badge variant="indigo">Menunggu Review</x-badge>
+                                @elseif($essay->status === 'approved')
+                                    <x-badge variant="emerald">Disetujui</x-badge>
+                                @elseif($essay->status === 'published')
+                                    <x-badge variant="primary">Published</x-badge>
+                                @elseif($essay->status === 'revision')
+                                    <x-badge variant="amber">Perlu Revisi</x-badge>
+                                @elseif($essay->status === 'rejected')
+                                    <x-badge variant="rose">Ditolak</x-badge>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-xs text-neutral-dark max-w-xs">
+                                @if($essay->review_note)
+                                    <span class="line-clamp-1 italic text-neutral-body" title="{{ $essay->review_note }}">
+                                        "{{ $essay->review_note }}"
+                                    </span>
+                                @else
+                                    <span class="text-neutral-muted italic">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <a href="{{ route('anggota.essays.show', $essay) }}" class="btn-editorial-outline text-xs py-1.5 px-3 uppercase tracking-wider font-semibold inline-flex items-center gap-1">
+                                    Buka Lembar &rarr;
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <p class="font-serif text-base font-semibold text-neutral-dark">Anda Belum Mengirimkan Karya Tulis</p>
+                                <p class="text-xs text-neutral-muted mt-1">Tuangkan pemikiran kritis Anda dalam bentuk esai atau unggah naskah ilmiah Anda.</p>
+                                <div class="mt-4">
+                                    <a href="{{ route('anggota.essays.create') }}" class="btn-editorial text-xs py-2 px-5">
+                                        Ajukan Tulisan Pertama
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </x-table>
+            </div>
 
             <div class="pt-2">
                 {{ $myEssays->links() }}

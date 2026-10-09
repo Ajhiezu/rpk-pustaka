@@ -30,66 +30,140 @@
             </form>
         </div>
 
-        <!-- Articles Table -->
-        <x-table :headers="['Artikel & Penulis', 'Status', 'Tanggal Terbit', 'Aksi']">
+        <!-- ============================================== -->
+        <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+        <!-- ============================================== -->
+        <div class="block md:hidden space-y-3">
             @forelse($articles as $article)
-                <tr class="group transition-colors hover:bg-neutral-surface">
-                    <td class="px-6 py-4">
-                        <div class="flex items-center space-x-3.5">
+                <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                    <div class="p-4 flex gap-3.5 items-start">
+                        <!-- Cover Thumbnail -->
+                        <div class="w-16 h-12 bg-neutral-surface rounded shrink-0 border border-neutral-border overflow-hidden flex items-center justify-center">
                             @if($article->cover_image)
-                                <img src="{{ asset('storage/'.$article->cover_image) }}" class="w-14 h-10 object-cover rounded border border-neutral-border shrink-0">
+                                <img src="{{ asset('storage/'.$article->cover_image) }}" alt="{{ $article->title }}" class="w-full h-full object-cover">
                             @else
-                                <div class="w-14 h-10 bg-neutral-surface rounded flex items-center justify-center text-neutral-muted border border-neutral-border shrink-0">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
-                                </div>
+                                <svg class="w-5 h-5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
                             @endif
-                            <div class="min-w-0">
-                                <a href="{{ route('admin.articles.edit', $article) }}" class="font-serif text-sm font-semibold text-neutral-dark hover:text-primary transition-colors block line-clamp-1">
-                                    {{ $article->title }}
-                                </a>
-                                <p class="text-[11px] text-neutral-muted mt-0.5">Penulis: {{ $article->user->name ?? 'Admin' }}</p>
-                            </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($article->status === 'published')
-                            <x-badge variant="emerald">Published</x-badge>
-                        @else
-                            <x-badge variant="slate">Draft</x-badge>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-dark">
-                        {{ $article->published_at ? $article->published_at->format('d M Y') : '—' }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center space-x-2">
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0 space-y-1">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                @if($article->status === 'published')
+                                    <x-badge variant="emerald">Published</x-badge>
+                                @else
+                                    <x-badge variant="slate">Draft</x-badge>
+                                @endif
+                                <span class="text-[10px] text-neutral-muted">
+                                    {{ $article->published_at ? $article->published_at->format('d M Y') : 'Draft' }}
+                                </span>
+                            </div>
+
+                            <a href="{{ route('admin.articles.edit', $article) }}" class="font-serif text-sm font-bold text-neutral-dark hover:text-primary transition-colors block leading-snug line-clamp-2">
+                                {{ $article->title }}
+                            </a>
+
+                            <p class="text-[11px] text-neutral-muted">
+                                Penulis: <span class="font-medium text-neutral-dark">{{ $article->user->name ?? 'Admin' }}</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Bar -->
+                    <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex flex-wrap items-center gap-1.5">
                             <form action="{{ route('admin.articles.toggle', $article) }}" method="POST" class="inline">
                                 @csrf
-                                <button type="submit" class="px-2.5 py-1 text-[11px] font-semibold rounded border transition-colors {{ $article->status === 'published' ? 'border-amber-300 text-[#B45309] hover:bg-amber-50' : 'border-green-300 text-success hover:bg-green-50' }}">
+                                <button type="submit" class="px-2.5 py-1.5 text-xs font-semibold rounded border transition-colors {{ $article->status === 'published' ? 'border-amber-300 text-[#B45309] bg-white hover:bg-amber-50' : 'border-green-300 text-success bg-white hover:bg-green-50' }}">
                                     {{ $article->status === 'published' ? 'Jadikan Draft' : 'Terbitkan' }}
                                 </button>
                             </form>
-                            <a href="{{ route('admin.articles.edit', $article) }}" class="p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Edit">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            <a href="{{ route('admin.articles.edit', $article) }}" 
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-neutral-border rounded text-xs font-semibold text-neutral-dark hover:text-primary hover:border-primary transition-colors shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <span>Edit</span>
                             </a>
-                            <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="inline" data-confirm-message="Apakah Anda yakin ingin menghapus artikel '{{ $article->title }}'?">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer" title="Hapus">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                </button>
-                            </form>
                         </div>
-                    </td>
-                </tr>
+                        <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="inline shrink-0" data-confirm-message="Apakah Anda yakin ingin menghapus artikel '{{ $article->title }}'?">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer" title="Hapus">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
             @empty
-                <tr>
-                    <td colspan="4" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
-                        Belum ada artikel yang dibuat.
-                    </td>
-                </tr>
+                <div class="bg-white p-8 rounded-lg border border-neutral-border text-center text-xs text-neutral-muted italic">
+                    Belum ada artikel yang dibuat.
+                </div>
             @endforelse
-        </x-table>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+        <!-- ============================================== -->
+        <div class="hidden md:block">
+            <x-table :headers="['Artikel & Penulis', 'Status', 'Tanggal Terbit', 'Aksi']">
+                @forelse($articles as $article)
+                    <tr class="group transition-colors hover:bg-neutral-surface">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center space-x-3.5">
+                                @if($article->cover_image)
+                                    <img src="{{ asset('storage/'.$article->cover_image) }}" class="w-14 h-10 object-cover rounded border border-neutral-border shrink-0">
+                                @else
+                                    <div class="w-14 h-10 bg-neutral-surface rounded flex items-center justify-center text-neutral-muted border border-neutral-border shrink-0">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                                    </div>
+                                @endif
+                                <div class="min-w-0">
+                                    <a href="{{ route('admin.articles.edit', $article) }}" class="font-serif text-sm font-semibold text-neutral-dark hover:text-primary transition-colors block line-clamp-1">
+                                        {{ $article->title }}
+                                    </a>
+                                    <p class="text-[11px] text-neutral-muted mt-0.5">Penulis: {{ $article->user->name ?? 'Admin' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($article->status === 'published')
+                                <x-badge variant="emerald">Published</x-badge>
+                            @else
+                                <x-badge variant="slate">Draft</x-badge>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-dark">
+                            {{ $article->published_at ? $article->published_at->format('d M Y') : '—' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <div class="flex items-center justify-end space-x-1.5">
+                                <form action="{{ route('admin.articles.toggle', $article) }}" method="POST" class="inline">
+                                    @csrf
+                                    <button type="submit" class="px-2.5 py-1 text-[11px] font-semibold rounded border transition-colors {{ $article->status === 'published' ? 'border-amber-300 text-[#B45309] hover:bg-amber-50' : 'border-green-300 text-success hover:bg-green-50' }}">
+                                        {{ $article->status === 'published' ? 'Jadikan Draft' : 'Terbitkan' }}
+                                    </button>
+                                </form>
+                                <a href="{{ route('admin.articles.edit', $article) }}" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Edit">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                </a>
+                                <form action="{{ route('admin.articles.destroy', $article) }}" method="POST" class="inline" data-confirm-message="Apakah Anda yakin ingin menghapus artikel '{{ $article->title }}'?">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer" title="Hapus">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
+                            Belum ada artikel yang dibuat.
+                        </td>
+                    </tr>
+                @endforelse
+            </x-table>
+        </div>
 
         <div class="pt-4">
             {{ $articles->links() }}

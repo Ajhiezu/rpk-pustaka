@@ -72,34 +72,15 @@
                 </div>
             </div>
 
-            <x-table :headers="['ID & KODE', 'PEMINJAM', 'KOLEKSI BUKU', 'PERIODE PINJAM', 'DENDA', 'STATUS']">
+            <!-- Responsive Mobile Cards (visible on mobile only) -->
+            <div class="block md:hidden divide-y divide-neutral-border">
                 @forelse($loans as $loan)
-                    <tr class="hover:bg-neutral-surface transition-colors">
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="font-mono text-xs font-bold text-primary block leading-tight">{{ $loan->loan_code ?? '#'.$loan->id }}</span>
-                            <span class="text-[10px] text-neutral-muted block font-mono">ID: #{{ $loan->id }}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="font-semibold text-xs text-neutral-dark block leading-tight">{{ $loan->user->name }}</span>
-                            <span class="text-[11px] text-neutral-body block mt-0.5">{{ $loan->user->email }}</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <div class="text-xs text-neutral-dark line-clamp-1 max-w-[280px]">
-                                {{ $loan->loanDetails->map(fn($d) => $d->book->title)->implode(', ') }}
+                    <div class="p-4 bg-white hover:bg-neutral-surface/50 transition-colors">
+                        <div class="flex items-start justify-between gap-2 mb-2">
+                            <div>
+                                <span class="font-mono text-xs font-bold text-primary block leading-tight">{{ $loan->loan_code ?? '#'.$loan->id }}</span>
+                                <span class="text-[10px] text-neutral-muted block font-mono">ID: #{{ $loan->id }}</span>
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-xs font-semibold text-neutral-dark block leading-tight">
-                                {{ $loan->loan_date ? \Carbon\Carbon::parse($loan->loan_date)->format('d M Y') : '-' }}
-                            </span>
-                            <span class="text-[11px] text-neutral-muted block mt-0.5">
-                                s.d. {{ $loan->due_date ? \Carbon\Carbon::parse($loan->due_date)->format('d M Y') : '-' }}
-                            </span>
-                        </td>
-                        <td @class(['px-6 py-4 text-xs font-bold whitespace-nowrap', 'text-danger' => $loan->fine_amount > 0, 'text-neutral-muted' => $loan->fine_amount == 0])>
-                            Rp {{ number_format($loan->fine_amount ?? 0, 0, ',', '.') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
                             @if($loan->status === 'returned')
                                 <x-badge variant="emerald">Kembali</x-badge>
                             @elseif($loan->status === 'borrowed')
@@ -109,16 +90,90 @@
                             @else
                                 <x-badge variant="slate">Batal</x-badge>
                             @endif
-                        </td>
-                    </tr>
+                        </div>
+
+                        <div class="mb-2">
+                            <span class="font-semibold text-xs text-neutral-dark block leading-tight">{{ $loan->user->name }}</span>
+                            <span class="text-[11px] text-neutral-body block">{{ $loan->user->email }}</span>
+                        </div>
+
+                        <div class="text-xs text-neutral-dark mb-2.5 bg-neutral-surface p-2 rounded border border-neutral-border/60">
+                            <span class="text-[10px] uppercase font-bold text-neutral-muted block tracking-wider mb-0.5">Koleksi Buku:</span>
+                            <p class="line-clamp-2 text-xs text-neutral-dark font-medium">{{ $loan->loanDetails->map(fn($d) => $d->book->title)->implode(', ') }}</p>
+                        </div>
+
+                        <div class="flex items-center justify-between text-xs pt-1 border-t border-neutral-border/60">
+                            <div>
+                                <span class="text-[10px] text-neutral-muted block">Periode</span>
+                                <span class="font-semibold text-neutral-dark text-[11px]">
+                                    {{ $loan->loan_date ? \Carbon\Carbon::parse($loan->loan_date)->format('d M Y') : '-' }} - {{ $loan->due_date ? \Carbon\Carbon::parse($loan->due_date)->format('d M Y') : '-' }}
+                                </span>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] text-neutral-muted block">Denda</span>
+                                <span @class(['font-bold text-xs', 'text-danger' => $loan->fine_amount > 0, 'text-neutral-muted' => $loan->fine_amount == 0])>
+                                    Rp {{ number_format($loan->fine_amount ?? 0, 0, ',', '.') }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
-                            Tidak ada rekaman data sirkulasi yang sesuai dengan filter yang dipilih.
-                        </td>
-                    </tr>
+                    <div class="p-8 text-center text-xs text-neutral-muted italic">
+                        Tidak ada rekaman data sirkulasi yang sesuai dengan filter yang dipilih.
+                    </div>
                 @endforelse
-            </x-table>
+            </div>
+
+            <!-- Desktop Table (hidden on mobile) -->
+            <div class="hidden md:block">
+                <x-table :headers="['ID & KODE', 'PEMINJAM', 'KOLEKSI BUKU', 'PERIODE PINJAM', 'DENDA', 'STATUS']">
+                    @forelse($loans as $loan)
+                        <tr class="hover:bg-neutral-surface transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="font-mono text-xs font-bold text-primary block leading-tight">{{ $loan->loan_code ?? '#'.$loan->id }}</span>
+                                <span class="text-[10px] text-neutral-muted block font-mono">ID: #{{ $loan->id }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="font-semibold text-xs text-neutral-dark block leading-tight">{{ $loan->user->name }}</span>
+                                <span class="text-[11px] text-neutral-body block mt-0.5">{{ $loan->user->email }}</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="text-xs text-neutral-dark line-clamp-1 max-w-[280px]">
+                                    {{ $loan->loanDetails->map(fn($d) => $d->book->title)->implode(', ') }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="text-xs font-semibold text-neutral-dark block leading-tight">
+                                    {{ $loan->loan_date ? \Carbon\Carbon::parse($loan->loan_date)->format('d M Y') : '-' }}
+                                </span>
+                                <span class="text-[11px] text-neutral-muted block mt-0.5">
+                                    s.d. {{ $loan->due_date ? \Carbon\Carbon::parse($loan->due_date)->format('d M Y') : '-' }}
+                                </span>
+                            </td>
+                            <td @class(['px-6 py-4 text-xs font-bold whitespace-nowrap', 'text-danger' => $loan->fine_amount > 0, 'text-neutral-muted' => $loan->fine_amount == 0])>
+                                Rp {{ number_format($loan->fine_amount ?? 0, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($loan->status === 'returned')
+                                    <x-badge variant="emerald">Kembali</x-badge>
+                                @elseif($loan->status === 'borrowed')
+                                    <x-badge variant="indigo">Aktif</x-badge>
+                                @elseif($loan->status === 'overdue')
+                                    <x-badge variant="rose">Terlambat</x-badge>
+                                @else
+                                    <x-badge variant="slate">Batal</x-badge>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
+                                Tidak ada rekaman data sirkulasi yang sesuai dengan filter yang dipilih.
+                            </td>
+                        </tr>
+                    @endforelse
+                </x-table>
+            </div>
 
             <div class="pt-4">
                 {{ $loans->links() }}

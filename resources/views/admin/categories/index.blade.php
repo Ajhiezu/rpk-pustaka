@@ -32,14 +32,69 @@
             </form>
         </div>
 
-        <!-- Table View -->
-        <div class="space-y-3">
-            <div class="flex items-center justify-between px-1">
-                <span class="text-xs font-semibold uppercase tracking-wider text-neutral-dark">
-                    Total Terdata: {{ $categories->total() }} Kategori
-                </span>
-            </div>
+        <!-- ============================================== -->
+        <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+        <!-- ============================================== -->
+        <div class="block md:hidden space-y-3">
+            @forelse($categories as $category)
+                <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                    <div class="p-4 flex items-center justify-between gap-3">
+                        <div class="flex items-center space-x-3 min-w-0">
+                            <div class="w-10 h-10 bg-primary-light border border-primary/20 text-primary font-bold text-xs rounded-md flex items-center justify-center shrink-0 shadow-xs">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                                </svg>
+                            </div>
+                            <div class="min-w-0">
+                                <a href="{{ route('admin.categories.show', $category) }}" class="text-sm font-bold text-neutral-dark hover:text-primary transition-colors block leading-tight truncate">
+                                    {{ $category->name }}
+                                </a>
+                                <p class="text-[11px] font-mono text-neutral-muted mt-0.5 truncate">
+                                    Slug: {{ $category->slug }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="shrink-0">
+                            <x-badge variant="indigo">{{ $category->books()->count() }} Koleksi</x-badge>
+                        </div>
+                    </div>
 
+                    <!-- Bottom Action Bar -->
+                    <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <a href="{{ route('admin.categories.show', $category) }}" 
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-neutral-border rounded text-xs font-semibold text-neutral-dark hover:text-primary hover:border-primary transition-colors shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <span>Lihat Koleksi</span>
+                            </a>
+                            <a href="{{ route('admin.categories.edit', $category) }}" 
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-neutral-border rounded text-xs font-semibold text-neutral-dark hover:text-primary hover:border-primary transition-colors shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <span>Edit</span>
+                            </a>
+                        </div>
+                        <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline shrink-0" data-confirm-message="Apakah Anda yakin ingin menghapus kategori '{{ $category->name }}'? Data yang terhapus tidak dapat dipulihkan.">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer" title="Hapus Kategori">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white p-8 rounded-lg border border-neutral-border text-center text-xs text-neutral-muted italic">
+                    Belum ada kategori buku ditemukan.
+                </div>
+            @endforelse
+        </div>
+
+        <!-- ============================================== -->
+        <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+        <!-- ============================================== -->
+        <div class="hidden md:block">
             <x-table :headers="['Nama Kategori', 'Slug Sistem', 'Jumlah Koleksi', 'Aksi']">
                 @forelse($categories as $category)
                     <tr class="hover:bg-neutral-surface transition-colors">
@@ -66,14 +121,14 @@
                             </a>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
-                            <div class="flex justify-end space-x-1.5">
-                                <a href="{{ route('admin.categories.show', $category) }}" class="p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Lihat Koleksi Buku di Kategori Ini">
+                            <div class="flex items-center justify-end space-x-1.5">
+                                <a href="{{ route('admin.categories.show', $category) }}" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Lihat Koleksi Buku di Kategori Ini">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                     </svg>
                                 </a>
-                                <a href="{{ route('admin.categories.edit', $category) }}" class="p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Ubah Kategori">
+                                <a href="{{ route('admin.categories.edit', $category) }}" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Ubah Kategori">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                                     </svg>
@@ -81,7 +136,7 @@
                                 <form action="{{ route('admin.categories.destroy', $category) }}" method="POST" class="inline" data-confirm-message="Apakah Anda yakin ingin menghapus kategori '{{ $category->name }}'? Data yang terhapus tidak dapat dipulihkan.">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer" title="Hapus Kategori">
+                                    <button type="submit" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer" title="Hapus Kategori">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                         </svg>

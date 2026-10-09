@@ -73,14 +73,75 @@
             </form>
         </div>
 
-        <!-- Academic Table View -->
-        <div class="space-y-3">
-            <div class="flex items-center justify-between px-1">
-                <span class="text-xs font-semibold uppercase tracking-wider text-neutral-dark">
-                    Total Terdata: {{ $users->total() }} Pengguna
-                </span>
-            </div>
+        <!-- ============================================== -->
+        <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+        <!-- ============================================== -->
+        <div class="block md:hidden space-y-3">
+            @forelse($users as $user)
+                <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                    <div class="p-4 space-y-3">
+                        <div class="flex items-center justify-between gap-2.5">
+                            <div class="flex items-center space-x-3 min-w-0">
+                                <div class="w-10 h-10 bg-primary-light border border-primary/20 text-primary font-serif font-bold text-sm rounded-md flex items-center justify-center uppercase shrink-0 shadow-xs">
+                                    {{ substr($user->name, 0, 1) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="font-serif text-sm font-bold text-neutral-dark block leading-tight truncate">{{ $user->name }}</span>
+                                    <span class="text-xs text-neutral-body block mt-0.5 truncate">{{ $user->email }}</span>
+                                </div>
+                            </div>
+                            <div class="shrink-0">
+                                @if($user->role === 'admin')
+                                    <x-badge variant="indigo">ADMIN</x-badge>
+                                @else
+                                    <x-badge variant="slate">ANGGOTA</x-badge>
+                                @endif
+                            </div>
+                        </div>
 
+                        <div class="pt-2 border-t border-neutral-border/60 text-xs space-y-1">
+                            <div class="flex items-center space-x-1.5 text-neutral-dark">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                <span>{{ $user->phone ?? 'Belum ada nomor telepon' }}</span>
+                            </div>
+                            <p class="text-[11px] text-neutral-body truncate">{{ $user->address ?? 'Alamat belum diatur' }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Bar -->
+                    <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <a href="{{ route('admin.users.edit', $user) }}" 
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-neutral-border rounded text-xs font-semibold text-neutral-dark hover:text-primary hover:border-primary transition-colors shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <span>Edit Pengguna</span>
+                            </a>
+                        </div>
+                        @if(Auth::id() !== $user->id)
+                            <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline shrink-0"
+                                data-confirm-message="Apakah Anda yakin ingin menghapus akun pengguna '{{ $user->name }}'? Data transaksi peminjaman terkait mungkin akan terpengaruh.">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                    title="Hapus Pengguna">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white p-8 rounded-lg border border-neutral-border text-center text-xs text-neutral-muted italic">
+                    Tidak ada pengguna ditemukan.
+                </div>
+            @endforelse
+        </div>
+
+        <!-- ============================================== -->
+        <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+        <!-- ============================================== -->
+        <div class="hidden md:block">
             <x-table :headers="['Identitas Pengguna', 'Hak Akses', 'Kontak & Domisili', 'Aksi']">
                 @forelse($users as $user)
                     <tr class="hover:bg-neutral-surface transition-colors">
@@ -114,9 +175,9 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex items-center space-x-1.5 justify-end">
                                 <a href="{{ route('admin.users.edit', $user) }}"
-                                    class="p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors"
+                                    class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors"
                                     title="Edit Pengguna">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                                 </a>
                                 @if(Auth::id() !== $user->id)
                                     <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="inline"
@@ -124,7 +185,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                            class="p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer"
+                                            class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-muted hover:text-danger hover:bg-red-50 rounded transition-colors cursor-pointer"
                                             title="Hapus Pengguna">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                         </button>

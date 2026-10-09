@@ -26,67 +26,136 @@
             </form>
         </div>
 
-        <!-- Essays Table -->
-        <x-table :headers="['Nama Anggota', 'Judul Karya Tulis', 'Format Pengajuan', 'Tanggal Diajukan', 'Status Kurasi', 'Aksi']">
+        <!-- ============================================== -->
+        <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+        <!-- ============================================== -->
+        <div class="block md:hidden space-y-3">
             @forelse($essays as $essay)
-                <tr class="group transition-colors hover:bg-neutral-surface">
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="flex items-center space-x-2.5">
-                            <div class="w-8 h-8 rounded-full bg-neutral-surface border border-neutral-border flex items-center justify-center font-bold text-xs text-neutral-dark">
-                                {{ substr($essay->user->name ?? 'A', 0, 1) }}
+                <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                    <div class="p-4 space-y-2.5">
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center space-x-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-neutral-surface border border-neutral-border flex items-center justify-center font-bold text-xs text-neutral-dark shrink-0">
+                                    {{ substr($essay->user->name ?? 'A', 0, 1) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="font-semibold text-xs text-neutral-dark block leading-tight truncate">{{ $essay->user->name ?? 'Anggota' }}</span>
+                                    <span class="text-[10px] text-neutral-muted block truncate">{{ $essay->created_at->format('d M Y') }}</span>
+                                </div>
                             </div>
-                            <div>
-                                <span class="font-semibold text-xs text-neutral-dark block">{{ $essay->user->name ?? 'Anggota' }}</span>
-                                <span class="text-[10px] text-neutral-muted">{{ $essay->user->email ?? '' }}</span>
+                            <div class="shrink-0">
+                                @if($essay->status === 'submitted')
+                                    <x-badge variant="indigo">Menunggu</x-badge>
+                                @elseif($essay->status === 'approved')
+                                    <x-badge variant="emerald">Disetujui</x-badge>
+                                @elseif($essay->status === 'published')
+                                    <x-badge variant="primary">Published</x-badge>
+                                @elseif($essay->status === 'revision')
+                                    <x-badge variant="amber">Revisi</x-badge>
+                                @elseif($essay->status === 'rejected')
+                                    <x-badge variant="rose">Ditolak</x-badge>
+                                @endif
                             </div>
                         </div>
-                    </td>
-                    <td class="px-6 py-4">
-                        <a href="{{ route('admin.essays.show', $essay) }}" class="font-serif text-sm font-semibold text-neutral-dark hover:text-primary transition-colors block line-clamp-1">
-                            {{ $essay->title }}
-                        </a>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($essay->isOnline())
-                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary-light px-2.5 py-0.5 rounded border border-red-200">
-                                Tulis Online
-                            </span>
-                        @else
-                            <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#B45309] bg-[#FFF9ED] px-2.5 py-0.5 rounded border border-[#FDE68A]">
-                                Berkas {{ strtoupper($essay->file_type ?? 'Doc') }}
-                            </span>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-muted">
-                        {{ $essay->created_at->format('d M Y') }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        @if($essay->status === 'submitted')
-                            <x-badge variant="indigo">Menunggu Review</x-badge>
-                        @elseif($essay->status === 'approved')
-                            <x-badge variant="emerald">Disetujui</x-badge>
-                        @elseif($essay->status === 'published')
-                            <x-badge variant="primary">Published</x-badge>
-                        @elseif($essay->status === 'revision')
-                            <x-badge variant="amber">Perlu Revisi</x-badge>
-                        @elseif($essay->status === 'rejected')
-                            <x-badge variant="rose">Ditolak</x-badge>
-                        @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                        <a href="{{ route('admin.essays.show', $essay) }}" class="btn-editorial-outline text-xs py-1.5 px-3 uppercase tracking-wider font-semibold inline-flex items-center gap-1">
+
+                        <div>
+                            <a href="{{ route('admin.essays.show', $essay) }}" class="font-serif text-sm font-bold text-neutral-dark hover:text-primary transition-colors block leading-snug line-clamp-2">
+                                {{ $essay->title }}
+                            </a>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 pt-1">
+                            @if($essay->isOnline())
+                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary-light px-2 py-0.5 rounded border border-red-200">
+                                    Tulis Online
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-[#B45309] bg-[#FFF9ED] px-2 py-0.5 rounded border border-[#FDE68A]">
+                                    Berkas {{ strtoupper($essay->file_type ?? 'Doc') }}
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Bar -->
+                    <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                        <a href="{{ route('admin.essays.show', $essay) }}" class="btn-editorial text-xs py-1.5 px-3.5 uppercase tracking-wider font-semibold inline-flex items-center gap-1 shadow-xs">
                             Review Esai &rarr;
                         </a>
-                    </td>
-                </tr>
+                    </div>
+                </div>
             @empty
-                <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
-                        Belum ada pengajuan tulisan atau esai dari anggota.
-                    </td>
-                </tr>
+                <div class="bg-white p-8 rounded-lg border border-neutral-border text-center text-xs text-neutral-muted italic">
+                    Belum ada pengajuan tulisan atau esai dari anggota.
+                </div>
             @endforelse
-        </x-table>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+        <!-- ============================================== -->
+        <div class="hidden md:block">
+            <x-table :headers="['Nama Anggota', 'Judul Karya Tulis', 'Format Pengajuan', 'Tanggal Diajukan', 'Status Kurasi', 'Aksi']">
+                @forelse($essays as $essay)
+                    <tr class="group transition-colors hover:bg-neutral-surface">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-full bg-neutral-surface border border-neutral-border flex items-center justify-center font-bold text-xs text-neutral-dark">
+                                    {{ substr($essay->user->name ?? 'A', 0, 1) }}
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-xs text-neutral-dark block">{{ $essay->user->name ?? 'Anggota' }}</span>
+                                    <span class="text-[10px] text-neutral-muted">{{ $essay->user->email ?? '' }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <a href="{{ route('admin.essays.show', $essay) }}" class="font-serif text-sm font-semibold text-neutral-dark hover:text-primary transition-colors block line-clamp-1">
+                                {{ $essay->title }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($essay->isOnline())
+                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-primary-light px-2.5 py-0.5 rounded border border-red-200">
+                                    Tulis Online
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 text-[11px] font-semibold text-[#B45309] bg-[#FFF9ED] px-2.5 py-0.5 rounded border border-[#FDE68A]">
+                                    Berkas {{ strtoupper($essay->file_type ?? 'Doc') }}
+                                </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-muted">
+                            {{ $essay->created_at->format('d M Y') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($essay->status === 'submitted')
+                                <x-badge variant="indigo">Menunggu Review</x-badge>
+                            @elseif($essay->status === 'approved')
+                                <x-badge variant="emerald">Disetujui</x-badge>
+                            @elseif($essay->status === 'published')
+                                <x-badge variant="primary">Published</x-badge>
+                            @elseif($essay->status === 'revision')
+                                <x-badge variant="amber">Perlu Revisi</x-badge>
+                            @elseif($essay->status === 'rejected')
+                                <x-badge variant="rose">Ditolak</x-badge>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <a href="{{ route('admin.essays.show', $essay) }}" class="btn-editorial-outline text-xs py-1.5 px-3 uppercase tracking-wider font-semibold inline-flex items-center gap-1">
+                                Review Esai &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-xs text-neutral-muted italic">
+                            Belum ada pengajuan tulisan atau esai dari anggota.
+                        </td>
+                    </tr>
+                @endforelse
+            </x-table>
+        </div>
 
         <div class="pt-4">
             {{ $essays->links() }}

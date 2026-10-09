@@ -75,6 +75,85 @@
                 </span>
             </div>
 
+        <!-- ============================================== -->
+        <!-- MOBILE CARD VIEW (Tampil khusus layar HP/Tablet) -->
+        <!-- ============================================== -->
+        <div class="block md:hidden space-y-3">
+            @forelse($books as $book)
+                <div class="bg-white rounded-lg border border-neutral-border shadow-xs overflow-hidden">
+                    <div class="p-4 flex gap-3.5 items-start">
+                        <!-- Cover Thumbnail -->
+                        <div class="w-16 h-22 bg-neutral-surface rounded shrink-0 border border-neutral-border shadow-xs overflow-hidden flex items-center justify-center">
+                            @if($book->image)
+                                <img src="{{ asset('storage/'.$book->image) }}" alt="{{ $book->title }}" class="w-full h-full object-cover" loading="lazy">
+                            @else
+                                <div class="w-full h-full flex items-center justify-center text-primary">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                </div>
+                            @endif
+                        </div>
+
+                        <!-- Info -->
+                        <div class="flex-1 min-w-0 space-y-1">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                @if($book->collection_type === 'fisik_digital')
+                                    <span class="text-[9px] font-bold text-primary bg-primary-light border border-red-200 px-1.5 py-0.5 rounded">Fisik & Digital</span>
+                                @elseif($book->collection_type === 'digital')
+                                    <span class="text-[9px] font-bold text-[#B45309] bg-[#FFF9ED] border border-[#FDE68A] px-1.5 py-0.5 rounded">Digital</span>
+                                @else
+                                    <span class="text-[9px] font-bold text-success bg-[#EDF7ED] border border-[#C8E6C9] px-1.5 py-0.5 rounded">Fisik</span>
+                                @endif
+                            </div>
+
+                            <a href="{{ route('admin.books.show', $book) }}" class="font-sans text-sm font-bold text-neutral-dark hover:text-primary transition-colors block leading-snug line-clamp-2">
+                                {{ $book->title }}
+                            </a>
+
+                            <p class="text-[11px] text-neutral-body">
+                                <span>{{ $book->author }}</span>
+                            </p>
+
+                            <div class="pt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-neutral-muted">
+                                <span class="font-mono text-primary font-bold">{{ $book->book_code ?? '-' }}</span>
+                                @if($book->collection_type !== 'digital')
+                                    <span>•</span>
+                                    <span>Stok: <strong class="text-neutral-dark font-bold">{{ $book->available_stock }}/{{ $book->stock }}</strong></span>
+                                    @if($book->location)
+                                        <span>•</span>
+                                        <span>Rak: {{ $book->location->name }}</span>
+                                    @endif
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Bar -->
+                    <div class="bg-neutral-surface px-3.5 py-2.5 border-t border-neutral-border flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex flex-wrap items-center gap-1.5">
+                            <a href="{{ route('admin.books.show', $book) }}" 
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-neutral-border rounded text-xs font-semibold text-neutral-dark hover:text-primary hover:border-primary transition-colors shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                <span>Detail</span>
+                            </a>
+                            <a href="{{ route('admin.books.edit', $book) }}" 
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-neutral-border rounded text-xs font-semibold text-neutral-dark hover:text-primary hover:border-primary transition-colors shadow-2xs">
+                                <svg class="w-3.5 h-3.5 text-neutral-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                <span>Edit</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white p-8 rounded-lg border border-neutral-border text-center text-xs text-neutral-muted italic">
+                    Belum ada koleksi buku yang tergolong dalam kategori <strong>"{{ $category->name }}"</strong>.
+                </div>
+            @endforelse
+        </div>
+
+        <!-- ============================================== -->
+        <!-- DESKTOP TABLE VIEW (Tampil di Laptop & PC)      -->
+        <!-- ============================================== -->
+        <div class="hidden md:block">
             <x-table :headers="['Koleksi Buku', 'Penempatan Lokasi Rak', 'Tipe Koleksi', 'Stok Buku', 'Aksi']">
                 @forelse($books as $book)
                     <tr class="hover:bg-neutral-surface transition-colors">
@@ -156,14 +235,14 @@
                         </td>
 
                         <td class="px-6 py-4 text-right whitespace-nowrap">
-                            <div class="flex justify-end space-x-1.5">
-                                <a href="{{ route('admin.books.show', $book) }}" class="p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Lihat Detail Buku">
+                            <div class="flex items-center justify-end space-x-1.5">
+                                <a href="{{ route('admin.books.show', $book) }}" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Lihat Detail Buku">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                     </svg>
                                 </a>
-                                <a href="{{ route('admin.books.edit', $book) }}" class="p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Ubah Data Buku">
+                                <a href="{{ route('admin.books.edit', $book) }}" class="w-8 h-8 inline-flex items-center justify-center p-1.5 text-neutral-body hover:text-primary hover:bg-primary-light rounded transition-colors" title="Ubah Data Buku">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
                                     </svg>
