@@ -100,15 +100,15 @@
 
         <!-- Right: Zoom & Fullscreen Controls -->
         <div class="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-            <!-- Zoom Controls (Desktop & Tablet) -->
+            <!-- Zoom & Fit Controls (Desktop & Tablet) -->
             <div class="hidden sm:flex items-center bg-neutral-900/90 border border-neutral-800 rounded-md p-0.5">
-                <button type="button" onclick="zoomOut()" class="p-1 rounded hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors" title="Perkecil (-)">
+                <button type="button" onclick="zoomOut()" class="p-1 rounded hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors cursor-pointer" title="Perkecil (-)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                 </button>
-                <button type="button" onclick="fitWidth()" id="zoom-level-btn" class="px-2 py-0.5 text-[11px] font-mono text-neutral-300 hover:text-white" title="Sesuaikan Lebar">
-                    Fit
+                <button type="button" onclick="toggleFitMode()" id="zoom-level-btn" class="px-2 py-0.5 text-[11px] font-mono text-neutral-300 hover:text-white cursor-pointer" title="Ubah Mode: Fit Halaman / Fit Lebar">
+                    Fit Halaman
                 </button>
-                <button type="button" onclick="zoomIn()" class="p-1 rounded hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors" title="Perbesar (+)">
+                <button type="button" onclick="zoomIn()" class="p-1 rounded hover:bg-neutral-800 text-neutral-300 hover:text-white transition-colors cursor-pointer" title="Perbesar (+)">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </button>
             </div>
@@ -180,7 +180,7 @@
             <button type="button" onclick="zoomOut()" class="p-1.5 bg-neutral-800 text-neutral-300 rounded" title="Perkecil">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
             </button>
-            <button type="button" onclick="fitWidth()" class="px-2 py-1 bg-neutral-800 text-neutral-200 font-mono text-[10px] rounded" title="Sesuaikan">
+            <button type="button" onclick="toggleFitMode()" class="px-2 py-1 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-mono text-[10px] rounded cursor-pointer" title="Ubah Mode Tampilan">
                 Fit
             </button>
             <button type="button" onclick="zoomIn()" class="p-1.5 bg-neutral-800 text-neutral-300 rounded" title="Perbesar">
@@ -202,7 +202,7 @@
         let pageRendering = false;
         let pageNumPending = null;
         let scale = 1.0;
-        let fitMode = 'width'; // 'width' or 'manual'
+        let fitMode = 'page'; // 'page' (Fit Halaman Asli / Proporsional), 'width' (Fit Lebar), or 'manual'
 
         const canvas = document.getElementById('pdf-render-canvas');
         const ctx = canvas.getContext('2d', { alpha: false });
@@ -249,7 +249,7 @@
 
                 loadingIndicator.classList.add('hidden');
                 
-                // Initial render
+                // Initial render respecting native PDF aspect ratio & orientation
                 renderPage(pageNum);
             } catch (err) {
                 console.error('PDF Reader Init Error:', err);
@@ -266,20 +266,30 @@
             try {
                 const page = await pdfDoc.getPage(num);
                 
-                // Calculate optimal scale based on container width or user zoom
+                // Read natural unscaled dimensions of this specific PDF page
                 const unscaledViewport = page.getViewport({ scale: 1.0 });
-                const availableWidth = viewportContainer.clientWidth - (window.innerWidth < 640 ? 16 : 48);
+                const paddingHoriz = window.innerWidth < 640 ? 16 : 48;
+                const paddingVert = window.innerWidth < 640 ? 16 : 48;
+                const availableWidth = Math.max(300, viewportContainer.clientWidth - paddingHoriz);
+                const availableHeight = Math.max(300, viewportContainer.clientHeight - paddingVert);
                 
                 let targetScale = scale;
-                if (fitMode === 'width') {
-                    targetScale = Math.max(0.6, availableWidth / unscaledViewport.width);
+                if (fitMode === 'page') {
+                    // Fit entire page inside the viewport according to its natural aspect ratio (Portrait or Landscape)
+                    const scaleWidth = availableWidth / unscaledViewport.width;
+                    const scaleHeight = availableHeight / unscaledViewport.height;
+                    targetScale = Math.min(scaleWidth, scaleHeight);
                     scale = targetScale;
-                    if (zoomLevelBtn) zoomLevelBtn.innerText = 'Fit';
+                    if (zoomLevelBtn) zoomLevelBtn.innerText = 'Fit Halaman';
+                } else if (fitMode === 'width') {
+                    targetScale = availableWidth / unscaledViewport.width;
+                    scale = targetScale;
+                    if (zoomLevelBtn) zoomLevelBtn.innerText = 'Fit Lebar';
                 } else {
                     if (zoomLevelBtn) zoomLevelBtn.innerText = Math.round(scale * 100) + '%';
                 }
 
-                // Support HiDPI / Retina displays
+                // Support HiDPI / Retina displays without distortion
                 const outputScale = window.devicePixelRatio || 1;
                 const viewport = page.getViewport({ scale: targetScale });
 
@@ -346,12 +356,26 @@
 
         function zoomOut() {
             fitMode = 'manual';
-            scale = Math.max(0.5, scale - 0.2);
+            scale = Math.max(0.4, scale - 0.2);
+            queueRenderPage(pageNum);
+        }
+
+        function toggleFitMode() {
+            if (fitMode === 'page') {
+                fitMode = 'width';
+            } else {
+                fitMode = 'page';
+            }
             queueRenderPage(pageNum);
         }
 
         function fitWidth() {
             fitMode = 'width';
+            queueRenderPage(pageNum);
+        }
+
+        function fitPage() {
+            fitMode = 'page';
             queueRenderPage(pageNum);
         }
 
