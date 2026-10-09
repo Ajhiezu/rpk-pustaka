@@ -30,28 +30,51 @@
                 @if(request('format'))
                     <input type="hidden" name="format" value="{{ request('format') }}">
                 @endif
+                @if(request('book_type'))
+                    <input type="hidden" name="book_type" value="{{ request('book_type') }}">
+                @endif
                 <div class="flex space-x-2">
                     <x-button type="submit" variant="primary" class="px-5 text-xs uppercase tracking-wider font-semibold">Cari</x-button>
-                    @if(request('search') || request('format'))
+                    @if(request('search') || request('format') || request('book_type'))
                         <a href="{{ route('admin.books.index') }}" class="btn-editorial-outline px-4 text-xs uppercase tracking-wider font-semibold">Reset</a>
                     @endif
                 </div>
             </form>
 
-            <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-neutral-border text-xs">
-                <span class="text-[11px] font-semibold text-neutral-muted uppercase tracking-wider mr-1">Filter Format:</span>
-                <a href="{{ route('admin.books.index', ['search' => request('search')]) }}" 
-                   class="px-2.5 py-1 rounded text-xs font-semibold {{ !request('format') ? 'bg-neutral-dark text-white' : 'bg-neutral-surface text-neutral-body hover:bg-neutral-border' }}">
-                    Semua
-                </a>
-                <a href="{{ route('admin.books.index', ['format' => 'digital', 'search' => request('search')]) }}" 
-                   class="px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 {{ request('format') === 'digital' ? 'bg-primary text-white' : 'bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A]' }}">
-                    Digital
-                </a>
-                <a href="{{ route('admin.books.index', ['format' => 'physical', 'search' => request('search')]) }}" 
-                   class="px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 {{ request('format') === 'physical' ? 'bg-primary text-white' : 'bg-[#EDF7ED] text-success border border-[#C8E6C9]' }}">
-                    Fisik
-                </a>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-2 border-t border-neutral-border text-xs">
+                <!-- Filter Format (Digital / Fisik) -->
+                <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[11px] font-semibold text-neutral-muted uppercase tracking-wider mr-1">Format:</span>
+                    <a href="{{ route('admin.books.index', array_filter(['search' => request('search'), 'book_type' => request('book_type')])) }}" 
+                       class="px-2.5 py-1 rounded text-xs font-semibold {{ !request('format') ? 'bg-neutral-dark text-white' : 'bg-neutral-surface text-neutral-body hover:bg-neutral-border' }}">
+                        Semua
+                    </a>
+                    <a href="{{ route('admin.books.index', array_filter(['format' => 'digital', 'search' => request('search'), 'book_type' => request('book_type')])) }}" 
+                       class="px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 {{ request('format') === 'digital' ? 'bg-primary text-white' : 'bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A]' }}">
+                        Digital
+                    </a>
+                    <a href="{{ route('admin.books.index', array_filter(['format' => 'physical', 'search' => request('search'), 'book_type' => request('book_type')])) }}" 
+                       class="px-2.5 py-1 rounded text-xs font-semibold flex items-center gap-1 {{ request('format') === 'physical' ? 'bg-primary text-white' : 'bg-[#EDF7ED] text-success border border-[#C8E6C9]' }}">
+                        Fisik
+                    </a>
+                </div>
+
+                <!-- Filter Jenis Karya (Fiksi / Non-Fiksi) -->
+                <div class="flex flex-wrap items-center gap-1.5 sm:border-l sm:border-neutral-border sm:pl-3">
+                    <span class="text-[11px] font-semibold text-neutral-muted uppercase tracking-wider mr-1">Jenis:</span>
+                    <a href="{{ route('admin.books.index', array_filter(['search' => request('search'), 'format' => request('format')])) }}" 
+                       class="px-2.5 py-1 rounded text-xs font-semibold {{ !request('book_type') ? 'bg-neutral-dark text-white' : 'bg-neutral-surface text-neutral-body hover:bg-neutral-border' }}">
+                        Semua Jenis
+                    </a>
+                    <a href="{{ route('admin.books.index', array_filter(['book_type' => 'nonfiksi', 'search' => request('search'), 'format' => request('format')])) }}" 
+                       class="px-2.5 py-1 rounded text-xs font-semibold {{ request('book_type') === 'nonfiksi' ? 'bg-neutral-800 text-white' : 'bg-neutral-surface text-neutral-dark border border-neutral-border hover:bg-neutral-border' }}">
+                        Non-Fiksi
+                    </a>
+                    <a href="{{ route('admin.books.index', array_filter(['book_type' => 'fiksi', 'search' => request('search'), 'format' => request('format')])) }}" 
+                       class="px-2.5 py-1 rounded text-xs font-semibold {{ request('book_type') === 'fiksi' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100' }}">
+                        Fiksi (Novel)
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -78,6 +101,11 @@
                         <div class="flex-1 min-w-0 space-y-1">
                             <div class="flex items-center gap-1.5 flex-wrap">
                                 <x-badge variant="indigo" class="text-[9px] px-1.5 py-0.5">{{ $book->category->name ?? 'Umum' }}</x-badge>
+                                @if($book->isFiction())
+                                    <span class="text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">Fiksi (Novel)</span>
+                                @else
+                                    <span class="text-[9px] font-semibold text-neutral-600 bg-neutral-surface border border-neutral-border px-1.5 py-0.5 rounded">Non-Fiksi</span>
+                                @endif
                                 @if($book->collection_type === 'fisik_digital')
                                     <span class="text-[9px] font-bold text-primary bg-primary-light border border-red-200 px-1.5 py-0.5 rounded">Fisik & Digital</span>
                                 @elseif($book->collection_type === 'digital')
@@ -183,7 +211,22 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <x-badge variant="indigo">{{ $book->category->name ?? 'Umum' }}</x-badge>
+                            <div class="space-y-1">
+                                <div>
+                                    <x-badge variant="indigo">{{ $book->category->name ?? 'Umum' }}</x-badge>
+                                </div>
+                                <div>
+                                    @if($book->isFiction())
+                                        <span class="inline-flex items-center text-[9px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                                            Fiksi (Novel)
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center text-[9px] font-medium text-neutral-600 bg-neutral-surface border border-neutral-border px-2 py-0.5 rounded">
+                                            Non-Fiksi
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($book->collection_type === 'fisik_digital')

@@ -210,8 +210,18 @@
                                     </div>
                                 </div>
 
-                                <!-- Row 3: Penerbit & ISBN -->
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <!-- Row 3: Jenis Karya, Penerbit, & ISBN -->
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block font-sans text-xs font-bold uppercase tracking-wider text-neutral-dark mb-1">
+                                            Jenis Karya
+                                        </label>
+                                            <select name="candidates[{{ $id }}][book_type]"
+                                                    class="w-full px-3 py-2 bg-white border border-neutral-border rounded-md text-xs text-neutral-dark focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                                                <option value="fiksi" {{ ($cand['book_type'] ?? 'fiksi') === 'fiksi' ? 'selected' : '' }}>Fiksi (Novel)</option>
+                                                <option value="nonfiksi" {{ ($cand['book_type'] ?? '') === 'nonfiksi' ? 'selected' : '' }}>Non-Fiksi</option>
+                                            </select>
+                                    </div>
                                     <div>
                                         <label class="block font-sans text-xs font-bold uppercase tracking-wider text-neutral-dark mb-1">
                                             Penerbit

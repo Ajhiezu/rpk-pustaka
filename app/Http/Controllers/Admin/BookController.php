@@ -18,6 +18,7 @@ class BookController extends Controller
     {
         $search = $request->input('search');
         $format = $request->input('format'); // all, physical, digital, hybrid
+        $bookType = $request->input('book_type'); // all, fiksi, nonfiksi
         
         $books = Book::with(['category', 'location'])
             ->when($search, function($query) use ($search) {
@@ -34,8 +35,12 @@ class BookController extends Controller
             ->when($format === 'physical', function($query) {
                 $query->whereIn('collection_type', ['fisik', 'fisik_digital']);
             })
+            ->when(in_array($bookType, ['fiksi', 'nonfiksi']), function($query) use ($bookType) {
+                $query->where('book_type', $bookType);
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
             
         return view('admin.books.index', compact('books'));
     }
@@ -76,6 +81,7 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'collection_type' => 'required|in:fisik,digital,fisik_digital',
+            'book_type' => 'required|in:nonfiksi,fiksi',
             'publisher' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1800|max:' . (date('Y') + 1),
             'isbn' => ['nullable', 'string', 'max:50', Rule::unique('books', 'isbn')->whereNull('deleted_at')],
@@ -262,6 +268,7 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'collection_type' => 'required|in:fisik,digital,fisik_digital',
+            'book_type' => 'required|in:nonfiksi,fiksi',
             'publisher' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1800|max:' . (date('Y') + 1),
             'isbn' => ['nullable', 'string', 'max:50', Rule::unique('books', 'isbn')->ignore($book->id)->whereNull('deleted_at')],

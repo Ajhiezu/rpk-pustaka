@@ -139,6 +139,7 @@ class BookImportService
             'file_hash' => $fileHash,
             'cover_path' => $coverPath,
             'collection_type' => 'digital',
+            'book_type' => 'fiksi',
             'title' => $metadata['title'],
             'author' => $metadata['author'],
             'category_id' => $metadata['category_id'],
@@ -241,6 +242,7 @@ class BookImportService
                 'file_hash' => null,
                 'cover_path' => null,
                 'collection_type' => 'fisik',
+                'book_type' => (isset($columnMap['book_type']) && str_contains(strtolower((string)($row[$columnMap['book_type']] ?? '')), 'non')) ? 'nonfiksi' : 'fiksi',
                 'title' => $titleRaw,
                 'author' => $author ?: null,
                 'category_id' => $categoryId,
@@ -289,6 +291,8 @@ class BookImportService
                 $map['page_count'] = $colKey;
             } elseif (in_array($normalized, ['stok', 'stock', 'jumlah', 'qty', 'eksemplar', 'total stok'])) {
                 $map['stock'] = $colKey;
+            } elseif (in_array($normalized, ['jenis', 'jenis buku', 'tipe', 'type', 'karya', 'fiksi/nonfiksi', 'book type', 'book_type'])) {
+                $map['book_type'] = $colKey;
             } elseif (in_array($normalized, ['deskripsi', 'description', 'sinopsis', 'keterangan'])) {
                 $map['description'] = $colKey;
             }
@@ -779,6 +783,7 @@ class BookImportService
                     'language' => !empty($cand['language']) ? trim($cand['language']) : 'Indonesia',
                     'page_count' => $cleanPageCount,
                     'collection_type' => $collectionType,
+                    'book_type' => in_array($cand['book_type'] ?? '', ['fiksi', 'nonfiksi']) ? $cand['book_type'] : 'fiksi',
                     'stock' => $collectionType === 'digital' ? 0 : $stock,
                     'available_stock' => $collectionType === 'digital' ? 0 : $stock,
                     'price' => 0,

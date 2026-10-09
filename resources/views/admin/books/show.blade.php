@@ -35,6 +35,15 @@
                     <h2 class="text-xl sm:text-2xl font-bold text-neutral-dark tracking-tight leading-snug">
                         {{ $book->title }}
                     </h2>
+                    @if($book->isFiction())
+                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 rounded">
+                            Fiksi (Novel)
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-semibold bg-neutral-surface text-neutral-dark border border-neutral-border rounded">
+                            Non-Fiksi
+                        </span>
+                    @endif
                     @if($book->collection_type === 'fisik_digital')
                         <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-primary-light text-primary border border-red-200 rounded">
                             Fisik & Digital
@@ -52,6 +61,7 @@
                 <p class="text-xs text-neutral-body">
                     Penulis: <span class="font-semibold text-neutral-dark">{{ $book->author }}</span> • 
                     Kategori: <span class="font-semibold text-primary">{{ $book->category->name ?? 'Umum' }}</span> • 
+                    Jenis: <span class="font-semibold text-neutral-dark">{{ $book->book_type_label }}</span> • 
                     Kode Buku: <span class="font-mono font-bold text-neutral-dark">{{ $book->book_code ?? '-' }}</span>
                 </p>
             </div>
@@ -207,6 +217,19 @@
                             <span class="inline-block mt-0.5 font-semibold text-primary bg-primary-light border border-red-200 px-2 py-0.5 rounded">
                                 {{ $book->category->name ?? 'Umum' }}
                             </span>
+                        </div>
+
+                        <div>
+                            <span class="text-neutral-muted uppercase tracking-wider block font-semibold text-[10px] mb-1">Jenis Karya / Sastra</span>
+                            @if($book->isFiction())
+                                <span class="inline-block mt-0.5 font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                                    Fiksi (Novel / Sastra)
+                                </span>
+                            @else
+                                <span class="inline-block mt-0.5 font-medium text-neutral-600 bg-neutral-surface border border-neutral-border px-2 py-0.5 rounded">
+                                    Non-Fiksi
+                                </span>
+                            @endif
                         </div>
 
                         <div>

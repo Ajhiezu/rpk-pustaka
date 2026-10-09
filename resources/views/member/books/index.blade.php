@@ -34,12 +34,15 @@
                     @if(request('format'))
                         <input type="hidden" name="format" value="{{ request('format') }}">
                     @endif
+                    @if(request('book_type'))
+                        <input type="hidden" name="book_type" value="{{ request('book_type') }}">
+                    @endif
 
                     <div class="flex items-center space-x-2">
                         <x-button type="submit" variant="primary" class="px-5 py-2.5 text-xs uppercase tracking-wider font-semibold">
                             Cari Koleksi
                         </x-button>
-                        @if(request('search') || request('category') || request('format'))
+                        @if(request('search') || request('category') || request('format') || request('book_type'))
                             <a href="{{ route('anggota.books.index') }}" class="btn-editorial-outline px-4 py-2.5 text-xs uppercase tracking-wider font-semibold">
                                 Reset
                             </a>
@@ -47,26 +50,46 @@
                     </div>
                 </div>
 
-                <!-- Format Filter Pills -->
-                <div class="pt-3 border-t border-neutral-border flex flex-wrap items-center gap-2">
-                    <span class="text-[11px] font-semibold text-neutral-muted uppercase tracking-wider shrink-0 mr-1">Format:</span>
-                    
-                    <a href="{{ route('anggota.books.index', array_merge(request()->except('format'), [])) }}"
-                       class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 {{ !request('format') ? 'bg-neutral-dark text-white' : 'bg-[#F8F8F7] text-neutral-body border border-neutral-border hover:border-neutral-dark hover:text-neutral-dark' }}">
-                        Semua Format
-                    </a>
+                <!-- Format & Jenis Filter Pills -->
+                <div class="pt-3 border-t border-neutral-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <!-- Format Filter -->
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] font-semibold text-neutral-muted uppercase tracking-wider shrink-0 mr-1">Format:</span>
+                        
+                        <a href="{{ route('anggota.books.index', array_merge(request()->except('format'), [])) }}"
+                           class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 {{ !request('format') ? 'bg-neutral-dark text-white' : 'bg-[#F8F8F7] text-neutral-body border border-neutral-border hover:border-neutral-dark hover:text-neutral-dark' }}">
+                            Semua Format
+                        </a>
 
-                    <a href="{{ route('anggota.books.index', array_merge(request()->except('format'), ['format' => 'digital'])) }}"
-                       class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 flex items-center gap-1.5 {{ request('format') === 'digital' ? 'bg-primary text-white' : 'bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A] hover:bg-primary-light hover:text-primary' }}">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                        Buku Digital (PDF)
-                    </a>
+                        <a href="{{ route('anggota.books.index', array_merge(request()->except('format'), ['format' => 'digital'])) }}"
+                           class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 flex items-center gap-1.5 {{ request('format') === 'digital' ? 'bg-primary text-white' : 'bg-[#FFF9ED] text-[#B45309] border border-[#FDE68A] hover:bg-primary-light hover:text-primary' }}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Digital (PDF)
+                        </a>
 
-                    <a href="{{ route('anggota.books.index', array_merge(request()->except('format'), ['format' => 'physical'])) }}"
-                       class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 flex items-center gap-1.5 {{ request('format') === 'physical' ? 'bg-primary text-white' : 'bg-[#EDF7ED] text-success border border-[#C8E6C9] hover:bg-primary-light hover:text-primary' }}">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
-                        Buku Cetak Fisik
-                    </a>
+                        <a href="{{ route('anggota.books.index', array_merge(request()->except('format'), ['format' => 'physical'])) }}"
+                           class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 flex items-center gap-1.5 {{ request('format') === 'physical' ? 'bg-primary text-white' : 'bg-[#EDF7ED] text-success border border-[#C8E6C9] hover:bg-primary-light hover:text-primary' }}">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"></path></svg>
+                            Cetak Fisik
+                        </a>
+                    </div>
+
+                    <!-- Jenis Karya Filter -->
+                    <div class="flex flex-wrap items-center gap-1.5 sm:border-l sm:border-neutral-border sm:pl-3">
+                        <span class="text-[11px] font-semibold text-neutral-muted uppercase tracking-wider shrink-0 mr-1">Jenis:</span>
+                        <a href="{{ route('anggota.books.index', array_merge(request()->except('book_type'), [])) }}"
+                           class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 {{ !request('book_type') ? 'bg-neutral-dark text-white' : 'bg-[#F8F8F7] text-neutral-body border border-neutral-border hover:border-neutral-dark hover:text-neutral-dark' }}">
+                            Semua Jenis
+                        </a>
+                        <a href="{{ route('anggota.books.index', array_merge(request()->except('book_type'), ['book_type' => 'nonfiksi'])) }}"
+                           class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 {{ request('book_type') === 'nonfiksi' ? 'bg-neutral-800 text-white' : 'bg-[#F8F8F7] text-neutral-dark border border-neutral-border hover:border-neutral-dark' }}">
+                            Non-Fiksi
+                        </a>
+                        <a href="{{ route('anggota.books.index', array_merge(request()->except('book_type'), ['book_type' => 'fiksi'])) }}"
+                           class="px-3 py-1 text-xs font-semibold rounded transition-colors shrink-0 {{ request('book_type') === 'fiksi' ? 'bg-amber-600 text-white' : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100' }}">
+                            Fiksi (Novel)
+                        </a>
+                    </div>
                 </div>
 
                 <!-- Academic Category Chips -->

@@ -41,6 +41,11 @@ class BookController extends Controller
             }
         }
 
+        // Book Type filter: fiksi, nonfiksi
+        if ($request->filled('book_type') && in_array($request->book_type, ['fiksi', 'nonfiksi'])) {
+            $query->where('book_type', $request->book_type);
+        }
+
         $books = $query->latest()->paginate(12)->withQueryString();
         $categories = Category::all();
 

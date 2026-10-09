@@ -175,6 +175,15 @@
                         <span class="px-2.5 py-0.5 bg-primary-light text-primary text-[11px] font-bold uppercase tracking-wider rounded border border-red-200">
                             {{ $book->category->name ?? 'Umum' }}
                         </span>
+                        @if($book->isFiction())
+                            <span class="px-2.5 py-0.5 bg-amber-50 text-amber-800 text-[11px] font-bold uppercase tracking-wider rounded border border-amber-200">
+                                Fiksi (Novel)
+                            </span>
+                        @else
+                            <span class="px-2.5 py-0.5 bg-neutral-surface text-neutral-dark text-[11px] font-semibold uppercase tracking-wider rounded border border-neutral-border">
+                                Non-Fiksi
+                            </span>
+                        @endif
                         <span class="font-mono text-xs font-semibold px-2 py-0.5 bg-neutral-surface border border-neutral-border rounded text-neutral-dark">
                             Kode: {{ $book->book_code }}
                         </span>
@@ -213,18 +222,22 @@
                     <h3 class="text-xs font-bold uppercase tracking-[0.2em] text-neutral-muted">Informasi Bibliografi & Publikasi</h3>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                         <div class="p-3 bg-[#F8F8F7] rounded border border-neutral-border">
-                            <span class="text-[10px] uppercase tracking-wider text-neutral-muted block font-semibold">Penerbit Resmi</span>
-                            <span class="font-semibold text-neutral-dark block mt-0.5">{{ $book->publisher ?? '-' }}</span>
+                            <span class="text-[10px] uppercase tracking-wider text-neutral-muted block font-semibold">Jenis Karya / Sastra</span>
+                            <span class="font-semibold text-neutral-dark block mt-0.5">{{ $book->book_type_label }}</span>
                         </div>
                         <div class="p-3 bg-[#F8F8F7] rounded border border-neutral-border">
                             <span class="text-[10px] uppercase tracking-wider text-neutral-muted block font-semibold">Format Media</span>
                             <span class="font-semibold text-neutral-dark block mt-0.5">{{ $book->format_label }}</span>
                         </div>
                         <div class="p-3 bg-[#F8F8F7] rounded border border-neutral-border">
+                            <span class="text-[10px] uppercase tracking-wider text-neutral-muted block font-semibold">Penerbit Resmi</span>
+                            <span class="font-semibold text-neutral-dark block mt-0.5">{{ $book->publisher ?? '-' }}</span>
+                        </div>
+                        <div class="p-3 bg-[#F8F8F7] rounded border border-neutral-border">
                             <span class="text-[10px] uppercase tracking-wider text-neutral-muted block font-semibold">Bahasa Naskah</span>
                             <span class="font-semibold text-neutral-dark block mt-0.5">{{ $book->language ?? 'Indonesia' }}</span>
                         </div>
-                        <div class="p-3 bg-[#F8F8F7] rounded border border-neutral-border">
+                        <div class="p-3 bg-[#F8F8F7] rounded border border-neutral-border sm:col-span-2">
                             <span class="text-[10px] uppercase tracking-wider text-neutral-muted block font-semibold">Jumlah Halaman</span>
                             <span class="font-semibold text-neutral-dark block mt-0.5">{{ $book->page_count ? $book->page_count . ' Halaman' : '-' }}</span>
                         </div>

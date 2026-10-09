@@ -54,6 +54,28 @@
                             <x-input-error :messages="$errors->get('category_id')" class="mt-1.5" />
                         </div>
 
+                        <!-- Book Type (Fiksi vs Non-Fiksi) -->
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-neutral-dark uppercase tracking-wider mb-2 px-0.5">Jenis Karya / Sastra *</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <label class="flex items-center gap-3 p-3 bg-white border border-neutral-border rounded-lg cursor-pointer hover:bg-neutral-surface has-checked:border-primary has-checked:bg-primary-light/40 has-checked:text-primary transition-all shadow-2xs">
+                                    <input type="radio" name="book_type" value="fiksi" {{ old('book_type', 'fiksi') === 'fiksi' ? 'checked' : '' }} class="text-primary focus:ring-primary">
+                                    <div>
+                                        <span class="block text-xs font-bold text-neutral-dark">Fiksi (Novel / Sastra)</span>
+                                        <span class="block text-[11px] text-neutral-muted">Novel, Cerita Pendek (Cerpen), Antologi Puisi, Roman, Karya Sastra</span>
+                                    </div>
+                                </label>
+                                <label class="flex items-center gap-3 p-3 bg-white border border-neutral-border rounded-lg cursor-pointer hover:bg-neutral-surface has-checked:border-primary has-checked:bg-primary-light/40 has-checked:text-primary transition-all shadow-2xs">
+                                    <input type="radio" name="book_type" value="nonfiksi" {{ old('book_type', 'fiksi') === 'nonfiksi' ? 'checked' : '' }} class="text-primary focus:ring-primary">
+                                    <div>
+                                        <span class="block text-xs font-bold text-neutral-dark">Non-Fiksi</span>
+                                        <span class="block text-[11px] text-neutral-muted">Buku Ilmiah, Akademik, Ensiklopedia, Buku Ajar, Panduan, Referensi</span>
+                                    </div>
+                                </label>
+                            </div>
+                            <x-input-error :messages="$errors->get('book_type')" class="mt-1.5" />
+                        </div>
+
                         <!-- Title -->
                         <div class="md:col-span-2">
                             <x-input 

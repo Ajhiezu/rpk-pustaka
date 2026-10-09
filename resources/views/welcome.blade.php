@@ -26,7 +26,8 @@
     <body class="antialiased bg-white text-neutral-dark selection:bg-primary/10 selection:text-primary"
           x-data="{
               searchQuery: '',
-              selectedCategory: 'all'
+              selectedCategory: 'all',
+              selectedType: 'all'
           }">
         @php
             $physicalLoanDays = (int) \App\Models\Setting::get('physical_loan_duration_days', 14);
@@ -190,11 +191,38 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6">
                 
                 <!-- Section Header -->
-                <div class="flex flex-col md:flex-row md:items-end justify-between mb-6 sm:mb-8 md:mb-10 pb-4 sm:pb-6 border-b border-neutral-border gap-4 sm:gap-6">
-                    <div>
-                        <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-primary block mb-1 sm:mb-1.5">Pilihan Kurator</span>
-                        <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-dark tracking-tight">Koleksi Buku Unggulan</h2>
-                        <p class="text-xs sm:text-sm md:text-base text-neutral-body mt-1 sm:mt-1.5 max-w-xl">Koleksi rujukan terpenting yang siap dipelajari di ruang baca maupun dipinjam.</p>
+                <div class="space-y-4 mb-6 sm:mb-8 md:mb-10 pb-4 sm:pb-6 border-b border-neutral-border">
+                    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                        <div>
+                            <span class="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-primary block mb-1 sm:mb-1.5">Pilihan Kurator</span>
+                            <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-neutral-dark tracking-tight">Koleksi Buku Unggulan</h2>
+                            <p class="text-xs sm:text-sm md:text-base text-neutral-body mt-1 sm:mt-1.5 max-w-xl">Koleksi rujukan terpenting yang siap dipelajari di ruang baca maupun dipinjam.</p>
+                        </div>
+
+                        <!-- Fiksi / Non-Fiksi Segmented Tabs Filter -->
+                        <div class="flex items-center gap-1 p-1 bg-[#F8F8F7] border border-neutral-border rounded-xl self-start md:self-auto shrink-0 shadow-2xs">
+                            <button 
+                                type="button" 
+                                @click="selectedType = 'all'" 
+                                :class="selectedType === 'all' ? 'bg-primary text-white font-bold shadow-xs' : 'text-neutral-body hover:text-neutral-dark font-medium'"
+                                class="px-3 sm:px-4 py-1.5 rounded-lg text-xs tracking-wide transition-all cursor-pointer">
+                                Semua Jenis
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="selectedType = 'nonfiksi'" 
+                                :class="selectedType === 'nonfiksi' ? 'bg-neutral-800 text-white font-bold shadow-xs' : 'text-neutral-body hover:text-neutral-dark font-medium'"
+                                class="px-3 sm:px-4 py-1.5 rounded-lg text-xs tracking-wide transition-all cursor-pointer">
+                                Non-Fiksi
+                            </button>
+                            <button 
+                                type="button" 
+                                @click="selectedType = 'fiksi'" 
+                                :class="selectedType === 'fiksi' ? 'bg-amber-600 text-white font-bold shadow-xs' : 'text-neutral-body hover:text-amber-700 font-medium'"
+                                class="px-3 sm:px-4 py-1.5 rounded-lg text-xs tracking-wide transition-all cursor-pointer">
+                                Fiksi (Novel)
+                            </button>
+                        </div>
                     </div>
 
                     @php
@@ -202,15 +230,16 @@
                     @endphp
                     @if($allCategories->isNotEmpty())
                         <!-- Category Chips Bar (Smooth Horizontal Scroll on Mobile, Clean Flow on Desktop) -->
-                        <div class="w-full md:w-auto overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pt-1 pb-1 touch-pan-x">
+                        <div class="w-full overflow-x-auto no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 pt-1 pb-1 touch-pan-x">
                             <div class="flex items-center gap-1.5 sm:gap-2 min-w-max py-0.5">
+                                <span class="text-[11px] font-semibold uppercase tracking-wider text-neutral-muted mr-1">Kategori:</span>
                                 <button 
                                     type="button"
                                     @click="selectedCategory = 'all'" 
                                     :class="selectedCategory === 'all' 
-                                        ? 'bg-primary text-white border-primary shadow-xs font-bold' 
+                                        ? 'bg-neutral-dark text-white border-neutral-dark shadow-xs font-bold' 
                                         : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary/60 hover:text-neutral-dark font-medium'"
-                                    class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs md:text-[13px] uppercase tracking-wide border transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1 touch-manipulation select-none active:scale-95">
+                                    class="px-3 sm:px-3.5 py-1 rounded-full text-[11px] sm:text-xs uppercase tracking-wide border transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1 touch-manipulation select-none active:scale-95">
                                     <span>Semua</span>
                                     <span class="text-[10px] opacity-75 font-mono">({{ $totalBooksCount ?? $allCategories->sum('books_count') }})</span>
                                 </button>
@@ -222,9 +251,9 @@
                                         type="button"
                                         @click="selectedCategory = '{{ $catSlug }}'" 
                                         :class="selectedCategory === '{{ $catSlug }}' 
-                                            ? 'bg-primary text-white border-primary shadow-xs font-bold' 
+                                            ? 'bg-neutral-dark text-white border-neutral-dark shadow-xs font-bold' 
                                             : 'bg-[#F8F8F7] text-neutral-body border-neutral-border hover:border-primary/60 hover:text-neutral-dark font-medium'"
-                                        class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[11px] sm:text-xs md:text-[13px] uppercase tracking-wide border transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1 touch-manipulation select-none active:scale-95">
+                                        class="px-3 sm:px-3.5 py-1 rounded-full text-[11px] sm:text-xs uppercase tracking-wide border transition-all duration-200 cursor-pointer whitespace-nowrap flex items-center gap-1 touch-manipulation select-none active:scale-95">
                                         <span>{{ $cat->name }}</span>
                                         @if(!empty($cat->books_count))
                                             <span class="text-[10px] opacity-75 font-mono">({{ $cat->books_count }})</span>
@@ -241,11 +270,13 @@
                     @forelse($books as $book)
                         @php
                             $bookCatSlug = $book->category ? ($book->category->slug ?: Str::slug($book->category->name)) : 'umum';
+                            $bookTypeVal = $book->book_type ?? 'fiksi';
                         @endphp
                         <article 
                             data-category="{{ $bookCatSlug }}"
+                            data-type="{{ $bookTypeVal }}"
                             data-search="{{ strtolower($book->title . ' ' . $book->author . ' ' . ($book->category->name ?? '')) }}"
-                            x-show="(selectedCategory === 'all' || selectedCategory === '{{ $bookCatSlug }}') && (!searchQuery || $el.dataset.search.includes(searchQuery.toLowerCase().trim()))"
+                            x-show="(selectedCategory === 'all' || selectedCategory === '{{ $bookCatSlug }}') && (selectedType === 'all' || selectedType === '{{ $bookTypeVal }}') && (!searchQuery || $el.dataset.search.includes(searchQuery.toLowerCase().trim()))"
                             class="group flex flex-col bg-white border border-neutral-border rounded-lg overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-md">
                             
                             <!-- Book Cover as Focal Point -->
@@ -265,11 +296,16 @@
                                     </div>
                                 @endif
 
-                                <!-- Category Badge on Cover -->
-                                <div class="absolute top-3 left-3">
+                                <!-- Category & Literary Type Badges on Cover -->
+                                <div class="absolute top-3 left-3 flex flex-col gap-1 items-start">
                                     <span class="bg-white/95 backdrop-blur-xs px-2.5 py-1 text-[11px] font-bold text-primary uppercase tracking-wide rounded border border-neutral-border shadow-xs">
                                         {{ $book->category->name ?? 'Umum' }}
                                     </span>
+                                    @if($book->isFiction())
+                                        <span class="bg-amber-600 text-white px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded shadow-xs">
+                                            Fiksi (Novel)
+                                        </span>
+                                    @endif
                                 </div>
 
                                 <!-- Format Badge (FISIK / DIGITAL / FISIK + DIGITAL) -->

@@ -25,6 +25,7 @@ class Book extends Model
         'language',
         'page_count',
         'collection_type',
+        'book_type',
         'stock',
         'available_stock',
         'price',
@@ -88,6 +89,21 @@ class Book extends Model
     public function isPhysicalOnly(): bool
     {
         return $this->collection_type === 'fisik';
+    }
+
+    public function isFiction(): bool
+    {
+        return $this->book_type === 'fiksi';
+    }
+
+    public function isNonFiction(): bool
+    {
+        return $this->book_type === 'nonfiksi';
+    }
+
+    public function getBookTypeLabelAttribute(): string
+    {
+        return $this->book_type === 'fiksi' ? 'Fiksi (Novel)' : 'Non-Fiksi';
     }
 
     public function getFormatLabelAttribute(): string
