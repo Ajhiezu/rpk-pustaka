@@ -35,38 +35,79 @@ window.pdfjsLib = pdfjsLib;
  * @param {number} timeoutMs
  * @returns {Promise<{success: boolean, blob?: Blob, imageBase64?: string, pageCount?: number, error?: string, isEncrypted?: boolean}>}
  */
-window.renderPdfFirstPage = async function(file, timeoutMs = 12000) {
+window.renderPdfFirstPage = async function(file, timeoutMs = 8000) {
     if (!file || (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf'))) {
         return { success: false, error: 'Bukan berkas dokumen PDF valid.' };
     }
 
-    // Wrap execution with a strict timeout to guarantee it never hangs
+    let objectUrl = null;
     const renderPromise = (async () => {
         try {
-            const arrayBuffer = await file.arrayBuffer();
+            // Gunakan Object URL agar browser engine membaca stream langsung tanpa duplikasi RAM
+            objectUrl = URL.createObjectURL(file);
+
             const loadingTask = pdfjsLib.getDocument({
-                data: arrayBuffer,
+                url: objectUrl,
                 stopAtErrors: false,
                 disableFontFace: false,
                 nativeImageDecoderSupport: 'none',
             });
 
-            loadingTask.onPassword = function(callback, reason) {
+            loadingTask.onPassword = function(callback) {
                 callback(''); // abort on password prompt
             };
 
             const pdf = await loadingTask.promise;
-            const page = await pdf.getPage(1);
+            const pageCount = pdf.numPages || 1;
 
-            // Scale 1.2 for fast and crisp cover image
-            const viewport = page.getViewport({ scale: 1.2 });
+            // Ekstraksi metadata PDF (Penulis, Tahun, Judul) secara instan dari dokumen info
+            let author = null;
+            let year = null;
+            let title = null;
+
+            try {
+                const meta = await pdf.getMetadata();
+                if (meta && meta.info) {
+                    if (meta.info.Author && typeof meta.info.Author === 'string') {
+                        const a = meta.info.Author.trim();
+                        if (a.length > 1 && !/^(administrator|user|admin|microsoft|wps|canva)/i.test(a)) {
+                            author = a;
+                        }
+                    }
+                    if (meta.info.Title && typeof meta.info.Title === 'string') {
+                        const t = meta.info.Title.trim();
+                        if (t.length > 2 && !/^(microsoft word|untitled|wps office|canva|adobe|print)/i.test(t)) {
+                            title = t;
+                        }
+                    }
+                    if (meta.info.CreationDate) {
+                        const match = String(meta.info.CreationDate).match(/(?:D:)?(\d{4})/);
+                        if (match) {
+                            const y = parseInt(match[1]);
+                            if (y >= 1800 && y <= new Date().getFullYear() + 1) {
+                                year = y;
+                            }
+                        }
+                    }
+                }
+            } catch (metaErr) {
+                // Ignore metadata error
+            }
+
+            // Render Halaman 1 sebagai Cover Thumbnail (Maks lebar 320px agar super cepat & ringan)
+            const page = await pdf.getPage(1);
+            const baseViewport = page.getViewport({ scale: 1.0 });
+            const targetWidth = 320;
+            const scale = Math.min(1.0, targetWidth / Math.max(1, baseViewport.width));
+            const viewport = page.getViewport({ scale: scale });
+
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d', { alpha: false });
             
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
+            canvas.width = Math.round(viewport.width);
+            canvas.height = Math.round(viewport.height);
 
-            // Fill solid white background
+            // Background putih solid
             context.fillStyle = '#FFFFFF';
             context.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -75,10 +116,10 @@ window.renderPdfFirstPage = async function(file, timeoutMs = 12000) {
                 viewport: viewport,
             }).promise;
 
-            // Generate Blob (WebP with JPEG fallback)
+            // Generate Blob WebP (ringan ~15-25KB, kualitas optimal)
             let blob = await new Promise(resolve => {
                 try {
-                    canvas.toBlob(resolve, 'image/webp', 0.85);
+                    canvas.toBlob(resolve, 'image/webp', 0.80);
                 } catch (e) {
                     resolve(null);
                 }
@@ -86,22 +127,30 @@ window.renderPdfFirstPage = async function(file, timeoutMs = 12000) {
 
             if (!blob) {
                 blob = await new Promise(resolve => {
-                    canvas.toBlob(resolve, 'image/jpeg', 0.85);
+                    canvas.toBlob(resolve, 'image/jpeg', 0.80);
                 });
             }
 
-            let dataUrl;
+            // Preview URL instan tanpa string Base64 jutaan karakter
+            let previewUrl = blob ? URL.createObjectURL(blob) : null;
+            let dataUrl = null;
             try {
-                dataUrl = canvas.toDataURL('image/webp', 0.85);
+                dataUrl = canvas.toDataURL('image/webp', 0.80);
             } catch (e) {
-                dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+                try {
+                    dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+                } catch (e2) {}
             }
 
             return {
                 success: true,
                 blob: blob,
+                previewUrl: previewUrl,
                 imageBase64: dataUrl,
-                pageCount: pdf.numPages,
+                pageCount: pageCount,
+                author: author,
+                year: year,
+                title: title,
             };
         } catch (err) {
             console.error('PDF.js render error:', err);
@@ -112,6 +161,10 @@ window.renderPdfFirstPage = async function(file, timeoutMs = 12000) {
                 error: isEncrypted ? 'Berkas PDF terenkripsi / berpassword.' : errorMsg,
                 isEncrypted: isEncrypted,
             };
+        } finally {
+            if (objectUrl) {
+                try { URL.revokeObjectURL(objectUrl); } catch (e) {}
+            }
         }
     })();
 

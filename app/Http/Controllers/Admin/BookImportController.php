@@ -79,7 +79,21 @@ class BookImportController extends Controller
                 }
 
                 $pageCount = $request->input('page_count');
-                $candidate = $this->importService->processDigitalFile($file, $batchId, $coverBase64, $manualCoverFile, $skipPdfParse, $pageCount ? (int)$pageCount : null);
+                $clientAuthor = $request->input('author');
+                $clientYear = $request->input('year');
+                $clientTitle = $request->input('title');
+
+                $candidate = $this->importService->processDigitalFile(
+                    $file,
+                    $batchId,
+                    $coverBase64,
+                    $manualCoverFile,
+                    $skipPdfParse,
+                    $pageCount ? (int)$pageCount : null,
+                    $clientAuthor ? (string)$clientAuthor : null,
+                    $clientYear ? (int)$clientYear : null,
+                    $clientTitle ? (string)$clientTitle : null
+                );
                 $this->importService->saveCandidate($batchId, $candidate);
                 $newCandidates[] = $candidate;
             } catch (\Throwable $e) {
@@ -240,6 +254,23 @@ class BookImportController extends Controller
 
         return redirect()->route('admin.books.import.preview', ['batch_id' => $batchId])
             ->with('success', 'Naskah kandidat berhasil dihapus dari antrean import.');
+    }
+
+    /**
+     * Clear all candidates and temporary files for a batch session.
+     */
+    public function clearBatch(Request $request): JsonResponse
+    {
+        $batchId = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string)$request->input('batch_id'));
+        if (!empty($batchId)) {
+            $this->importService->cleanupBatch($batchId);
+            session()->forget('import_batch_' . $batchId);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Seluruh antrean berkas batch berhasil dibersihkan.'
+        ]);
     }
 
     /**

@@ -287,7 +287,7 @@
                     status: i.status,
                     statusText: i.statusText,
                     uploadPercent: i.uploadPercent,
-                    coverUrl: i.coverUrl,
+                    coverUrl: (i.coverUrl && !i.coverUrl.startsWith('blob:') && !i.coverUrl.startsWith('data:')) ? i.coverUrl : null,
                     pageCount: i.pageCount,
                     candidateId: i.candidateId
                 }));
@@ -500,7 +500,27 @@
                     if (this.fileQueue.length === 0) {
                         this.currentStepMessage = 'Antrean kosong.';
                         this.isUploading = false;
-                        clearPersistedQueue(this.batchId);
+                        const oldBatch = this.batchId;
+                        clearPersistedQueue(oldBatch);
+                        if (oldBatch) {
+                            try {
+                                fetch('{{ route("admin.books.import.clear") }}', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({ batch_id: oldBatch })
+                                }).catch(() => {});
+                            } catch (e) {}
+                        }
+                        this.batchId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+                            ? crypto.randomUUID() 
+                            : ('batch_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9));
+                        try {
+                            window.history.replaceState({}, '', '{{ route("admin.books.import.create") }}');
+                        } catch (e) {}
                     }
                 },
 
@@ -548,18 +568,48 @@
                     this.startUploadProcess();
                 },
 
-                resetQueue() {
+                async resetQueue() {
                     if (this.isUploading) {
                         if (!confirm('Proses unggah sedang berlangsung. Yakin ingin membatalkan dan membersihkan seluruh antrean berkas?')) {
                             return;
                         }
                         this.cancelUploadProcess();
                     }
+
+                    const oldBatchId = this.batchId;
+
+                    // 1. Kosongkan antrean di antarmuka
                     this.fileQueue = [];
                     this.completedCount = 0;
                     this.progressPercent = 0;
-                    this.currentStepMessage = 'Siap memproses berkas';
-                    clearPersistedQueue(this.batchId);
+                    this.currentStepMessage = 'Antrean telah dibersihkan. Siap memproses berkas baru.';
+
+                    // 2. Bersihkan IndexedDB lokal
+                    clearPersistedQueue(oldBatchId);
+
+                    // 3. Beri tahu server untuk menghapus seluruh kandidat di batch lama
+                    if (oldBatchId) {
+                        try {
+                            fetch('{{ route("admin.books.import.clear") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({ batch_id: oldBatchId })
+                            }).catch(() => {});
+                        } catch (e) {}
+                    }
+
+                    // 4. Generate batch ID baru yang segar & bersihkan URL dari ?batch_id=
+                    this.batchId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+                        ? crypto.randomUUID() 
+                        : ('batch_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9));
+                    
+                    try {
+                        window.history.replaceState({}, '', '{{ route("admin.books.import.create") }}');
+                    } catch (e) {}
                 },
 
                 formatFileSize(bytes) {
@@ -609,20 +659,24 @@
                     if (this.isCancelled) return Promise.resolve(false);
 
                     let coverBlob = null;
-                    let coverBase64 = null;
                     let pageCount = null;
+                    let author = null;
+                    let year = null;
+                    let title = null;
 
                     if (item.file && item.file.name && item.file.name.toLowerCase().endsWith('.pdf') && typeof window.renderPdfFirstPage === 'function') {
                         item.status = 'rendering';
-                        item.statusText = 'Membuat cover hal 1...';
+                        item.statusText = 'Menyiapkan cover & metadata...';
                         try {
                             const renderRes = await window.renderPdfFirstPage(item.file);
                             if (renderRes && renderRes.success) {
-                                item.coverUrl = renderRes.imageBase64;
+                                item.coverUrl = renderRes.previewUrl || renderRes.imageBase64;
                                 item.pageCount = renderRes.pageCount;
                                 coverBlob = renderRes.blob;
-                                coverBase64 = renderRes.imageBase64;
                                 pageCount = renderRes.pageCount;
+                                author = renderRes.author;
+                                year = renderRes.year;
+                                title = renderRes.title;
                             }
                         } catch (err) {
                             console.warn('Cover rendering hal 1 dilewati:', err);
@@ -638,16 +692,22 @@
                         formData.append('batch_id', this.batchId);
                         formData.append('_token', '{{ csrf_token() }}');
                         formData.append('files[0]', item.file);
-                        formData.append('skip_pdf_parse', '1');
 
                         if (coverBlob) {
                             formData.append('rendered_covers[0]', coverBlob, 'cover.webp');
-                        } else if (coverBase64) {
-                            formData.append('rendered_covers[0]', coverBase64);
                         }
 
                         if (pageCount) {
                             formData.append('page_count', pageCount);
+                        }
+                        if (author) {
+                            formData.append('author', author);
+                        }
+                        if (year) {
+                            formData.append('year', year);
+                        }
+                        if (title) {
+                            formData.append('title', title);
                         }
 
                         item.status = 'uploading';

@@ -26,7 +26,17 @@ class BookImportService
     /**
      * Process an uploaded digital book file (PDF or DOCX) and generate candidate metadata.
      */
-    public function processDigitalFile(UploadedFile $file, string $batchId, ?string $renderedCoverBase64 = null, ?UploadedFile $manualCover = null, bool $skipPdfParse = false, ?int $clientPageCount = null): array
+    public function processDigitalFile(
+        UploadedFile $file,
+        string $batchId,
+        ?string $renderedCoverBase64 = null,
+        ?UploadedFile $manualCover = null,
+        bool $skipPdfParse = false,
+        ?int $clientPageCount = null,
+        ?string $clientAuthor = null,
+        ?int $clientYear = null,
+        ?string $clientTitle = null
+    ): array
     {
         @set_time_limit(180);
         @ini_set('memory_limit', '512M');
@@ -73,13 +83,13 @@ class BookImportService
             }
         }
 
-        // 3. Extract Metadata
+        // 3. Extract Metadata (Title, Author, Year, Page Count)
         $metadata = [
-            'title' => $this->normalizeFilenameToTitle($originalFilename),
-            'author' => null,
+            'title' => (!empty($clientTitle) && strlen(trim($clientTitle)) > 2) ? trim($clientTitle) : $this->normalizeFilenameToTitle($originalFilename),
+            'author' => (!empty($clientAuthor) && strlen(trim($clientAuthor)) > 1) ? trim($clientAuthor) : null,
             'category_id' => null,
             'publisher' => null,
-            'year' => null,
+            'year' => (!empty($clientYear) && $clientYear >= 1800 && $clientYear <= ((int)date('Y') + 1)) ? (int)$clientYear : null,
             'isbn' => null,
             'language' => 'Indonesia',
             'page_count' => $clientPageCount ? (int)$clientPageCount : null,
@@ -90,24 +100,21 @@ class BookImportService
         $statusMessages = [];
 
         if ($extension === 'pdf') {
-            if (!$skipPdfParse) {
-                $pdfExtraction = $this->extractPdfMetadata($file->getRealPath(), $originalFilename);
-                $metadata['title'] = $pdfExtraction['title'] ?: $metadata['title'];
-                $metadata['author'] = $pdfExtraction['author'];
-                $metadata['year'] = $pdfExtraction['year'];
-                if (empty($metadata['page_count'])) {
-                    $metadata['page_count'] = $pdfExtraction['page_count'];
+            // Jalankan ekstraksi binary cepat stream header/footer (< 0.5ms) untuk melengkapi author, year, page_count
+            if (empty($metadata['author']) || empty($metadata['year']) || empty($metadata['page_count'])) {
+                $fastResult = $this->extractPdfMetadataFast($file->getRealPath());
+                if (empty($metadata['author']) && !empty($fastResult['author'])) {
+                    $metadata['author'] = $fastResult['author'];
                 }
-
-                if (!empty($pdfExtraction['error'])) {
-                    $status = 'WARNING';
-                    $statusMessages[] = $pdfExtraction['error'];
-                } elseif (!empty($pdfExtraction['warning'])) {
-                    $status = 'WARNING';
-                    $statusMessages[] = $pdfExtraction['warning'];
+                if (empty($metadata['year']) && !empty($fastResult['year'])) {
+                    $metadata['year'] = $fastResult['year'];
                 }
-            } else {
-                $statusMessages[] = 'Ekstraksi PDF server dilewati (menggunakan nama berkas).';
+                if (empty($metadata['page_count']) && !empty($fastResult['page_count'])) {
+                    $metadata['page_count'] = $fastResult['page_count'];
+                }
+                if (empty($clientTitle) && !empty($fastResult['title'])) {
+                    $metadata['title'] = $fastResult['title'];
+                }
             }
         } elseif ($extension === 'docx') {
             $docxExtraction = $this->extractDocxMetadata($file->getRealPath(), $originalFilename);
@@ -395,7 +402,7 @@ class BookImportService
                 }
             }
 
-            // 3. Author (/Author (...))
+            // 3. Author (/Author (...), hex string, or <dc:creator>)
             if (preg_match('/\/Author\s*\(([^)]+)\)/i', $content, $m)) {
                 $author = $this->decodePdfString(trim($m[1]));
                 if ($author && strlen($author) > 1 && !preg_match('/^(administrator|user|admin|microsoft|wps|canva)/i', $author)) {
@@ -406,10 +413,17 @@ class BookImportService
                 if ($author && strlen($author) > 1 && !preg_match('/^(administrator|user|admin|microsoft|wps|canva)/i', $author)) {
                     $result['author'] = $author;
                 }
+            } elseif (preg_match('/<dc:creator>[^<]*<rdf:li>([^<]+)<\/rdf:li>/i', $content, $m)) {
+                $author = trim(html_entity_decode($m[1]));
+                if ($author && strlen($author) > 1 && !preg_match('/^(administrator|user|admin|microsoft|wps|canva)/i', $author)) {
+                    $result['author'] = $author;
+                }
             }
 
-            // 4. CreationDate (/CreationDate (D:YYYY...))
-            if (preg_match('/\/CreationDate\s*\(\s*D?:?(\d{4})/i', $content, $m)) {
+            // 4. Year (/CreationDate (D:YYYY...), /ModDate, or <dc:date>)
+            if (preg_match('/\/CreationDate\s*\(\s*D?:?(\d{4})/i', $content, $m) ||
+                preg_match('/\/ModDate\s*\(\s*D?:?(\d{4})/i', $content, $m) ||
+                preg_match('/<(?:xmp:CreateDate|dc:date)[^>]*>(\d{4})/i', $content, $m)) {
                 $year = (int)$m[1];
                 if ($year >= 1800 && $year <= ((int)date('Y') + 1)) {
                     $result['year'] = $year;

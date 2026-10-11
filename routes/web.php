@@ -72,6 +72,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('books/import/preview', [AdminBookImportController::class, 'preview'])->name('books.import.preview');
         Route::post('books/import/cover', [AdminBookImportController::class, 'replaceCover'])->name('books.import.cover');
         Route::post('books/import/remove', [AdminBookImportController::class, 'removeCandidate'])->name('books.import.remove');
+        Route::post('books/import/clear', [AdminBookImportController::class, 'clearBatch'])->name('books.import.clear');
         Route::post('books/import/store', [AdminBookImportController::class, 'store'])->name('books.import.store');
         Route::post('books/{book}/auto-cover', [AdminBookController::class, 'saveAutoCover'])->name('books.auto-cover');
         Route::resource('books', AdminBookController::class);
