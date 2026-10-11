@@ -250,12 +250,48 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($activity->status === 'borrowed')
-                                        <x-badge variant="primary">Dipinjam</x-badge>
+                                    @if($activity->isPending())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200 rounded">
+                                            Pending
+                                        </span>
+                                    @elseif($activity->isApproved())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200 rounded">
+                                            Siap Ambil
+                                        </span>
+                                    @elseif($activity->status === 'borrowed')
+                                        @if($activity->isOverdue())
+                                            <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-red-50 text-danger border border-red-200 rounded">
+                                                Terlambat
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200 rounded">
+                                                Dipinjam
+                                            </span>
+                                        @endif
                                     @elseif($activity->status === 'returned')
-                                        <x-badge variant="emerald">Kembali</x-badge>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded">
+                                            Kembali
+                                        </span>
+                                    @elseif($activity->isCancelled())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-neutral-100 text-neutral-600 border border-neutral-border rounded">
+                                            Dibatalkan
+                                        </span>
+                                    @elseif($activity->isRejected())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
+                                            Ditolak
+                                        </span>
+                                    @elseif($activity->isExpiredState())
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-gray-100 text-gray-700 border border-gray-300 rounded">
+                                            Kedaluwarsa
+                                        </span>
+                                    @elseif($activity->status === 'overdue')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-red-50 text-danger border border-red-200 rounded">
+                                            Terlambat
+                                        </span>
                                     @else
-                                        <x-badge variant="rose">Terlambat</x-badge>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 text-[10px] font-bold bg-neutral-100 text-neutral-700 border border-neutral-border rounded">
+                                            {{ $activity->status_label ?? ucfirst((string)$activity->status) }}
+                                        </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-neutral-muted italic">
