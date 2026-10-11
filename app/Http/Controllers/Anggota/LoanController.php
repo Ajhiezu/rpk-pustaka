@@ -94,8 +94,8 @@ class LoanController extends Controller
 
     public function show(Loan $loan)
     {
-        // Authorization check: member can only view their own loan
-        if ($loan->user_id !== Auth::id()) {
+        // Authorization check: member can only view their own loan (or admin)
+        if ((int) $loan->user_id !== (int) Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses ke bukti peminjaman ini.');
         }
 
@@ -107,7 +107,7 @@ class LoanController extends Controller
     public function cancel(Loan $loan)
     {
         // Authorization check
-        if ($loan->user_id !== Auth::id()) {
+        if ((int) $loan->user_id !== (int) Auth::id() && !Auth::user()->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses untuk membatalkan reservasi ini.');
         }
 

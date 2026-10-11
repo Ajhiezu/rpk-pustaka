@@ -37,6 +37,8 @@ class Loan extends Model
     ];
 
     protected $casts = [
+        'user_id' => 'integer',
+        'total_books' => 'integer',
         'loan_date' => 'date',
         'due_date' => 'date',
         'pickup_deadline' => 'datetime',
