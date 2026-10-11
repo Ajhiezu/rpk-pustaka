@@ -275,15 +275,15 @@
                         <span class="text-xs text-neutral-muted font-mono">Total Transaksi: {{ count($recentLoans) }}</span>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto max-h-80 overflow-y-auto">
                         <table class="w-full text-left text-xs text-neutral-dark divide-y divide-neutral-border">
-                            <thead class="bg-neutral-surface text-[10px] uppercase font-bold text-neutral-muted tracking-wider">
+                            <thead class="sticky top-0 z-10 bg-neutral-surface text-[10px] uppercase font-bold text-neutral-muted tracking-wider border-b border-neutral-border">
                                 <tr>
-                                    <th class="px-6 py-3">Peminjam</th>
-                                    <th class="px-6 py-3">Tipe</th>
-                                    <th class="px-6 py-3">Tgl Pinjam</th>
-                                    <th class="px-6 py-3">Tenggat</th>
-                                    <th class="px-6 py-3">Status</th>
+                                    <th class="px-6 py-3 bg-neutral-surface">Peminjam</th>
+                                    <th class="px-6 py-3 bg-neutral-surface">Tipe</th>
+                                    <th class="px-6 py-3 bg-neutral-surface">Tgl Pinjam</th>
+                                    <th class="px-6 py-3 bg-neutral-surface">Tenggat</th>
+                                    <th class="px-6 py-3 bg-neutral-surface">Status</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-neutral-border">
@@ -312,7 +312,9 @@
                                                     @elseif($loan->isApproved()) bg-blue-100 text-blue-900 border-blue-300
                                                     @elseif($loan->isBorrowed()) bg-emerald-100 text-emerald-900 border-emerald-300
                                                     @elseif($loan->isReturned()) bg-slate-100 text-slate-800 border-slate-300
-                                                    @else bg-red-100 text-red-900 border-red-300 @endif">
+                                                    @elseif($loan->isCancelled()) bg-neutral-100 text-neutral-600 border-neutral-300
+                                                    @elseif($loan->isRejected() || $loan->isOverdue()) bg-red-100 text-red-900 border-red-300
+                                                    @else bg-neutral-100 text-neutral-800 border-neutral-300 @endif">
                                                     {{ $loan->status_label }}
                                                 </span>
                                             </td>
@@ -328,6 +330,15 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if(count($recentLoans) > 0)
+                        <div class="px-6 py-2.5 bg-neutral-surface/60 border-t border-neutral-border flex items-center justify-between text-xs text-neutral-muted">
+                            <span>Menampilkan riwayat sirkulasi terkini</span>
+                            <a href="{{ route('admin.loans.index', ['search' => $book->book_code]) }}" class="font-semibold text-primary hover:underline inline-flex items-center gap-1">
+                                Kelola di Sirkulasi &rarr;
+                            </a>
+                        </div>
+                    @endif
                 </div>
 
             </div>
