@@ -80,12 +80,19 @@
                         <button type="button" @click="resetQueue()" class="btn-editorial-outline text-xs py-1.5 px-3 cursor-pointer">
                             Bersihkan
                         </button>
-                        <button type="button" x-show="!isUploading" @click="startUploadProcess()" :disabled="fileQueue.length === 0" class="btn-editorial text-xs py-1.5 px-4 cursor-pointer">
-                            Mulai Ekstraksi & Pratinjau
+                        <button type="button" @click="$refs.digitalFileInput.click()" class="btn-editorial-outline text-xs py-1.5 px-3 cursor-pointer">
+                            + Tambah Berkas
                         </button>
-                        <button type="button" x-show="isUploading" @click="cancelUploadProcess()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs py-1.5 px-3.5 rounded transition-all cursor-pointer flex items-center gap-1.5 shadow-xs">
+                        <button type="button" x-show="isUploading" @click="cancelUploadProcess()" class="bg-red-50 hover:bg-red-100 text-danger border border-red-200 font-bold text-xs py-1.5 px-3 rounded transition-all cursor-pointer flex items-center gap-1.5">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            Batalkan Proses
+                            Batal
+                        </button>
+                        <button type="button" 
+                                @click="goToPreview()" 
+                                :disabled="completedCount === 0" 
+                                class="btn-editorial text-xs py-1.5 px-4 cursor-pointer flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                            <span x-show="isUploading" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+                            <span x-text="completedCount === fileQueue.length && completedCount > 0 ? 'Buka Pratinjau →' : (completedCount > 0 ? `Lanjut ke Pratinjau (${completedCount}/${fileQueue.length}) →` : 'Menunggu Berkas...')"></span>
                         </button>
                     </div>
                 </div>
@@ -240,12 +247,17 @@
                             name: file.name,
                             size: file.size,
                             status: 'ready',
-                            statusText: 'Siap',
+                            statusText: 'Antrean...',
                             uploadPercent: 0,
                             renderedCover: null,
                             coverBlob: null,
                             skipPdfParse: false,
                         });
+                    });
+
+                    // Instant auto-upload on select/drop (like iLovePDF)
+                    this.$nextTick(() => {
+                        this.startUploadProcess();
                     });
                 },
 
@@ -255,6 +267,7 @@
                         try { item._xhr.abort(); } catch (e) {}
                     }
                     this.fileQueue.splice(idx, 1);
+                    this.updateGlobalProgress();
                 },
 
                 cancelUploadProcess() {
@@ -303,6 +316,26 @@
                     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
                 },
 
+                updateGlobalProgress() {
+                    if (this.fileQueue.length === 0) {
+                        this.progressPercent = 0;
+                        return;
+                    }
+                    const totalBytes = this.fileQueue.reduce((acc, f) => acc + (f.size || 0), 0);
+                    const uploadedBytes = this.fileQueue.reduce((acc, f) => {
+                        if (f.status === 'done') return acc + (f.size || 0);
+                        if (f.status === 'uploading') return acc + Math.round((f.size || 0) * (f.uploadPercent || 0) / 100);
+                        return acc;
+                    }, 0);
+                    this.progressPercent = totalBytes > 0 ? Math.min(100, Math.round((uploadedBytes / totalBytes) * 100)) : 0;
+                },
+
+                goToPreview() {
+                    if (this.completedCount > 0) {
+                        window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
+                    }
+                },
+
                 uploadSingleItem(item, autoRetry = true) {
                     if (this.isCancelled) return Promise.resolve(false);
 
@@ -312,19 +345,13 @@
                         formData.append('_token', '{{ csrf_token() }}');
                         formData.append('files[0]', item.file);
 
-                        if (item.coverBlob) {
-                            formData.append('rendered_covers[0]', item.coverBlob, 'cover_0.webp');
-                        } else if (item.renderedCover) {
-                            formData.append('rendered_covers[0]', item.renderedCover);
-                        }
-
                         if (item.skipPdfParse) {
                             formData.append('skip_pdf_parse', '1');
                         }
 
                         item.status = 'uploading';
                         item.uploadPercent = 0;
-                        item.statusText = 'Mengunggah 0%...';
+                        item.statusText = '0% • Mengunggah...';
 
                         const xhr = new XMLHttpRequest();
                         item._xhr = xhr;
@@ -336,7 +363,7 @@
                             delete item._xhr;
                         };
 
-                        // Real-time transfer progress tracking
+                        // Real-time transfer progress tracking per file
                         xhr.upload.onprogress = (e) => {
                             if (this.isCancelled) return;
                             if (e.lengthComputable) {
@@ -344,7 +371,8 @@
                                 item.uploadPercent = percent;
                                 const loadedStr = this.formatFileSize(e.loaded);
                                 const totalStr = this.formatFileSize(e.total);
-                                item.statusText = `Mengunggah: ${loadedStr} / ${totalStr} (${percent}%)`;
+                                item.statusText = `${percent}% (${loadedStr} / ${totalStr})`;
+                                this.updateGlobalProgress();
                             }
                         };
 
@@ -361,8 +389,9 @@
                                     if (data.success) {
                                         item.status = 'done';
                                         item.uploadPercent = 100;
-                                        item.statusText = '✓ Selesai';
+                                        item.statusText = '✓ Siap';
                                         this.completedCount++;
+                                        this.updateGlobalProgress();
                                         resolve(true);
                                         return;
                                     } else {
@@ -378,7 +407,6 @@
                                     return;
                                 }
                             } else {
-                                // Auto-retry in lightweight mode on server timeouts
                                 if (autoRetry && !item.skipPdfParse && (xhr.status === 503 || xhr.status === 504 || xhr.status === 500)) {
                                     item.skipPdfParse = true;
                                     item.statusText = 'Mencoba Ulang (Mode Cepat)...';
@@ -434,107 +462,56 @@
 
                 async retrySingleItem(idx) {
                     const item = this.fileQueue[idx];
-                    if (!item || this.isUploading) return;
+                    if (!item) return;
 
-                    this.isUploading = true;
-                    this.isCancelled = false;
-                    item.skipPdfParse = true; // Always use fast mode on manual retry
-                    const success = await this.uploadSingleItem(item, false);
-                    this.isUploading = false;
-
-                    if (success && this.completedCount > 0) {
-                        this.currentStepMessage = 'Berkas berhasil diproses ulang. Membuka Pratinjau...';
-                        setTimeout(() => {
-                            if (!this.isCancelled) {
-                                window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
-                            }
-                        }, 600);
-                    }
-                },
-
-                async processItem(item) {
-                    if (this.isCancelled) return false;
-                    if (item.status === 'done') {
-                        this.completedCount++;
-                        return true;
-                    }
-
-                    // 1. Fast cover render with 1.2-second strict timeout guard
-                    if (item.name.toLowerCase().endsWith('.pdf') && !item.coverBlob && !item.renderedCover) {
-                        item.status = 'rendering';
-                        item.statusText = 'Menyiapkan sampul...';
-                        try {
-                            if (window.renderPdfFirstPage) {
-                                const timeoutPromise = new Promise(resolve => setTimeout(() => resolve({ success: false }), 1200));
-                                const renderPromise = window.renderPdfFirstPage(item.file, 1200);
-                                const renderRes = await Promise.race([renderPromise, timeoutPromise]);
-
-                                if (renderRes && renderRes.success && (renderRes.blob || renderRes.imageBase64)) {
-                                    item.coverBlob = renderRes.blob;
-                                    item.renderedCover = renderRes.imageBase64;
-                                }
-                            }
-                        } catch (err) {
-                            console.warn('Cover render timeout/skipped:', err);
-                        }
-                    }
-
-                    if (this.isCancelled) return false;
-
-                    // 2. Upload item with real-time XHR progress
-                    return await this.uploadSingleItem(item, true);
+                    item.status = 'ready';
+                    item.statusText = 'Menunggu...';
+                    item.uploadPercent = 0;
+                    item.skipPdfParse = true;
+                    this.startUploadProcess();
                 },
 
                 async startUploadProcess() {
-                    if (this.fileQueue.length === 0 || this.isUploading) return;
+                    if (this.fileQueue.length === 0) return;
+                    if (this.isUploading) return; // Already running workers
+
                     this.isUploading = true;
                     this.isCancelled = false;
-                    this.completedCount = 0;
 
-                    const totalFiles = this.fileQueue.length;
-                    this.progressPercent = 5;
-
-                    // High-speed parallel processing (2 files simultaneously)
-                    const CONCURRENCY = 2;
-                    let nextIndex = 0;
-                    let processedSoFar = 0;
+                    // 3 parallel upload streams for high bandwidth utilization (like iLovePDF)
+                    const CONCURRENCY = 3;
 
                     const worker = async () => {
-                        while (nextIndex < totalFiles && !this.isCancelled) {
-                            const idx = nextIndex++;
-                            const item = this.fileQueue[idx];
-                            if (!item) continue;
-                            
-                            this.currentStepMessage = `Memproses (${processedSoFar + 1}/${totalFiles}): ${item.name}...`;
-                            await this.processItem(item);
+                        while (!this.isCancelled) {
+                            const nextItem = this.fileQueue.find(i => i.status === 'ready');
+                            if (!nextItem) break;
 
-                            if (this.isCancelled) break;
+                            const done = this.completedCount;
+                            const total = this.fileQueue.length;
+                            this.currentStepMessage = `Mengunggah (${done + 1}/${total}): ${nextItem.name}...`;
 
-                            processedSoFar++;
-                            this.progressPercent = Math.min(99, Math.round((processedSoFar / totalFiles) * 100));
+                            await this.uploadSingleItem(nextItem, true);
                         }
                     };
 
-                    const workers = Array(Math.min(CONCURRENCY, totalFiles)).fill(0).map(() => worker());
+                    const workers = Array(Math.min(CONCURRENCY, this.fileQueue.length)).fill(0).map(() => worker());
                     await Promise.all(workers);
 
-                    if (this.isCancelled) {
-                        this.isUploading = false;
-                        return;
-                    }
-
-                    this.progressPercent = 100;
                     this.isUploading = false;
+                    this.updateGlobalProgress();
 
-                    if (this.completedCount > 0) {
-                        this.currentStepMessage = `Selesai! ${this.completedCount} dari ${totalFiles} berkas berhasil diproses. Mengarahkan ke Pratinjau...`;
-                        setTimeout(() => {
-                            if (!this.isCancelled) {
-                                window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
-                            }
-                        }, 600);
-                    } else {
-                        this.currentStepMessage = 'Tidak ada berkas yang berhasil diproses. Silakan periksa atau klik Coba Lagi.';
+                    const total = this.fileQueue.length;
+                    if (this.completedCount > 0 && !this.isCancelled) {
+                        if (this.completedCount === total) {
+                            this.currentStepMessage = `Selesai! Seluruh ${this.completedCount} berkas berhasil diunggah. Mengarahkan ke Pratinjau...`;
+                            setTimeout(() => {
+                                if (!this.isCancelled) {
+                                    this.goToPreview();
+                                }
+                            }, 800);
+                        } else {
+                            this.currentStepMessage = `${this.completedCount} dari ${total} berkas selesai diunggah. Klik "Lanjut ke Pratinjau" untuk melanjutkan.`;
+                        }
                     }
                 }
             };

@@ -35,7 +35,7 @@ class BookImportService
         $originalFilename = $file->getClientOriginalName();
         $extension = strtolower($file->getClientOriginalExtension());
         $mimeType = $file->getMimeType();
-        $fileHash = md5_file($file->getRealPath());
+        $fileHash = md5($originalFilename . '_' . $file->getSize() . '_' . $batchId);
 
         // 1. Store PDF/DOCX to private temporary storage
         $tempDir = 'temp/import/' . $batchId;
