@@ -58,8 +58,8 @@ window.renderPdfFirstPage = async function(file, timeoutMs = 12000) {
             const pdf = await loadingTask.promise;
             const page = await pdf.getPage(1);
 
-            // Scale 1.5 for crisp cover image
-            const viewport = page.getViewport({ scale: 1.5 });
+            // Scale 1.2 for fast and crisp cover image
+            const viewport = page.getViewport({ scale: 1.2 });
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d', { alpha: false });
             

@@ -74,7 +74,8 @@ class BookImportController extends Controller
                     $manualCoverFile = null;
                 }
 
-                $candidate = $this->importService->processDigitalFile($file, $batchId, $coverBase64, $manualCoverFile, $skipPdfParse);
+                $pageCount = $request->input('page_count');
+                $candidate = $this->importService->processDigitalFile($file, $batchId, $coverBase64, $manualCoverFile, $skipPdfParse, $pageCount ? (int)$pageCount : null);
                 $this->importService->saveCandidate($batchId, $candidate);
                 $newCandidates[] = $candidate;
             } catch (\Throwable $e) {

@@ -26,7 +26,7 @@ class BookImportService
     /**
      * Process an uploaded digital book file (PDF or DOCX) and generate candidate metadata.
      */
-    public function processDigitalFile(UploadedFile $file, string $batchId, ?string $renderedCoverBase64 = null, ?UploadedFile $manualCover = null, bool $skipPdfParse = false): array
+    public function processDigitalFile(UploadedFile $file, string $batchId, ?string $renderedCoverBase64 = null, ?UploadedFile $manualCover = null, bool $skipPdfParse = false, ?int $clientPageCount = null): array
     {
         @set_time_limit(180);
         @ini_set('memory_limit', '512M');
@@ -48,7 +48,11 @@ class BookImportService
         $coverWarning = null;
 
         if ($manualCover && $manualCover->isValid()) {
-            $coverFilename = $candidateId . '_cover.' . $manualCover->getClientOriginalExtension();
+            $ext = strtolower($manualCover->getClientOriginalExtension() ?: 'webp');
+            if (!in_array($ext, ['webp', 'jpg', 'jpeg', 'png'])) {
+                $ext = 'webp';
+            }
+            $coverFilename = $candidateId . '_cover.' . $ext;
             Storage::disk('public')->putFileAs($tempDir, $manualCover, $coverFilename);
             $coverPath = $tempDir . '/' . $coverFilename;
         } elseif (!empty($renderedCoverBase64) && str_starts_with($renderedCoverBase64, 'data:image')) {
@@ -78,7 +82,7 @@ class BookImportService
             'year' => null,
             'isbn' => null,
             'language' => 'Indonesia',
-            'page_count' => null,
+            'page_count' => $clientPageCount ? (int)$clientPageCount : null,
             'description' => null,
         ];
 
@@ -91,7 +95,9 @@ class BookImportService
                 $metadata['title'] = $pdfExtraction['title'] ?: $metadata['title'];
                 $metadata['author'] = $pdfExtraction['author'];
                 $metadata['year'] = $pdfExtraction['year'];
-                $metadata['page_count'] = $pdfExtraction['page_count'];
+                if (empty($metadata['page_count'])) {
+                    $metadata['page_count'] = $pdfExtraction['page_count'];
+                }
 
                 if (!empty($pdfExtraction['error'])) {
                     $status = 'WARNING';

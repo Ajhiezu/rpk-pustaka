@@ -69,6 +69,30 @@
                 </div>
             </div>
 
+            <!-- Rejected Files (>50MB Takedown) Alert Banner -->
+            <div x-show="rejectedFilesList.length > 0" class="bg-[#FDEDED] border border-[#FFCDD2] rounded-xl p-4 space-y-2.5 shadow-2xs">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-danger font-bold text-xs uppercase tracking-wider">
+                        <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span>Berkas Dikeluarkan / Ditakedown (Melebihi Batas 50MB)</span>
+                    </div>
+                    <button type="button" @click="rejectedFilesList = []" class="text-[11px] font-semibold text-danger hover:underline cursor-pointer">
+                        Tutup Info
+                    </button>
+                </div>
+                <p class="text-[11px] text-neutral-dark">
+                    Sistem otomatis mengeluarkan dan men-takedown berkas berikut karena ukurannya melebihi batas maksimal <strong>50MB per naskah digital</strong>:
+                </p>
+                <div class="divide-y divide-red-200/80 text-xs bg-white/70 rounded-lg p-2.5 border border-red-200 max-h-36 overflow-y-auto">
+                    <template x-for="(rf, rIdx) in rejectedFilesList" :key="rIdx">
+                        <div class="py-1.5 flex items-center justify-between gap-3 text-xs">
+                            <span class="font-semibold text-neutral-dark truncate" x-text="rf.name"></span>
+                            <span class="text-danger font-mono font-bold shrink-0 text-[11px]" x-text="`${rf.sizeFormatted} • Ditakedown`"></span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
             <!-- Queue Progress Section (Shows when files are queued or uploading) -->
             <div x-show="fileQueue.length > 0" class="bg-white border border-neutral-border rounded-xl p-5 space-y-4 shadow-xs">
                 <div class="flex items-center justify-between border-b border-neutral-border pb-3">
@@ -109,17 +133,30 @@
                 </div>
 
                 <!-- Individual File Queue Items -->
-                <div class="max-h-72 overflow-y-auto divide-y divide-neutral-border/60">
+                <div class="max-h-80 overflow-y-auto divide-y divide-neutral-border/60">
                     <template x-for="(item, idx) in fileQueue" :key="idx">
                         <div class="py-2.5 flex items-center justify-between text-xs gap-3">
                             <div class="flex items-center gap-3 min-w-0">
-                                <div class="w-8 h-8 rounded bg-neutral-surface border border-neutral-border flex items-center justify-center shrink-0 font-mono font-bold text-[10px]"
-                                     :class="item.name.toLowerCase().endsWith('.pdf') ? 'text-primary' : 'text-blue-600'"
-                                     x-text="item.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'DOC'">
+                                <!-- Real Cover Thumbnail (Page 1) or Document Badge -->
+                                <div class="w-9 h-12 rounded bg-neutral-surface border border-neutral-border flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                                    <template x-if="item.coverUrl">
+                                        <img :src="item.coverUrl" alt="Sampul" class="w-full h-full object-cover">
+                                    </template>
+                                    <template x-if="!item.coverUrl">
+                                        <span class="font-mono font-bold text-[10px]"
+                                              :class="item.name.toLowerCase().endsWith('.pdf') ? 'text-primary' : 'text-blue-600'"
+                                              x-text="item.name.toLowerCase().endsWith('.pdf') ? 'PDF' : 'DOC'">
+                                        </span>
+                                    </template>
                                 </div>
                                 <div class="min-w-0">
                                     <p class="font-semibold text-neutral-dark truncate max-w-sm" x-text="item.name"></p>
-                                    <p class="text-[11px] text-neutral-muted" x-text="formatFileSize(item.size)"></p>
+                                    <div class="flex items-center gap-2 text-[11px] text-neutral-muted">
+                                        <span x-text="formatFileSize(item.size)"></span>
+                                        <template x-if="item.pageCount">
+                                            <span>• <span x-text="`${item.pageCount} Hal.`"></span></span>
+                                        </template>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
@@ -139,14 +176,16 @@
                                       }"
                                       x-text="item.statusText">
                                 </span>
-                                <button type="button" @click="removeFromQueue(idx)" :disabled="isUploading" class="text-neutral-muted hover:text-danger p-1">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                <!-- Takedown / Hapus Item Button -->
+                                <button type="button" @click="takedownItem(idx)" class="text-neutral-muted hover:text-danger hover:bg-red-50 p-1.5 rounded transition-all cursor-pointer flex items-center gap-1" title="Takedown / Buang naskah ini dari antrean">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <span class="text-[11px] font-medium hidden sm:inline">Buang</span>
                                 </button>
                             </div>
                         </div>
                     </template>
                 </div>
-            </div>
+            </div></div>
         </div>
 
         <!-- TAB 2: PHYSICAL SPREADSHEET IMPORT -->
@@ -216,6 +255,7 @@
                 isCancelled: false,
                 activeXhrs: [],
                 fileQueue: [],
+                rejectedFilesList: [],
                 completedCount: 0,
                 currentStepMessage: 'Siap memproses berkas',
                 progressPercent: 0,
@@ -236,12 +276,29 @@
                 },
 
                 addFilesToQueue(files) {
-                    if (this.fileQueue.length + files.length > 50) {
-                        alert('Maksimal 50 berkas dalam satu sesi import massal.');
-                        files = files.slice(0, 50 - this.fileQueue.length);
-                    }
+                    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB limit
+                    const validFiles = [];
 
                     files.forEach(file => {
+                        if (file.size > MAX_FILE_SIZE) {
+                            // Otomatis takedown / tolak file di atas 50MB dan catat di info penolakan
+                            this.rejectedFilesList.push({
+                                name: file.name,
+                                size: file.size,
+                                sizeFormatted: this.formatFileSize(file.size),
+                                reason: 'Ukuran melebihi batas 50MB'
+                            });
+                        } else {
+                            validFiles.push(file);
+                        }
+                    });
+
+                    if (this.fileQueue.length + validFiles.length > 50) {
+                        alert('Maksimal 50 berkas dalam satu sesi import massal.');
+                        validFiles.splice(50 - this.fileQueue.length);
+                    }
+
+                    validFiles.forEach(file => {
                         this.fileQueue.push({
                             file: file,
                             name: file.name,
@@ -249,25 +306,59 @@
                             status: 'ready',
                             statusText: 'Antrean...',
                             uploadPercent: 0,
-                            renderedCover: null,
-                            coverBlob: null,
-                            skipPdfParse: false,
+                            coverUrl: null,
+                            pageCount: null,
+                            candidateId: null,
+                            skipPdfParse: true,
                         });
                     });
 
-                    // Instant auto-upload on select/drop (like iLovePDF)
+                    // Auto-start upload process instantly (like iLovePDF)
                     this.$nextTick(() => {
                         this.startUploadProcess();
                     });
                 },
 
-                removeFromQueue(idx) {
+                async takedownItem(idx) {
                     const item = this.fileQueue[idx];
-                    if (item && item._xhr) {
+                    if (!item) return;
+
+                    // 1. Batalkan XHR jika sedang berjalan
+                    if (item._xhr) {
                         try { item._xhr.abort(); } catch (e) {}
                     }
+
+                    // 2. Jika sudah tersimpan di server, hapus kandidat dari batch
+                    if (item.candidateId) {
+                        try {
+                            fetch('{{ route("admin.books.import.remove") }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    batch_id: this.batchId,
+                                    candidate_id: item.candidateId
+                                })
+                            }).catch(() => {});
+                        } catch (e) {}
+                    }
+
+                    // 3. Kurangi completedCount jika sebelumnya sudah sukses
+                    if (item.status === 'done') {
+                        this.completedCount = Math.max(0, this.completedCount - 1);
+                    }
+
+                    // 4. Hapus dari daftar antrean
                     this.fileQueue.splice(idx, 1);
                     this.updateGlobalProgress();
+
+                    if (this.fileQueue.length === 0) {
+                        this.currentStepMessage = 'Antrean kosong.';
+                        this.isUploading = false;
+                    }
                 },
 
                 cancelUploadProcess() {
@@ -336,8 +427,30 @@
                     }
                 },
 
-                uploadSingleItem(item, autoRetry = true) {
+                async uploadSingleItem(item) {
                     if (this.isCancelled) return Promise.resolve(false);
+
+                    // 1. Halaman Pertama Wajib Jadi Cover (PDF.js di browser, super cepat tanpa beban server)
+                    let coverBlob = null;
+                    let coverBase64 = null;
+                    let pageCount = null;
+
+                    if (item.file.name.toLowerCase().endsWith('.pdf') && typeof window.renderPdfFirstPage === 'function') {
+                        item.status = 'rendering';
+                        item.statusText = 'Membuat cover hal 1...';
+                        try {
+                            const renderRes = await window.renderPdfFirstPage(item.file);
+                            if (renderRes && renderRes.success) {
+                                item.coverUrl = renderRes.imageBase64;
+                                item.pageCount = renderRes.pageCount;
+                                coverBlob = renderRes.blob;
+                                coverBase64 = renderRes.imageBase64;
+                                pageCount = renderRes.pageCount;
+                            }
+                        } catch (err) {
+                            console.warn('Cover rendering hal 1 dilewati:', err);
+                        }
+                    }
 
                     return new Promise((resolve) => {
                         const formData = new FormData();
@@ -345,8 +458,17 @@
                         formData.append('_token', '{{ csrf_token() }}');
                         formData.append('files[0]', item.file);
 
-                        if (item.skipPdfParse) {
-                            formData.append('skip_pdf_parse', '1');
+                        // Wajib: lewati parsing berat isi teks dokumen agar cepat seperti iLovePDF
+                        formData.append('skip_pdf_parse', '1');
+
+                        if (coverBlob) {
+                            formData.append('rendered_covers[0]', coverBlob, 'cover.webp');
+                        } else if (coverBase64) {
+                            formData.append('rendered_covers[0]', coverBase64);
+                        }
+
+                        if (pageCount) {
+                            formData.append('page_count', pageCount);
                         }
 
                         item.status = 'uploading';
@@ -376,7 +498,7 @@
                             }
                         };
 
-                        xhr.onload = async () => {
+                        xhr.onload = () => {
                             cleanup();
                             if (this.isCancelled) {
                                 resolve(false);
@@ -390,6 +512,9 @@
                                         item.status = 'done';
                                         item.uploadPercent = 100;
                                         item.statusText = '✓ Siap';
+                                        if (data.processed && data.processed[0] && data.processed[0].id) {
+                                            item.candidateId = data.processed[0].id;
+                                        }
                                         this.completedCount++;
                                         this.updateGlobalProgress();
                                         resolve(true);
@@ -407,14 +532,6 @@
                                     return;
                                 }
                             } else {
-                                if (autoRetry && !item.skipPdfParse && (xhr.status === 503 || xhr.status === 504 || xhr.status === 500)) {
-                                    item.skipPdfParse = true;
-                                    item.statusText = 'Mencoba Ulang (Mode Cepat)...';
-                                    const retryResult = await this.uploadSingleItem(item, false);
-                                    resolve(retryResult);
-                                    return;
-                                }
-
                                 let errLabel = `Gagal (HTTP ${xhr.status})`;
                                 if (xhr.status === 413) errLabel = 'File Terlalu Besar (>50MB)';
                                 if (xhr.status === 500) errLabel = 'Gagal Server';
@@ -426,18 +543,10 @@
                             }
                         };
 
-                        xhr.onerror = async () => {
+                        xhr.onerror = () => {
                             cleanup();
                             if (this.isCancelled) {
                                 resolve(false);
-                                return;
-                            }
-
-                            if (autoRetry && !item.skipPdfParse) {
-                                item.skipPdfParse = true;
-                                item.statusText = 'Mencoba Ulang...';
-                                const retryResult = await this.uploadSingleItem(item, false);
-                                resolve(retryResult);
                                 return;
                             }
                             item.status = 'error';
@@ -467,13 +576,12 @@
                     item.status = 'ready';
                     item.statusText = 'Menunggu...';
                     item.uploadPercent = 0;
-                    item.skipPdfParse = true;
                     this.startUploadProcess();
                 },
 
                 async startUploadProcess() {
                     if (this.fileQueue.length === 0) return;
-                    if (this.isUploading) return; // Already running workers
+                    if (this.isUploading) return;
 
                     this.isUploading = true;
                     this.isCancelled = false;
@@ -490,7 +598,7 @@
                             const total = this.fileQueue.length;
                             this.currentStepMessage = `Mengunggah (${done + 1}/${total}): ${nextItem.name}...`;
 
-                            await this.uploadSingleItem(nextItem, true);
+                            await this.uploadSingleItem(nextItem);
                         }
                     };
 
