@@ -667,11 +667,16 @@
                         xhr.upload.onprogress = (e) => {
                             if (this.isCancelled) return;
                             if (e.lengthComputable) {
-                                const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
-                                item.uploadPercent = percent;
-                                const loadedStr = this.formatFileSize(e.loaded);
-                                const totalStr = this.formatFileSize(e.total);
-                                item.statusText = `${percent}% (${loadedStr} / ${totalStr})`;
+                                if (e.loaded < e.total) {
+                                    const percent = Math.min(99, Math.round((e.loaded / e.total) * 100));
+                                    item.uploadPercent = percent;
+                                    const loadedStr = this.formatFileSize(e.loaded);
+                                    const totalStr = this.formatFileSize(e.total);
+                                    item.statusText = `${percent}% (${loadedStr} / ${totalStr})`;
+                                } else {
+                                    item.uploadPercent = 99;
+                                    item.statusText = '99% • Menyimpan di server...';
+                                }
                                 this.updateGlobalProgress();
                             }
                         };

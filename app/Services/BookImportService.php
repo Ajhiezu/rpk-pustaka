@@ -544,8 +544,8 @@ class BookImportService
 
         // Check 2: Exact Title Match (only active books)
         if (!empty($title)) {
-            $cleanTitle = trim(strtolower($title));
-            $existingTitle = Book::whereRaw('LOWER(TRIM(title)) = ?', [$cleanTitle])->first();
+            $cleanTitle = trim($title);
+            $existingTitle = Book::where('title', $cleanTitle)->first();
             if ($existingTitle) {
                 return [
                     'is_duplicate' => true,

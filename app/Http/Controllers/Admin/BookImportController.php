@@ -113,12 +113,9 @@ class BookImportController extends Controller
             }
         }
 
-        $allCandidates = $this->importService->getBatchCandidates($batchId);
-
         return response()->json([
             'success' => true,
             'batch_id' => $batchId,
-            'total_candidates' => count($allCandidates),
             'processed' => $newCandidates,
         ]);
     }
