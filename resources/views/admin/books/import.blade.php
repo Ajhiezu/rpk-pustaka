@@ -185,7 +185,7 @@
                         </div>
                     </template>
                 </div>
-            </div></div>
+            </div>
         </div>
 
         <!-- TAB 2: PHYSICAL SPREADSHEET IMPORT -->
