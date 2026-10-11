@@ -117,10 +117,12 @@
                         </button>
                         <button type="button" 
                                 @click="goToPreview()" 
-                                :disabled="completedCount === 0" 
-                                class="btn-editorial text-xs py-1.5 px-4 cursor-pointer flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed">
+                                :disabled="completedCount === 0 || isUploading" 
+                                :class="isUploading ? 'opacity-50 cursor-not-allowed' : ''"
+                                class="btn-editorial text-xs py-1.5 px-4 cursor-pointer flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                                :title="isUploading ? 'Proses unggah sedang berjalan. Harap tunggu hingga selesai atau klik Batal terlebih dahulu.' : ''">
                             <span x-show="isUploading" class="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
-                            <span x-text="completedCount === fileQueue.length && completedCount > 0 ? 'Buka Pratinjau →' : (completedCount > 0 ? `Lanjut ke Pratinjau (${completedCount}/${fileQueue.length}) →` : 'Menunggu Berkas...')"></span>
+                            <span x-text="isUploading ? `Mengunggah (${completedCount}/${fileQueue.length})...` : (completedCount === fileQueue.length && completedCount > 0 ? 'Buka Pratinjau →' : (completedCount > 0 ? `Lanjut ke Pratinjau (${completedCount}/${fileQueue.length}) →` : 'Menunggu Berkas...'))"></span>
                         </button>
                     </div>
                 </div>
@@ -522,8 +524,13 @@
                         }
                     });
 
+                    // Langsung sinkronkan progres ke persentase berkas yang sudah berhasil (terkunci stabil)
+                    this.updateGlobalProgress();
                     persistBatchQueue(this.batchId, this.fileQueue);
-                    this.currentStepMessage = 'Proses upload dihentikan sementara. Anda dapat menekan "Lanjutkan Proses" kapan saja.';
+
+                    const done = this.completedCount;
+                    const total = this.fileQueue.length;
+                    this.currentStepMessage = `Proses dihentikan (${done}/${total} selesai). Anda dapat klik "Lanjutkan Proses" kapan saja.`;
                 },
 
                 resumeUploadProcess() {
@@ -536,6 +543,7 @@
                             delete item._xhr;
                         }
                     });
+                    this.updateGlobalProgress();
                     this.currentStepMessage = 'Melanjutkan proses unggah antrean berkas...';
                     this.startUploadProcess();
                 },
@@ -563,24 +571,38 @@
                 },
 
                 updateGlobalProgress() {
-                    if (this.fileQueue.length === 0) {
+                    const total = this.fileQueue.length;
+                    if (total === 0) {
                         this.progressPercent = 0;
                         return;
                     }
-                    const totalBytes = this.fileQueue.reduce((acc, f) => acc + (f.size || 0), 0);
-                    const uploadedBytes = this.fileQueue.reduce((acc, f) => {
-                        if (f.status === 'done') return acc + (f.size || 0);
-                        if (f.status === 'uploading') return acc + Math.round((f.size || 0) * (f.uploadPercent || 0) / 100);
-                        return acc;
-                    }, 0);
-                    this.progressPercent = totalBytes > 0 ? Math.min(100, Math.round((uploadedBytes / totalBytes) * 100)) : 0;
+
+                    const completed = this.fileQueue.filter(f => f.status === 'done').length;
+
+                    // Basis persentase terkunci dari berkas yang sudah selesai 100%
+                    let calculated = (completed / total) * 100;
+
+                    // Tambahkan fraksi dari berkas yang sedang aktif mengunggah saat ini
+                    this.fileQueue.forEach(item => {
+                        if (item.status === 'uploading' && (item.uploadPercent || 0) > 0) {
+                            calculated += ((item.uploadPercent || 0) / total);
+                        }
+                    });
+
+                    this.progressPercent = Math.min(100, Math.max(0, Math.round(calculated)));
                 },
 
                 async goToPreview() {
-                    if (this.completedCount > 0) {
-                        await persistBatchQueue(this.batchId, this.fileQueue);
-                        window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
+                    if (this.isUploading) {
+                        alert('Proses upload masih berjalan. Harap tunggu hingga seluruh berkas selesai atau klik "Batal" terlebih dahulu sebelum menuju pratinjau.');
+                        return;
                     }
+                    if (this.completedCount === 0) {
+                        alert('Belum ada berkas yang selesai diunggah.');
+                        return;
+                    }
+                    await persistBatchQueue(this.batchId, this.fileQueue);
+                    window.location.href = `{{ route('admin.books.import.preview') }}?batch_id=${this.batchId}`;
                 },
 
                 async uploadSingleItem(item) {
@@ -716,6 +738,7 @@
                             item.status = 'cancelled';
                             item.statusText = 'Dibatalkan';
                             item.uploadPercent = 0;
+                            this.updateGlobalProgress();
                             resolve(false);
                         };
 
@@ -745,23 +768,17 @@
                     this.isUploading = true;
                     this.isCancelled = false;
 
-                    const CONCURRENCY = 3;
+                    // Optimasi 1 berkas per 1 berkas: 1 file selesai penuh, baru lanjut membaca berkas berikutnya
+                    while (!this.isCancelled) {
+                        const nextItem = this.fileQueue.find(i => i.status === 'ready');
+                        if (!nextItem) break;
 
-                    const worker = async () => {
-                        while (!this.isCancelled) {
-                            const nextItem = this.fileQueue.find(i => i.status === 'ready');
-                            if (!nextItem) break;
+                        const done = this.completedCount;
+                        const total = this.fileQueue.length;
+                        this.currentStepMessage = `Memproses (${done + 1}/${total}): ${nextItem.name}...`;
 
-                            const done = this.completedCount;
-                            const total = this.fileQueue.length;
-                            this.currentStepMessage = `Mengunggah (${done + 1}/${total}): ${nextItem.name}...`;
-
-                            await this.uploadSingleItem(nextItem);
-                        }
-                    };
-
-                    const workers = Array(Math.min(CONCURRENCY, this.fileQueue.length)).fill(0).map(() => worker());
-                    await Promise.all(workers);
+                        await this.uploadSingleItem(nextItem);
+                    }
 
                     this.isUploading = false;
                     this.updateGlobalProgress();
