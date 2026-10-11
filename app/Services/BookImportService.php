@@ -35,7 +35,7 @@ class BookImportService
         $originalFilename = $file->getClientOriginalName();
         $extension = strtolower($file->getClientOriginalExtension());
         $mimeType = $file->getMimeType();
-        $fileHash = hash_file('sha256', $file->getRealPath());
+        $fileHash = md5_file($file->getRealPath());
 
         // 1. Store PDF/DOCX to private temporary storage
         $tempDir = 'temp/import/' . $batchId;
@@ -314,7 +314,7 @@ class BookImportService
             'warning' => null,
         ];
 
-        // 1. Fast Stream-Based PDF Scanner (<1ms execution time)
+        // 1. Fast Stream-Based Binary Scanner (<1ms execution time, 0 memory overhead)
         $fastResult = $this->extractPdfMetadataFast($realPath);
         if (!empty($fastResult['title'])) {
             $result['title'] = $fastResult['title'];
@@ -327,43 +327,6 @@ class BookImportService
         }
         if (!empty($fastResult['page_count'])) {
             $result['page_count'] = $fastResult['page_count'];
-        }
-
-        // 2. If fast scanner found a title, return immediately without heavy Smalot parsing
-        if (!empty($result['title']) && !empty($result['page_count'])) {
-            return $result;
-        }
-
-        // 3. Optional fallback to Smalot only if title is missing and memory permit
-        if (empty($result['title']) && memory_get_usage() < 128 * 1024 * 1024) {
-            try {
-                $parser = new PdfParser();
-                $pdf = $parser->parseFile($realPath);
-                $details = $pdf->getDetails();
-
-                if (empty($result['title']) && !empty($details['Title']) && is_string($details['Title']) && strlen(trim($details['Title'])) > 2) {
-                    $cleanedTitle = trim($details['Title']);
-                    if (!preg_match('/^(microsoft word|untitled|wps office|canva|adobe|print)/i', $cleanedTitle)) {
-                        $result['title'] = $cleanedTitle;
-                    }
-                }
-
-                if (empty($result['author']) && !empty($details['Author']) && is_string($details['Author']) && strlen(trim($details['Author'])) > 1) {
-                    $cleanedAuthor = trim($details['Author']);
-                    if (!preg_match('/^(administrator|user|admin|microsoft|wps|canva)/i', $cleanedAuthor)) {
-                        $result['author'] = $cleanedAuthor;
-                    }
-                }
-
-                if (empty($result['page_count'])) {
-                    try {
-                        $pages = $pdf->getPages();
-                        $result['page_count'] = count($pages);
-                    } catch (\Throwable $e) {}
-                }
-            } catch (\Throwable $e) {
-                // Ignore Smalot errors silently - filename title will be used as ultimate fallback
-            }
         }
 
         return $result;
@@ -387,17 +350,17 @@ class BookImportService
                 return $result;
             }
 
-            // Read first 128KB and last 64KB where metadata dictionaries reside
+            // Read first 256KB and last 128KB where metadata dictionaries reside
             $fp = @fopen($realPath, 'rb');
             if (!$fp) {
                 return $result;
             }
 
-            $header = fread($fp, 131072);
+            $header = fread($fp, 262144); // 256KB
             $footer = '';
-            if ($fileSize > 131072) {
-                fseek($fp, max(0, $fileSize - 65536));
-                $footer = fread($fp, 65536);
+            if ($fileSize > 262144) {
+                fseek($fp, max(0, $fileSize - 131072));
+                $footer = fread($fp, 131072); // 128KB
             }
             fclose($fp);
 
