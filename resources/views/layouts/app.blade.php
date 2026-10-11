@@ -34,6 +34,38 @@
         .font-serif, h1, h2, h3, h4, h5, h6 {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
         }
+
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 10mm;
+            }
+
+            body, html {
+                background: #FFFFFF !important;
+                color: #181818 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            aside, header, footer, nav, [class*="print:hidden"] {
+                display: none !important;
+            }
+
+            .lg\:pl-64, .lg\:pl-20, [class*="lg:pl-"] {
+                padding-left: 0 !important;
+            }
+
+            main {
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+            }
+        }
     </style>
 </head>
 
@@ -68,7 +100,7 @@
         <aside
             x-show="isDesktop || mobileSidebarOpen"
             x-cloak
-            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#C62828] text-white border-r border-[#A71D1D] transition-all duration-300 flex flex-col shadow-lg overflow-hidden lg:translate-x-0"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#C62828] text-white border-r border-[#A71D1D] transition-all duration-300 flex flex-col shadow-lg overflow-hidden lg:translate-x-0 print:hidden"
             :class="{
                 'lg:w-64': sidebarOpen,
                 'lg:w-20': !sidebarOpen
@@ -446,10 +478,10 @@
         </aside>
 
         <!-- Main Content Canvas -->
-        <div class="flex-1 min-w-0 transition-all duration-300 flex flex-col min-h-screen bg-white" :class="sidebarOpen ? 'lg:pl-64' : 'lg:pl-20'">
+        <div class="flex-1 min-w-0 transition-all duration-300 flex flex-col min-h-screen bg-white print:p-0 print:m-0 print:w-full print:block" :class="sidebarOpen ? 'lg:pl-64 print:pl-0' : 'lg:pl-20 print:pl-0'">
             <!-- Topbar -->
             <header
-                class="h-16 bg-[#C62828] border-b border-[#A71D1D] sticky top-0 z-40 flex items-center justify-between px-4 lg:px-8 shadow-md">
+                class="h-16 bg-[#C62828] border-b border-[#A71D1D] sticky top-0 z-40 flex items-center justify-between px-4 lg:px-8 shadow-md print:hidden">
                 <div class="flex items-center space-x-3">
                     <button @click="toggleSidebar()"
                         class="w-8 h-8 flex items-center justify-center hover:bg-white/15 rounded-md transition-colors text-white cursor-pointer"
@@ -493,10 +525,10 @@
             </header>
 
             <!-- Page Content Area -->
-            <main class="flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 max-w-7xl w-full mx-auto">
+            <main class="flex-1 px-4 sm:px-6 lg:px-10 py-6 sm:py-8 max-w-7xl w-full mx-auto print:p-0 print:m-0 print:max-w-none print:w-full">
                 @isset($header)
                     <!-- Page Header Banner -->
-                    <div class="mb-6 sm:mb-8 bg-[#C62828] rounded-xl p-5 sm:p-7 relative overflow-hidden shadow-lg">
+                    <div class="mb-6 sm:mb-8 bg-[#C62828] rounded-xl p-5 sm:p-7 relative overflow-hidden shadow-lg print:hidden">
                         <!-- Ambient decorations -->
                         <div class="absolute -right-10 -top-10 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
                         <div class="absolute right-20 -bottom-6 w-24 h-24 rounded-full bg-black/10 pointer-events-none"></div>
@@ -528,7 +560,7 @@
             </main>
 
             <!-- Refined Academic Footer -->
-            <footer class="mt-auto border-t border-neutral-border bg-[#F8F8F7] px-5 lg:px-10 py-5 text-center text-xs text-neutral-muted">
+            <footer class="mt-auto border-t border-neutral-border bg-[#F8F8F7] px-5 lg:px-10 py-5 text-center text-xs text-neutral-muted print:hidden">
                 <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
                     <div class="flex items-center gap-2">
                         <img src="{{ asset('images/logo-rpk.png') }}" alt="RPK PUSTAKA" class="h-5 w-auto object-contain opacity-60">
