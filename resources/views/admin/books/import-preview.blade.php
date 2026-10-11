@@ -5,9 +5,9 @@
 
     <x-slot name="actions">
         <div class="flex items-center gap-2">
-            <a href="{{ route('admin.books.import.create') }}" class="btn-editorial-outline text-xs py-2 px-3 shadow-xs">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Tambah Berkas
+            <a href="{{ route('admin.books.import.create', ['batch_id' => $batchId]) }}" class="btn-editorial-outline text-xs py-2 px-3 shadow-xs flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Kembali ke Antrean
             </a>
             <button type="button" @click="startBatchImport()" class="btn-editorial text-xs py-2 px-4 font-bold uppercase tracking-wider shadow-sm flex items-center gap-1.5 cursor-pointer">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -45,8 +45,9 @@
                     <span>Tinjau data naskah di bawah sebelum disimpan ke katalog Master:</span>
                 </div>
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <a href="{{ route('admin.books.import.create') }}" class="btn-editorial-outline text-xs py-2 px-4 text-center w-1/2 sm:w-auto">
-                        Batalkan Sesi
+                    <a href="{{ route('admin.books.import.create', ['batch_id' => $batchId]) }}" class="btn-editorial-outline text-xs py-2 px-4 text-center w-1/2 sm:w-auto flex items-center justify-center gap-1.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                        Kembali ke Antrean
                     </a>
                     <button type="button" @click="startBatchImport()" class="btn-editorial text-xs py-2 px-5 font-bold uppercase tracking-wider shadow-xs w-1/2 sm:w-auto cursor-pointer flex items-center justify-center gap-1.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>

@@ -32,13 +32,17 @@ class BookImportController extends Controller
     /**
      * Display the Bulk Import upload page.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
         $categories = Category::all();
         $locations = Location::all();
-        $batchId = Str::uuid()->toString();
+        $batchId = $request->query('batch_id')
+            ? preg_replace('/[^a-zA-Z0-9_\-]/', '', (string)$request->query('batch_id'))
+            : Str::uuid()->toString();
 
-        return view('admin.books.import', compact('categories', 'locations', 'batchId'));
+        $existingCandidates = $this->importService->getBatchCandidates($batchId);
+
+        return view('admin.books.import', compact('categories', 'locations', 'batchId', 'existingCandidates'));
     }
 
     /**
