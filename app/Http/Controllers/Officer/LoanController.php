@@ -42,7 +42,7 @@ class LoanController extends Controller
         ]);
 
         if ($request->filled('search')) {
-            $search = $request->search;
+            $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('loan_code', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($uq) use ($search) {
@@ -50,7 +50,10 @@ class LoanController extends Controller
                          ->orWhere('email', 'like', "%{$search}%");
                   })
                   ->orWhereHas('loanDetails.book', function ($bq) use ($search) {
-                      $bq->where('title', 'like', "%{$search}%");
+                      $bq->where('title', 'like', "%{$search}%")
+                         ->orWhere('book_code', 'like', "%{$search}%")
+                         ->orWhere('isbn', 'like', "%{$search}%")
+                         ->orWhere('author', 'like', "%{$search}%");
                   });
             });
         }
