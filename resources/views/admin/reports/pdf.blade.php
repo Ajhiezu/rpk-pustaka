@@ -45,10 +45,10 @@
                     <div><strong>{{ $loan->user->name }}</strong></div>
                     <div style="font-size: 9px; color: #666;">{{ $loan->user->email }}</div>
                 </td>
-                <td>{{ $loan->loanDetails->map(fn($d) => $d->book->title)->implode(', ') }}</td>
+                <td>{{ $loan->loanDetails->map(fn($d) => $d->book?->title ?? '-')->implode(', ') }}</td>
                 <td>{{ $loan->loan_date ? \Carbon\Carbon::parse($loan->loan_date)->format('d M Y') : '-' }}</td>
                 <td>{{ $loan->due_date ? \Carbon\Carbon::parse($loan->due_date)->format('d M Y') : '-' }}</td>
-                <td>Rp {{ number_format($loan->fine_amount ?? 0, 0, ',', '.') }}</td>
+                <td>Rp {{ number_format(($loan->isDigital() ? 0 : ($loan->fine->amount ?? 0)), 0, ',', '.') }}</td>
             </tr>
             @empty
             <tr>

@@ -34,7 +34,7 @@ class ReportController extends Controller
 
     public function exportPdf(Request $request)
     {
-        $loans = Loan::with(['user', 'loanDetails.book'])
+        $loans = Loan::with(['user', 'loanDetails.book', 'fine'])
             ->when($request->start_date, fn($q) => $q->whereDate('created_at', '>=', $request->start_date))
             ->when($request->end_date, fn($q) => $q->whereDate('created_at', '<=', $request->end_date))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
