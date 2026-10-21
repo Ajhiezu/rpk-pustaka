@@ -184,8 +184,8 @@
                                         </span>
                                     @endif
                                 @elseif($loan->isReturned())
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded">
-                                        Dikembalikan
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-[#EDF7ED] text-success border border-[#C8E6C9] rounded">
+                                        {{ $loan->isDigital() ? 'Otomatis Selesai' : 'Dikembalikan' }}
                                     </span>
                                 @elseif($loan->isCancelled())
                                     <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
@@ -349,8 +349,8 @@
                                     </span>
                                 @endif
                             @elseif($loan->isReturned())
-                                <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded">
-                                    ✓ Dikembalikan
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-[#EDF7ED] text-success border border-[#C8E6C9] rounded">
+                                    ✓ {{ $loan->isDigital() ? 'Otomatis Selesai' : 'Dikembalikan' }}
                                 </span>
                             @elseif($loan->isCancelled())
                                 <span class="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
@@ -373,7 +373,7 @@
 
                         <!-- Informasi Rincian Denda Column -->
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($loan->fine && $loan->fine->amount > 0)
+                            @if(!$loan->isDigital() && $loan->fine && $loan->fine->amount > 0)
                                 <div>
                                     <span class="font-sans text-xs font-bold {{ $loan->fine->status === 'paid' ? 'text-neutral-dark' : 'text-danger' }}">
                                         Rp {{ number_format($loan->fine->amount, 0, ',', '.') }}

@@ -12,10 +12,14 @@ use App\Models\Essay;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 
+use App\Services\LibraryService;
+
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(LibraryService $libraryService)
     {
+        $libraryService->autoReturnExpiredDigitalLoans();
+
         $user = auth()->user();
         $stats = [];
         $activities = [];
@@ -27,7 +31,7 @@ class DashboardController extends Controller
                 SUM(CASE WHEN status = 'borrowed' THEN 1 ELSE 0 END) as active_loans,
                 SUM(CASE WHEN loan_type = 'physical' AND status = 'borrowed' THEN 1 ELSE 0 END) as active_physical_loans,
                 SUM(CASE WHEN loan_type = 'digital'  AND status = 'borrowed' AND due_date >= CURDATE() THEN 1 ELSE 0 END) as active_digital_loans,
-                SUM(CASE WHEN status = 'borrowed' AND due_date < CURDATE() THEN 1 ELSE 0 END) as overdue_loans
+                SUM(CASE WHEN loan_type = 'physical' AND status = 'borrowed' AND due_date < CURDATE() THEN 1 ELSE 0 END) as overdue_loans
             ")->first();
 
             // ── Single aggregated DB hit for book counts ──────────────────────

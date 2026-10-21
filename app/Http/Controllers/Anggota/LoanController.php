@@ -20,6 +20,8 @@ class LoanController extends Controller
 
     public function index(Request $request)
     {
+        $this->libraryService->autoReturnExpiredDigitalLoans();
+
         $query = Loan::where('user_id', Auth::id())
             ->with(['loanDetails.book', 'returnBook', 'fine']);
 

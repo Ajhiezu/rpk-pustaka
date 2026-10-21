@@ -123,16 +123,27 @@ class Loan extends Model
 
     public function isExpired(): bool
     {
+        if ($this->isDigital()) {
+            return $this->status === 'returned' || ($this->due_date && now()->startOfDay()->gt($this->due_date));
+        }
         return $this->status === 'borrowed' && now()->startOfDay()->gt($this->due_date);
     }
 
     public function isOverdue(): bool
     {
+        // Digital loans are automatically returned upon expiration and never incur overdue status
+        if ($this->isDigital()) {
+            return false;
+        }
         return $this->status === 'overdue' || ($this->status === 'borrowed' && $this->due_date && now()->startOfDay()->gt($this->due_date));
     }
 
     public function getStatusBadgeLabelAttribute(): string
     {
+        if ($this->isDigital() && $this->status === 'returned') {
+            return 'Selesai (Otomatis Dikembalikan)';
+        }
+
         return match ($this->status) {
             'pending' => 'Menunggu Persetujuan',
             'approved' => 'Disetujui (Menunggu Pengambilan)',

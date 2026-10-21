@@ -306,6 +306,59 @@ class LibraryService
     }
 
     /**
+     * Automatically return all expired digital loans without fine.
+     * Digital loans expire when due_date is past today and are automatically marked as returned.
+     */
+    public function autoReturnExpiredDigitalLoans(): int
+    {
+        $expiredDigitalLoans = Loan::where('loan_type', 'digital')
+            ->whereIn('status', ['borrowed', 'overdue', 'pending', 'approved'])
+            ->whereDate('due_date', '<', now()->toDateString())
+            ->with(['loanDetails', 'returnBook', 'fine'])
+            ->get();
+
+        if ($expiredDigitalLoans->isEmpty()) {
+            return 0;
+        }
+
+        DB::transaction(function () use ($expiredDigitalLoans) {
+            foreach ($expiredDigitalLoans as $loan) {
+                $returnDate = $loan->due_date;
+
+                // 1. Update loan status to returned
+                $loan->update([
+                    'status' => 'returned',
+                ]);
+
+                // 2. Update loan details to returned
+                $loan->loanDetails()->where(function ($q) {
+                    $q->whereNull('status')->orWhere('status', '!=', 'returned');
+                })->update([
+                    'status'      => 'returned',
+                    'returned_at' => Carbon::parse($returnDate)->endOfDay(),
+                ]);
+
+                // 3. Create ReturnBook record if not exists
+                if (!$loan->returnBook) {
+                    ReturnBook::create([
+                        'loan_id'     => $loan->id,
+                        'return_date' => $returnDate,
+                        'condition'   => 'good',
+                        'notes'       => 'Pengembalian otomatis oleh sistem (Masa akses digital telah berakhir).',
+                    ]);
+                }
+
+                // 4. Ensure no fine exists for digital loans
+                if ($loan->fine) {
+                    $loan->fine->delete();
+                }
+            }
+        });
+
+        return $expiredDigitalLoans->count();
+    }
+
+    /**
      * Process return of a loan.
      * Prevents double return exploit and handles physical vs digital returns.
      *
@@ -399,6 +452,11 @@ class LibraryService
      */
     protected function calculateFine(Loan $loan, ReturnBook $returnBook, $detailsToReturn = null)
     {
+        // Digital loans NEVER incur fines
+        if ($loan->isDigital()) {
+            return;
+        }
+
         $dueDate = Carbon::parse($loan->due_date);
         $returnDate = Carbon::parse($returnBook->return_date);
 

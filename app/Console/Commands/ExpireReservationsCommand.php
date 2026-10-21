@@ -26,9 +26,10 @@ class ExpireReservationsCommand extends Command
      */
     public function handle(LibraryService $libraryService)
     {
-        $this->info('Memulai pengecekan reservasi kedaluwarsa...');
+        $this->info('Memulai pengecekan reservasi kedaluwarsa & peminjaman digital expired...');
         $count = $libraryService->expireAllOverdueReservations();
-        $this->info("Selesai. Berhasil memperbarui {$count} reservasi kedaluwarsa dan mengembalikan stok fisik.");
+        $digitalCount = $libraryService->autoReturnExpiredDigitalLoans();
+        $this->info("Selesai. Berhasil memperbarui {$count} reservasi fisik kedaluwarsa dan {$digitalCount} peminjaman digital otomatis dikembalikan.");
 
         return Command::SUCCESS;
     }

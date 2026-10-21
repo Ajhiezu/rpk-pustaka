@@ -191,7 +191,7 @@
                             </div>
                         </div>
 
-                        @if($loan->fine && $loan->fine->amount > 0)
+                        @if(!$loan->isDigital() && $loan->fine && $loan->fine->amount > 0)
                             <div class="pt-1 flex items-center justify-between text-xs border-t border-neutral-border/60">
                                 <span class="text-neutral-muted text-[11px]">Denda:</span>
                                 <span class="font-mono font-bold {{ $loan->fine->status === 'paid' ? 'text-success' : 'text-danger' }}">
@@ -272,7 +272,7 @@
                                     <x-badge variant="primary">Sedang Dipinjam</x-badge>
                                 @endif
                             @elseif($loan->status === 'returned')
-                                <x-badge variant="emerald">Telah Kembali</x-badge>
+                                <x-badge variant="emerald">{{ $loan->isDigital() ? 'Otomatis Selesai' : 'Telah Kembali' }}</x-badge>
                             @elseif($loan->isCancelled())
                                 <span class="inline-flex items-center px-2 py-0.5 text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 rounded">
                                     Dibatalkan
@@ -290,7 +290,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($loan->fine)
+                            @if(!$loan->isDigital() && $loan->fine)
                                 @if($loan->fine->status === 'unpaid')
                                     <div class="space-y-0.5">
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-danger border border-red-200">

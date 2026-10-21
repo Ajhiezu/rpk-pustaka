@@ -22,6 +22,9 @@ class LoanController extends Controller
 
     public function index(Request $request)
     {
+        // Automatically return expired digital loans
+        $this->libraryService->autoReturnExpiredDigitalLoans();
+
         // Only run expiry check when there are pending loans (avoid full scan every page load)
         $hasPending = Cache::remember('has_pending_reservations', 30, function () {
             return Loan::where('status', Loan::STATUS_PENDING)
